@@ -14,6 +14,7 @@ interface Expense {
 
 interface ExpenseListProps {
   expenses: Expense[];
+  onExpenseClick?: (expense: Expense) => void;
 }
 
 const categoryColors: Record<string, string> = {
@@ -29,7 +30,7 @@ const categoryColors: Record<string, string> = {
   "Other": "bg-gray-100 text-gray-800"
 };
 
-export const ExpenseList = ({ expenses }: ExpenseListProps) => {
+export const ExpenseList = ({ expenses, onExpenseClick }: ExpenseListProps) => {
   const sortedExpenses = [...expenses].sort((a, b) => b.date.getTime() - a.date.getTime());
 
   if (expenses.length === 0) {

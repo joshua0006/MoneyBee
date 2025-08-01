@@ -1,3 +1,19 @@
+interface Account {
+  id: string;
+  name: string;
+  type: 'checking' | 'savings' | 'credit' | 'cash';
+  balance: number;
+  color: string;
+}
+
+interface Budget {
+  id: string;
+  category: string;
+  amount: number;
+  period: 'monthly' | 'weekly' | 'yearly';
+  startDate: Date;
+}
+
 interface Expense {
   id: string;
   amount: number;
@@ -5,10 +21,17 @@ interface Expense {
   category: string;
   date: Date;
   type: 'expense' | 'income';
+  accountId: string;
+  photos?: string[];
+  location?: string;
+  tags?: string[];
+  recurring?: boolean;
 }
 
 // Local storage utilities
 export const STORAGE_KEY = 'expense_tracker_data';
+export const ACCOUNTS_KEY = 'expense_tracker_accounts';
+export const BUDGETS_KEY = 'expense_tracker_budgets';
 
 export const saveExpensesToStorage = (expenses: Expense[]): void => {
   try {
@@ -46,7 +69,8 @@ const getDefaultExpenses = (): Expense[] => [
     description: 'Coffee and pastry',
     category: 'Food & Dining',
     date: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    type: 'expense'
+    type: 'expense',
+    accountId: 'main'
   },
   {
     id: '2',
@@ -54,7 +78,8 @@ const getDefaultExpenses = (): Expense[] => [
     description: 'Gas station',
     category: 'Transportation',
     date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    type: 'expense'
+    type: 'expense',
+    accountId: 'main'
   },
   {
     id: '3',
@@ -62,7 +87,35 @@ const getDefaultExpenses = (): Expense[] => [
     description: 'Monthly salary',
     category: 'Other',
     date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-    type: 'income'
+    type: 'income',
+    accountId: 'main'
+  }
+];
+
+const getDefaultAccounts = (): Account[] => [
+  {
+    id: 'main',
+    name: 'Main Account',
+    type: 'checking',
+    balance: 2500.00,
+    color: 'hsl(var(--primary))'
+  }
+];
+
+const getDefaultBudgets = (): Budget[] => [
+  {
+    id: '1',
+    category: 'Food & Dining',
+    amount: 500,
+    period: 'monthly',
+    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+  },
+  {
+    id: '2',
+    category: 'Transportation',
+    amount: 200,
+    period: 'monthly',
+    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
   }
 ];
 
@@ -149,4 +202,69 @@ export const getTopSpendingCategories = (expenses: Expense[], limit = 5) => {
     .map(([category, amount]) => ({ category, amount }));
 };
 
-export { type Expense };
+// Account management
+export const saveAccountsToStorage = (accounts: Account[]): void => {
+  try {
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+  } catch (error) {
+    console.error('Failed to save accounts to localStorage:', error);
+  }
+};
+
+export const loadAccountsFromStorage = (): Account[] => {
+  try {
+    const stored = localStorage.getItem(ACCOUNTS_KEY);
+    if (!stored) return getDefaultAccounts();
+    return JSON.parse(stored);
+  } catch (error) {
+    console.error('Failed to load accounts from localStorage:', error);
+    return getDefaultAccounts();
+  }
+};
+
+// Budget management
+export const saveBudgetsToStorage = (budgets: Budget[]): void => {
+  try {
+    const serializedBudgets = budgets.map(budget => ({
+      ...budget,
+      startDate: budget.startDate.toISOString()
+    }));
+    localStorage.setItem(BUDGETS_KEY, JSON.stringify(serializedBudgets));
+  } catch (error) {
+    console.error('Failed to save budgets to localStorage:', error);
+  }
+};
+
+export const loadBudgetsFromStorage = (): Budget[] => {
+  try {
+    const stored = localStorage.getItem(BUDGETS_KEY);
+    if (!stored) return getDefaultBudgets();
+    
+    const parsed = JSON.parse(stored);
+    return parsed.map((budget: any) => ({
+      ...budget,
+      startDate: new Date(budget.startDate)
+    }));
+  } catch (error) {
+    console.error('Failed to load budgets from localStorage:', error);
+    return getDefaultBudgets();
+  }
+};
+
+// Budget calculations
+export const calculateBudgetUsage = (expenses: Expense[], budget: Budget): number => {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  
+  return expenses
+    .filter(e => 
+      e.type === 'expense' && 
+      e.category === budget.category &&
+      e.date.getMonth() === currentMonth &&
+      e.date.getFullYear() === currentYear
+    )
+    .reduce((sum, e) => sum + e.amount, 0);
+};
+
+export { type Expense, type Account, type Budget };

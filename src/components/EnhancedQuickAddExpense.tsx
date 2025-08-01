@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Camera, Receipt, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getSmartSuggestions, type Expense } from "@/utils/expenseUtils";
+import { getSmartSuggestions, type Expense, type Account } from "@/utils/expenseUtils";
 
 interface QuickAddExpenseProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => void;
   existingExpenses: Expense[];
+  accounts: Account[];
 }
 
 const categories = [
@@ -27,11 +28,12 @@ const categories = [
 
 const quickAmounts = [5, 10, 15, 20, 25, 50];
 
-export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses }: QuickAddExpenseProps) => {
+export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accounts }: QuickAddExpenseProps) => {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [type, setType] = useState<'expense' | 'income'>('expense');
+  const [accountId, setAccountId] = useState(accounts[0]?.id || "");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -97,7 +99,8 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses }: Quic
       description: description.trim(),
       category: finalCategory,
       date: new Date(),
-      type
+      type,
+      accountId: accountId || accounts[0]?.id
     };
 
     // Simulate processing time for better UX
@@ -296,6 +299,31 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses }: Quic
               </SelectContent>
             </Select>
           </div>
+
+          {/* Account Selection */}
+          {accounts.length > 1 && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Account</label>
+              <Select value={accountId} onValueChange={setAccountId} disabled={isLoading}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select account" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map(account => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: account.color }}
+                        />
+                        {account.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">

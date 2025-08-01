@@ -5,38 +5,70 @@ import { ExpenseList } from "@/components/ExpenseList";
 import { CategoryBreakdown } from "@/components/CategoryBreakdown";
 import { SearchAndFilter } from "@/components/SearchAndFilter";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
+import { TransactionDetail } from "@/components/TransactionDetail";
+import { CalendarView } from "@/components/CalendarView";
+import { BudgetManager } from "@/components/BudgetManager";
+import { AccountManager } from "@/components/AccountManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wallet, TrendingUp, BarChart3, Search, Plus, PieChart } from "lucide-react";
+import { Wallet, TrendingUp, BarChart3, Search, Plus, PieChart, Calendar, Target, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { 
   saveExpensesToStorage, 
   loadExpensesFromStorage, 
+  saveAccountsToStorage,
+  loadAccountsFromStorage,
+  saveBudgetsToStorage,
+  loadBudgetsFromStorage,
   exportExpensesAsCSV,
-  type Expense 
+  type Expense,
+  type Account,
+  type Budget
 } from "@/utils/expenseUtils";
 
 const Index = () => {
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   // Load data on mount
   useEffect(() => {
     const loadedExpenses = loadExpensesFromStorage();
+    const loadedAccounts = loadAccountsFromStorage();
+    const loadedBudgets = loadBudgetsFromStorage();
+    
     setAllExpenses(loadedExpenses);
     setFilteredExpenses(loadedExpenses);
+    setAccounts(loadedAccounts);
+    setBudgets(loadedBudgets);
     setIsLoading(false);
   }, []);
 
-  // Save data whenever expenses change
+  // Save data whenever data changes
   useEffect(() => {
     if (!isLoading) {
       saveExpensesToStorage(allExpenses);
     }
   }, [allExpenses, isLoading]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      saveAccountsToStorage(accounts);
+    }
+  }, [accounts, isLoading]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      saveBudgetsToStorage(budgets);
+    }
+  }, [budgets, isLoading]);
 
   const handleAddExpense = (expense: Omit<Expense, 'id'>) => {
     const newExpense: Expense = {
@@ -46,8 +78,56 @@ const Index = () => {
     setAllExpenses(prev => [newExpense, ...prev]);
   };
 
+  const handleAddAccount = (account: Omit<Account, 'id'>) => {
+    const newAccount: Account = {
+      ...account,
+      id: Date.now().toString()
+    };
+    setAccounts(prev => [...prev, newAccount]);
+  };
+
+  const handleUpdateAccount = (updatedAccount: Account) => {
+    setAccounts(prev => prev.map(acc => acc.id === updatedAccount.id ? updatedAccount : acc));
+  };
+
+  const handleDeleteAccount = (id: string) => {
+    setAccounts(prev => prev.filter(acc => acc.id !== id));
+  };
+
+  const handleAddBudget = (budget: Omit<Budget, 'id'>) => {
+    const newBudget: Budget = {
+      ...budget,
+      id: Date.now().toString()
+    };
+    setBudgets(prev => [...prev, newBudget]);
+  };
+
+  const handleUpdateBudget = (updatedBudget: Budget) => {
+    setBudgets(prev => prev.map(budget => budget.id === updatedBudget.id ? updatedBudget : budget));
+  };
+
+  const handleDeleteBudget = (id: string) => {
+    setBudgets(prev => prev.filter(budget => budget.id !== id));
+  };
+
   const handleFilteredResults = (filtered: Expense[]) => {
     setFilteredExpenses(filtered);
+  };
+
+  const handleExpenseClick = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setIsDetailOpen(true);
+  };
+
+  const handleDeleteExpense = (id: string) => {
+    setAllExpenses(prev => prev.filter(e => e.id !== id));
+    setFilteredExpenses(prev => prev.filter(e => e.id !== id));
+  };
+
+  const handleEditExpense = (expense: Expense) => {
+    setAllExpenses(prev => prev.map(e => e.id === expense.id ? expense : e));
+    setFilteredExpenses(prev => prev.map(e => e.id === expense.id ? expense : e));
+    setIsDetailOpen(false);
   };
 
   const handleExport = () => {
@@ -123,7 +203,7 @@ const Index = () => {
       {/* Main Content with Tabs */}
       <div className="max-w-lg mx-auto px-4 py-6">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-muted/50 p-1">
+          <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1">
             <TabsTrigger value="overview" className="flex items-center gap-1 text-xs">
               <BarChart3 size={14} />
               Overview
@@ -132,13 +212,9 @@ const Index = () => {
               <Plus size={14} />
               Add
             </TabsTrigger>
-            <TabsTrigger value="search" className="flex items-center gap-1 text-xs">
-              <Search size={14} />
-              Search
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-1 text-xs">
-              <PieChart size={14} />
-              Analytics
+            <TabsTrigger value="more" className="flex items-center gap-1 text-xs">
+              <Settings size={14} />
+              More
             </TabsTrigger>
           </TabsList>
 
@@ -153,7 +229,10 @@ const Index = () => {
             <CategoryBreakdown expenses={allExpenses} />
 
             {/* Recent Transactions */}
-            <ExpenseList expenses={allExpenses.slice(0, 5)} />
+            <ExpenseList 
+              expenses={allExpenses.slice(0, 5)} 
+              onExpenseClick={handleExpenseClick}
+            />
             
             {allExpenses.length > 5 && (
               <div className="text-center">
@@ -168,23 +247,91 @@ const Index = () => {
             <EnhancedQuickAddExpense 
               onAddExpense={handleAddExpense}
               existingExpenses={allExpenses}
+              accounts={accounts}
             />
           </TabsContent>
 
-          <TabsContent value="search" className="space-y-6">
-            <SearchAndFilter 
-              expenses={allExpenses}
-              onFilteredResults={handleFilteredResults}
-              onExport={handleExport}
-            />
-            
-            <ExpenseList expenses={filteredExpenses} />
-          </TabsContent>
+          <TabsContent value="more" className="space-y-6">
+            <Tabs defaultValue="search" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-5 bg-muted/30 p-1">
+                <TabsTrigger value="search" className="flex flex-col items-center gap-1 text-xs p-2">
+                  <Search size={16} />
+                  Search
+                </TabsTrigger>
+                <TabsTrigger value="calendar" className="flex flex-col items-center gap-1 text-xs p-2">
+                  <Calendar size={16} />
+                  Calendar
+                </TabsTrigger>
+                <TabsTrigger value="budget" className="flex flex-col items-center gap-1 text-xs p-2">
+                  <Target size={16} />
+                  Budget
+                </TabsTrigger>
+                <TabsTrigger value="accounts" className="flex flex-col items-center gap-1 text-xs p-2">
+                  <Wallet size={16} />
+                  Accounts
+                </TabsTrigger>
+                <TabsTrigger value="analytics" className="flex flex-col items-center gap-1 text-xs p-2">
+                  <PieChart size={16} />
+                  Analytics
+                </TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="analytics" className="space-y-6">
-            <AdvancedAnalytics expenses={allExpenses} />
+              <TabsContent value="search" className="space-y-4">
+                <SearchAndFilter 
+                  expenses={allExpenses}
+                  onFilteredResults={handleFilteredResults}
+                  onExport={handleExport}
+                />
+                <ExpenseList 
+                  expenses={filteredExpenses} 
+                  onExpenseClick={handleExpenseClick}
+                />
+              </TabsContent>
+
+              <TabsContent value="calendar" className="space-y-4">
+                <CalendarView 
+                  expenses={allExpenses}
+                  onDateSelect={setSelectedDate}
+                  selectedDate={selectedDate}
+                />
+              </TabsContent>
+
+              <TabsContent value="budget" className="space-y-4">
+                <BudgetManager 
+                  budgets={budgets}
+                  expenses={allExpenses}
+                  onAddBudget={handleAddBudget}
+                  onUpdateBudget={handleUpdateBudget}
+                  onDeleteBudget={handleDeleteBudget}
+                />
+              </TabsContent>
+
+              <TabsContent value="accounts" className="space-y-4">
+                <AccountManager 
+                  accounts={accounts}
+                  expenses={allExpenses}
+                  onAddAccount={handleAddAccount}
+                  onUpdateAccount={handleUpdateAccount}
+                  onDeleteAccount={handleDeleteAccount}
+                />
+              </TabsContent>
+
+              <TabsContent value="analytics" className="space-y-4">
+                <AdvancedAnalytics expenses={allExpenses} />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
+
+        {/* Transaction Detail Modal */}
+        <TransactionDetail 
+          expense={selectedExpense}
+          account={accounts.find(acc => acc.id === selectedExpense?.accountId)}
+          isOpen={isDetailOpen}
+          onClose={() => setIsDetailOpen(false)}
+          onDelete={handleDeleteExpense}
+          onEdit={handleEditExpense}
+        />
       </div>
     </div>
   );
