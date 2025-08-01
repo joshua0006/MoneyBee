@@ -36,6 +36,8 @@ const Index = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [mainTab, setMainTab] = useState("overview");
+  const [moreTab, setMoreTab] = useState("search");
   const { toast } = useToast();
 
   // Load data on mount
@@ -147,6 +149,11 @@ const Index = () => {
     }
   };
 
+  const handleViewAllTransactions = () => {
+    setMainTab("more");
+    setMoreTab("search");
+  };
+
   const totalIncome = allExpenses
     .filter(e => e.type === 'income')
     .reduce((sum, e) => sum + e.amount, 0);
@@ -202,7 +209,7 @@ const Index = () => {
 
       {/* Main Content with Tabs */}
       <div className="max-w-lg mx-auto px-4 py-6">
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs value={mainTab} onValueChange={setMainTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1">
             <TabsTrigger value="overview" className="flex items-center gap-1 text-xs">
               <BarChart3 size={14} />
@@ -236,7 +243,7 @@ const Index = () => {
             
             {allExpenses.length > 5 && (
               <div className="text-center">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleViewAllTransactions}>
                   View All {allExpenses.length} Transactions
                 </Button>
               </div>
@@ -252,7 +259,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="more" className="space-y-6">
-            <Tabs defaultValue="search" className="space-y-4">
+            <Tabs value={moreTab} onValueChange={setMoreTab} className="space-y-4">
               <TabsList className="grid w-full grid-cols-5 bg-muted/30 p-1">
                 <TabsTrigger value="search" className="flex flex-col items-center gap-1 text-xs p-2">
                   <Search size={16} />
