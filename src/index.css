@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 0 0% 98%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -35,6 +35,27 @@ All colors MUST be HSL.
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
+
+    /* Expense Tracker Design System */
+    --expense: 0 73% 69%;
+    --expense-foreground: 0 0% 100%;
+    --expense-light: 0 73% 85%;
+    
+    --income: 199 84% 55%;
+    --income-foreground: 0 0% 100%;
+    --income-light: 199 84% 85%;
+    
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    
+    --gradient-expense: linear-gradient(135deg, hsl(0 73% 69%), hsl(0 73% 75%));
+    --gradient-income: linear-gradient(135deg, hsl(199 84% 55%), hsl(199 84% 65%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 0% 98%));
+    
+    --shadow-soft: 0 2px 20px hsl(0 0% 0% / 0.08);
+    --shadow-medium: 0 4px 30px hsl(0 0% 0% / 0.12);
+    --shadow-expense: 0 4px 20px hsl(0 73% 69% / 0.25);
+    --shadow-income: 0 4px 20px hsl(199 84% 55% / 0.25);
 
     --radius: 0.5rem;
 
@@ -101,5 +122,34 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Custom progress bar styling */
+  .progress-bar {
+    transition: width 0.5s ease-out;
+  }
+  
+  /* Smooth animations for expense tracker */
+  .expense-card {
+    @apply transition-all duration-300 hover:shadow-medium;
+  }
+  
+  .expense-item {
+    @apply transition-all duration-200 hover:bg-muted/30;
+  }
+  
+  /* Custom gradients */
+  .gradient-expense {
+    background: var(--gradient-expense);
+  }
+  
+  .gradient-income {
+    background: var(--gradient-income);
+  }
+  
+  .gradient-card {
+    background: var(--gradient-card);
   }
 }
