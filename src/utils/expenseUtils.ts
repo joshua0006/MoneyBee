@@ -61,63 +61,11 @@ export const loadExpensesFromStorage = (): Expense[] => {
   }
 };
 
-// Default sample expenses for new users
-const getDefaultExpenses = (): Expense[] => [
-  {
-    id: '1',
-    amount: 15.50,
-    description: 'Coffee and pastry',
-    category: 'Food & Dining',
-    date: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    type: 'expense',
-    accountId: 'main'
-  },
-  {
-    id: '2',
-    amount: 45.00,
-    description: 'Gas station',
-    category: 'Transportation',
-    date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    type: 'expense',
-    accountId: 'main'
-  },
-  {
-    id: '3',
-    amount: 3200.00,
-    description: 'Monthly salary',
-    category: 'Other',
-    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-    type: 'income',
-    accountId: 'main'
-  }
-];
+const getDefaultExpenses = (): Expense[] => [];
 
-const getDefaultAccounts = (): Account[] => [
-  {
-    id: 'main',
-    name: 'Main Account',
-    type: 'checking',
-    balance: 2500.00,
-    color: 'hsl(var(--primary))'
-  }
-];
+const getDefaultAccounts = (): Account[] => [];
 
-const getDefaultBudgets = (): Budget[] => [
-  {
-    id: '1',
-    category: 'Food & Dining',
-    amount: 500,
-    period: 'monthly',
-    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-  },
-  {
-    id: '2',
-    category: 'Transportation',
-    amount: 200,
-    period: 'monthly',
-    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-  }
-];
+const getDefaultBudgets = (): Budget[] => [];
 
 // Smart suggestions based on previous entries
 export const getSmartSuggestions = (expenses: Expense[], currentInput: string): string[] => {
