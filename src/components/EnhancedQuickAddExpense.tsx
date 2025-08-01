@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,13 +42,14 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [isLoading, setIsLoading] = useState(false);
   
   // AI Recognition states
-  const [aiMode, setAiMode] = useState(false);
+  const [aiMode, setAiMode] = useState(true);
   const [aiInput, setAiInput] = useState("");
   const [parsedExpense, setParsedExpense] = useState<ParsedExpense | null>(null);
   const [showAiPreview, setShowAiPreview] = useState(false);
   
   const { toast } = useToast();
   const descriptionRef = useRef<HTMLInputElement>(null);
+  const aiInputRef = useRef<HTMLTextAreaElement>(null);
 
   // Smart suggestions based on input
   useEffect(() => {
@@ -161,6 +162,48 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
   const recentCategories = getLastUsedCategories();
 
+  // Auto-focus AI input when component mounts
+  useEffect(() => {
+    if (aiMode && aiInputRef.current) {
+      setTimeout(() => aiInputRef.current?.focus(), 100);
+    }
+  }, [aiMode]);
+
+  // Real-time AI parsing with debouncing
+  const debouncedParse = useCallback((input: string) => {
+    if (!input.trim()) {
+      setParsedExpense(null);
+      setShowAiPreview(false);
+      return;
+    }
+
+    const parsed = AIExpenseParser.parseExpenseText(input);
+    setParsedExpense(parsed);
+    setShowAiPreview(true);
+    
+    // Auto-accept if high confidence (all fields > 70%)
+    if (parsed.confidence.amount > 0.7 && parsed.confidence.category > 0.7 && parsed.confidence.description > 0.7) {
+      setTimeout(() => {
+        if (parsed.amount > 0) {
+          setAmount(parsed.amount.toString());
+          setDescription(parsed.description);
+          setCategory(parsed.category);
+        }
+      }, 500);
+    }
+  }, []);
+
+  // Debounce the AI parsing
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (aiInput && aiMode) {
+        debouncedParse(aiInput);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [aiInput, aiMode, debouncedParse]);
+
   // AI Parsing Functions
   const handleAiParse = () => {
     if (!aiInput.trim()) {
@@ -186,11 +229,10 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     setAiInput("");
     setParsedExpense(null);
     setShowAiPreview(false);
-    setAiMode(false);
     
     toast({
-      title: "AI parsing accepted",
-      description: "Fields have been auto-filled",
+      title: "✨ AI parsing applied",
+      description: "Ready to submit",
       duration: 2000
     });
   };
@@ -239,100 +281,93 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-4">
-        {/* AI Input Mode */}
+        {/* AI Input Mode - Primary Interface */}
         {aiMode && (
-          <div className="space-y-4 mb-6 p-4 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg border border-primary/20">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={16} className="text-primary" />
-              <span className="font-medium text-sm">AI Expense Recognition</span>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Describe your expense naturally</label>
-              <Textarea
-                placeholder="e.g., 'coffee at starbucks 4.50' or 'paid 25 dollars for gas'"
-                value={aiInput}
-                onChange={(e) => setAiInput(e.target.value)}
-                className="min-h-[80px]"
-              />
-              <div className="flex gap-2">
+          <div className="space-y-4 mb-6">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={18} className="text-primary" />
+                  <span className="font-medium">Just type naturally</span>
+                </div>
                 <Button
                   type="button"
-                  onClick={handleAiParse}
-                  variant="default"
+                  onClick={() => setAiMode(false)}
+                  variant="ghost"
                   size="sm"
-                  className="flex items-center gap-1"
-                >
-                  <Sparkles size={14} />
-                  Parse with AI
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    setAiMode(false);
-                    setAiInput("");
-                    setParsedExpense(null);
-                    setShowAiPreview(false);
-                  }}
-                  variant="outline"
-                  size="sm"
+                  className="text-xs"
                 >
                   Manual Entry
                 </Button>
               </div>
+              <Textarea
+                ref={aiInputRef}
+                placeholder="Try: 'coffee 5 bucks', 'gas $25', 'lunch at subway 12 dollars', 'groceries 45.30'..."
+                value={aiInput}
+                onChange={(e) => setAiInput(e.target.value)}
+                className="min-h-[100px] text-base bg-gradient-to-br from-background to-muted/20 border-primary/20 focus:border-primary/40 transition-all duration-200"
+              />
             </div>
 
-            {/* AI Preview */}
+            {/* Real-time AI Preview */}
             {showAiPreview && parsedExpense && (
-              <div className="space-y-3 p-3 bg-background rounded-md border">
+              <div className="space-y-3 p-4 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg border border-primary/20 animate-in slide-in-from-top-5 duration-300">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">AI Suggestions:</span>
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={14} className="text-primary animate-pulse" />
+                    <span className="text-sm font-medium">Live Preview</span>
+                  </div>
                   <div className="flex gap-1">
                     {getConfidenceBadge(parsedExpense.confidence.amount, "Amount")}
                     {getConfidenceBadge(parsedExpense.confidence.category, "Category")}
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Amount:</span>
-                    <div className="font-medium">${parsedExpense.amount}</div>
+                  <div className="space-y-1">
+                    <span className="text-muted-foreground text-xs">Amount</span>
+                    <div className="font-semibold text-lg text-primary">${parsedExpense.amount}</div>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">Description:</span>
+                  <div className="space-y-1">
+                    <span className="text-muted-foreground text-xs">Description</span>
                     <div className="font-medium">{parsedExpense.description}</div>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">Category:</span>
+                  <div className="space-y-1">
+                    <span className="text-muted-foreground text-xs">Category</span>
                     <div className="font-medium">{parsedExpense.category}</div>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    onClick={handleAcceptAiParsing}
-                    variant="success"
-                    size="sm"
-                    className="flex items-center gap-1"
-                  >
-                    <Check size={14} />
-                    Accept
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleRejectAiParsing}
-                    variant="destructive"
-                    size="sm"
-                    className="flex items-center gap-1"
-                  >
-                    <X size={14} />
-                    Reject
-                  </Button>
-                </div>
+                {parsedExpense.amount > 0 && (
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      type="button"
+                      onClick={handleAcceptAiParsing}
+                      variant="default"
+                      size="sm"
+                      className="flex items-center gap-1 flex-1"
+                    >
+                      <Check size={14} />
+                      Use These Details
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleRejectAiParsing}
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center gap-1"
+                    >
+                      <X size={14} />
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Manual Entry Form */}
+        {!aiMode && (
+          <div className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
           {/* Type Toggle */}
           <div className="flex gap-2 p-1 bg-muted rounded-lg">
             <Button
@@ -497,6 +532,96 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               variant={type === 'expense' ? 'expense' : 'income'}
               className="flex-1 relative overflow-hidden group"
               disabled={isLoading}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              <Plus size={16} />
+              {isLoading ? 'Adding...' : `Add ${type === 'expense' ? 'Expense' : 'Income'}`}
+            </Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="icon"
+              disabled={isLoading}
+              className="hover:scale-105 transition-transform"
+            >
+              <Camera size={16} />
+            </Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="icon"
+              disabled={isLoading}
+              className="hover:scale-105 transition-transform"
+            >
+              <Receipt size={16} />
+            </Button>
+            </div>
+            </form>
+          </div>
+        )}
+
+        {/* Always show form for AI mode too */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Type Toggle */}
+          <div className="flex gap-2 p-1 bg-muted rounded-lg">
+            <Button
+              type="button"
+              variant={type === 'expense' ? 'expense' : 'ghost'}
+              className="flex-1 relative overflow-hidden"
+              onClick={() => setType('expense')}
+              disabled={isLoading}
+            >
+              {type === 'expense' && (
+                <div className="absolute inset-0 bg-gradient-to-r from-expense to-expense/80" />
+              )}
+              <span className="relative">💳 Expense</span>
+            </Button>
+            <Button
+              type="button"
+              variant={type === 'income' ? 'income' : 'ghost'}
+              className="flex-1 relative overflow-hidden"
+              onClick={() => setType('income')}
+              disabled={isLoading}
+            >
+              {type === 'income' && (
+                <div className="absolute inset-0 bg-gradient-to-r from-income to-income/80" />
+              )}
+              <span className="relative">💰 Income</span>
+            </Button>
+          </div>
+
+          {/* Account Selection */}
+          {accounts.length > 1 && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Account</label>
+              <Select value={accountId} onValueChange={setAccountId} disabled={isLoading}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select account" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map(account => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: account.color }}
+                        />
+                        {account.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 pt-2">
+            <Button
+              type="submit"
+              variant={type === 'expense' ? 'expense' : 'income'}
+              className="flex-1 relative overflow-hidden group"
+              disabled={isLoading || !amount || !description}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
               <Plus size={16} />
