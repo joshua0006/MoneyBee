@@ -91,10 +91,12 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!amount || !description) {
+    // Validate amount based on type
+    const validAmount = type === 'income' ? parseSmartAmount(amount) : parseFloat(amount);
+    if (!amount || validAmount <= 0 || !description.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please enter an amount and description",
+        description: type === 'income' ? "Please enter a valid amount (e.g., 3.2k, $2,000) and description" : "Please enter an amount and description",
         variant: "destructive"
       });
       return;
