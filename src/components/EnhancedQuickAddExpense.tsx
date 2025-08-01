@@ -3,9 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Camera, Receipt, Zap } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Camera, Receipt, Zap, Sparkles, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getSmartSuggestions, type Expense, type Account } from "@/utils/expenseUtils";
+import { AIExpenseParser, type ParsedExpense } from "@/utils/aiExpenseParser";
 
 interface QuickAddExpenseProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -37,6 +40,13 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // AI Recognition states
+  const [aiMode, setAiMode] = useState(false);
+  const [aiInput, setAiInput] = useState("");
+  const [parsedExpense, setParsedExpense] = useState<ParsedExpense | null>(null);
+  const [showAiPreview, setShowAiPreview] = useState(false);
+  
   const { toast } = useToast();
   const descriptionRef = useRef<HTMLInputElement>(null);
 
@@ -151,22 +161,177 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
   const recentCategories = getLastUsedCategories();
 
+  // AI Parsing Functions
+  const handleAiParse = () => {
+    if (!aiInput.trim()) {
+      toast({
+        title: "No input to parse",
+        description: "Please enter some text to parse",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const parsed = AIExpenseParser.parseExpenseText(aiInput);
+    setParsedExpense(parsed);
+    setShowAiPreview(true);
+  };
+
+  const handleAcceptAiParsing = () => {
+    if (!parsedExpense) return;
+    
+    setAmount(parsedExpense.amount.toString());
+    setDescription(parsedExpense.description);
+    setCategory(parsedExpense.category);
+    setAiInput("");
+    setParsedExpense(null);
+    setShowAiPreview(false);
+    setAiMode(false);
+    
+    toast({
+      title: "AI parsing accepted",
+      description: "Fields have been auto-filled",
+      duration: 2000
+    });
+  };
+
+  const handleRejectAiParsing = () => {
+    setParsedExpense(null);
+    setShowAiPreview(false);
+  };
+
+  const getConfidenceBadge = (confidence: number, field: string) => {
+    const level = AIExpenseParser.getConfidenceLevel(confidence);
+    const color = level === 'high' ? 'bg-green-500' : level === 'medium' ? 'bg-yellow-500' : 'bg-red-500';
+    
+    return (
+      <Badge variant="outline" className={`text-xs ${color} text-white border-none`}>
+        {field}: {Math.round(confidence * 100)}%
+      </Badge>
+    );
+  };
+
   return (
     <Card className="shadow-soft border-0 overflow-hidden">
       <CardHeader className="pb-3 bg-gradient-to-r from-background to-muted/30">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <div className="p-1 bg-primary/10 rounded-full">
-            <Plus size={16} className="text-primary" />
-          </div>
-          Quick Add
-          {isLoading && (
-            <div className="animate-spin">
-              <Zap size={16} className="text-primary" />
+        <CardTitle className="text-lg flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="p-1 bg-primary/10 rounded-full">
+              <Plus size={16} className="text-primary" />
             </div>
-          )}
+            Quick Add
+            {isLoading && (
+              <div className="animate-spin">
+                <Zap size={16} className="text-primary" />
+              </div>
+            )}
+          </div>
+          <Button
+            type="button"
+            variant={aiMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => setAiMode(!aiMode)}
+            className="flex items-center gap-1"
+          >
+            <Sparkles size={14} />
+            AI
+          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-4">
+        {/* AI Input Mode */}
+        {aiMode && (
+          <div className="space-y-4 mb-6 p-4 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg border border-primary/20">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles size={16} className="text-primary" />
+              <span className="font-medium text-sm">AI Expense Recognition</span>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Describe your expense naturally</label>
+              <Textarea
+                placeholder="e.g., 'coffee at starbucks 4.50' or 'paid 25 dollars for gas'"
+                value={aiInput}
+                onChange={(e) => setAiInput(e.target.value)}
+                className="min-h-[80px]"
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  onClick={handleAiParse}
+                  variant="default"
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <Sparkles size={14} />
+                  Parse with AI
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setAiMode(false);
+                    setAiInput("");
+                    setParsedExpense(null);
+                    setShowAiPreview(false);
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  Manual Entry
+                </Button>
+              </div>
+            </div>
+
+            {/* AI Preview */}
+            {showAiPreview && parsedExpense && (
+              <div className="space-y-3 p-3 bg-background rounded-md border">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">AI Suggestions:</span>
+                  <div className="flex gap-1">
+                    {getConfidenceBadge(parsedExpense.confidence.amount, "Amount")}
+                    {getConfidenceBadge(parsedExpense.confidence.category, "Category")}
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Amount:</span>
+                    <div className="font-medium">${parsedExpense.amount}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Description:</span>
+                    <div className="font-medium">{parsedExpense.description}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Category:</span>
+                    <div className="font-medium">{parsedExpense.category}</div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={handleAcceptAiParsing}
+                    variant="success"
+                    size="sm"
+                    className="flex items-center gap-1"
+                  >
+                    <Check size={14} />
+                    Accept
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleRejectAiParsing}
+                    variant="destructive"
+                    size="sm"
+                    className="flex items-center gap-1"
+                  >
+                    <X size={14} />
+                    Reject
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Type Toggle */}
           <div className="flex gap-2 p-1 bg-muted rounded-lg">
