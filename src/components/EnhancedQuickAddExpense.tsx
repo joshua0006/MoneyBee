@@ -106,7 +106,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     const finalCategory = category || suggestCategoryFromDescription(description) || "Other";
 
     const expense: Omit<Expense, 'id'> = {
-      amount: parseFloat(amount),
+      amount: type === 'income' ? parseSmartAmount(amount) : parseFloat(amount),
       description: description.trim(),
       category: finalCategory,
       date: new Date(),
@@ -138,8 +138,39 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     }, 300);
   };
 
+  const parseSmartAmount = (value: string): number => {
+    // Remove any non-numeric characters except decimal point, k, and m
+    const cleanValue = value.toLowerCase().replace(/[^\d.km]/g, '');
+    
+    if (cleanValue.includes('k')) {
+      return parseFloat(cleanValue.replace('k', '')) * 1000;
+    }
+    if (cleanValue.includes('m')) {
+      return parseFloat(cleanValue.replace('m', '')) * 1000000;
+    }
+    
+    return parseFloat(cleanValue) || 0;
+  };
+
   const handleQuickAmount = (quickAmount: number) => {
     setAmount(quickAmount.toString());
+  };
+
+  const handleSmartAmountChange = (value: string) => {
+    setAmount(value);
+    // Show parsed amount in real-time for income
+    if (type === 'income' && value) {
+      const parsed = parseSmartAmount(value);
+      if (parsed > 0 && parsed !== parseFloat(value)) {
+        // Show a subtle indicator of the parsed amount
+        setTimeout(() => {
+          const input = document.querySelector('input[type="number"]') as HTMLInputElement;
+          if (input) {
+            input.setAttribute('data-parsed', `$${parsed.toLocaleString()}`);
+          }
+        }, 100);
+      }
+    }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -311,7 +342,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       </CardHeader>
       <CardContent className="pt-4">
         {/* AI Input Mode - Primary Interface */}
-        {aiMode && (
+        {aiMode && type === 'expense' && (
           <div className="space-y-4 mb-6">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -411,21 +442,26 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             </Button>
           </div>
 
-          {/* Amount Input */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium">Amount</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-lg">$</span>
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="pl-8 text-lg font-semibold"
-                disabled={isLoading}
-              />
-            </div>
+           {/* Amount Input */}
+           <div className="space-y-3">
+             <label className="text-sm font-medium">Amount</label>
+             <div className="relative">
+               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-lg">$</span>
+               <Input
+                 type={type === 'income' ? 'text' : 'number'}
+                 step={type === 'income' ? undefined : '0.01'}
+                 placeholder={type === 'income' ? '3.2k, $2,000, 5000...' : '0.00'}
+                 value={amount}
+                 onChange={(e) => handleSmartAmountChange(e.target.value)}
+                 className="pl-8 text-lg font-semibold"
+                 disabled={isLoading}
+               />
+               {type === 'income' && amount && parseSmartAmount(amount) !== parseFloat(amount) && parseSmartAmount(amount) > 0 && (
+                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-primary font-medium">
+                   ${parseSmartAmount(amount).toLocaleString()}
+                 </div>
+               )}
+             </div>
 
             {/* Quick Amount Buttons */}
             <div className="grid grid-cols-6 gap-2">
