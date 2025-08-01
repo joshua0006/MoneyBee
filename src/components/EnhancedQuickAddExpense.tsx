@@ -42,7 +42,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [isLoading, setIsLoading] = useState(false);
   
   // AI Recognition states
-  const [aiMode, setAiMode] = useState(true);
+  const [aiMode, setAiMode] = useState(false);
   const [aiInput, setAiInput] = useState("");
   const [parsedExpense, setParsedExpense] = useState<ParsedExpense | null>(null);
   const [showAiPreview, setShowAiPreview] = useState(false);
@@ -412,10 +412,8 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
           </div>
         )}
 
-        {/* Manual Entry Form */}
-        {!aiMode && (
-          <div className="space-y-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Manual Entry Form or Always Show Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Type Toggle */}
           <div className="flex gap-2 p-1 bg-muted rounded-lg">
             <Button
@@ -444,26 +442,26 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             </Button>
           </div>
 
-           {/* Amount Input */}
-           <div className="space-y-3">
-             <label className="text-sm font-medium">Amount</label>
-             <div className="relative">
-               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-lg">$</span>
-               <Input
-                 type={type === 'income' ? 'text' : 'number'}
-                 step={type === 'income' ? undefined : '0.01'}
-                 placeholder={type === 'income' ? '3.2k, $2,000, 5000...' : '0.00'}
-                 value={amount}
-                 onChange={(e) => handleSmartAmountChange(e.target.value)}
-                 className="pl-8 text-lg font-semibold"
-                 disabled={isLoading}
-               />
-               {type === 'income' && amount && parseSmartAmount(amount) !== parseFloat(amount) && parseSmartAmount(amount) > 0 && (
-                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-primary font-medium">
-                   ${parseSmartAmount(amount).toLocaleString()}
-                 </div>
-               )}
-             </div>
+          {/* Amount Input */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium">Amount</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-lg">$</span>
+              <Input
+                type={type === 'income' ? 'text' : 'number'}
+                step={type === 'income' ? undefined : '0.01'}
+                placeholder={type === 'income' ? '3.2k, $2,000, 5000...' : '0.00'}
+                value={amount}
+                onChange={(e) => handleSmartAmountChange(e.target.value)}
+                className="pl-8 text-lg font-semibold"
+                disabled={isLoading}
+              />
+              {type === 'income' && amount && parseSmartAmount(amount) !== parseFloat(amount) && parseSmartAmount(amount) > 0 && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-primary font-medium">
+                  ${parseSmartAmount(amount).toLocaleString()}
+                </div>
+              )}
+            </div>
 
             {/* Quick Amount Buttons */}
             <div className="grid grid-cols-6 gap-2">
@@ -585,96 +583,6 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               variant={type === 'expense' ? 'expense' : 'income'}
               className="flex-1 relative overflow-hidden group"
               disabled={isLoading}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              <Plus size={16} />
-              {isLoading ? 'Adding...' : `Add ${type === 'expense' ? 'Expense' : 'Income'}`}
-            </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="icon"
-              disabled={isLoading}
-              className="hover:scale-105 transition-transform"
-            >
-              <Camera size={16} />
-            </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="icon"
-              disabled={isLoading}
-              className="hover:scale-105 transition-transform"
-            >
-              <Receipt size={16} />
-            </Button>
-            </div>
-            </form>
-          </div>
-        )}
-
-        {/* Always show form for AI mode too */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Type Toggle */}
-          <div className="flex gap-2 p-1 bg-muted rounded-lg">
-            <Button
-              type="button"
-              variant={type === 'expense' ? 'expense' : 'ghost'}
-              className="flex-1 relative overflow-hidden"
-              onClick={() => setType('expense')}
-              disabled={isLoading}
-            >
-              {type === 'expense' && (
-                <div className="absolute inset-0 bg-gradient-to-r from-expense to-expense/80" />
-              )}
-              <span className="relative">💳 Expense</span>
-            </Button>
-            <Button
-              type="button"
-              variant={type === 'income' ? 'income' : 'ghost'}
-              className="flex-1 relative overflow-hidden"
-              onClick={() => setType('income')}
-              disabled={isLoading}
-            >
-              {type === 'income' && (
-                <div className="absolute inset-0 bg-gradient-to-r from-income to-income/80" />
-              )}
-              <span className="relative">💰 Income</span>
-            </Button>
-          </div>
-
-          {/* Account Selection */}
-          {accounts.length > 1 && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Account</label>
-              <Select value={accountId} onValueChange={setAccountId} disabled={isLoading}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select account" />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map(account => (
-                    <SelectItem key={account.id} value={account.id}>
-                      <div className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: account.color }}
-                        />
-                        {account.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
-            <Button
-              type="submit"
-              variant={type === 'expense' ? 'expense' : 'income'}
-              className="flex-1 relative overflow-hidden group"
-              disabled={isLoading || !amount || !description}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
               <Plus size={16} />
