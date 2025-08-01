@@ -125,6 +125,11 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       setShowSuggestions(false);
       setIsLoading(false);
       
+      // Reset AI mode
+      setAiInput("");
+      setParsedExpense(null);
+      setShowAiPreview(false);
+      
       toast({
         title: type === 'expense' ? "💳 Expense Added" : "💰 Income Added",
         description: `$${amount} for ${description}`,
@@ -181,15 +186,11 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     setParsedExpense(parsed);
     setShowAiPreview(true);
     
-    // Auto-accept if high confidence (all fields > 70%)
-    if (parsed.confidence.amount > 0.7 && parsed.confidence.category > 0.7 && parsed.confidence.description > 0.7) {
-      setTimeout(() => {
-        if (parsed.amount > 0) {
-          setAmount(parsed.amount.toString());
-          setDescription(parsed.description);
-          setCategory(parsed.category);
-        }
-      }, 500);
+    // Auto-accept if decent confidence (amount > 50% and has valid amount)
+    if (parsed.confidence.amount > 0.5 && parsed.amount > 0) {
+      setAmount(parsed.amount.toString());
+      setDescription(parsed.description);
+      setCategory(parsed.category);
     }
   }, []);
 
@@ -235,6 +236,33 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       description: "Ready to submit",
       duration: 2000
     });
+  };
+
+  const handleAiInputKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      
+      if (parsedExpense && parsedExpense.amount > 0) {
+        // Auto-accept the parsing
+        setAmount(parsedExpense.amount.toString());
+        setDescription(parsedExpense.description);
+        setCategory(parsedExpense.category);
+        
+        // Clear AI input
+        setAiInput("");
+        setParsedExpense(null);
+        setShowAiPreview(false);
+        
+        // Submit the form
+        setTimeout(() => {
+          const form = document.querySelector('form');
+          if (form) {
+            const submitEvent = new Event('submit', { bubbles: true });
+            form.dispatchEvent(submitEvent);
+          }
+        }, 100);
+      }
+    }
   };
 
   const handleRejectAiParsing = () => {
@@ -302,20 +330,21 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               </div>
               <Textarea
                 ref={aiInputRef}
-                placeholder="Try: 'coffee 5 bucks', 'gas $25', 'lunch at subway 12 dollars', 'groceries 45.30'..."
+                placeholder="Try: 'coffee 5 bucks', 'gas $25', 'lunch at subway 12 dollars' (Press Enter to add)"
                 value={aiInput}
                 onChange={(e) => setAiInput(e.target.value)}
+                onKeyDown={handleAiInputKeyDown}
                 className="min-h-[100px] text-base bg-gradient-to-br from-background to-muted/20 border-primary/20 focus:border-primary/40 transition-all duration-200"
               />
             </div>
 
             {/* Real-time AI Preview */}
-            {showAiPreview && parsedExpense && (
+            {showAiPreview && parsedExpense && parsedExpense.amount > 0 && (
               <div className="space-y-3 p-4 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg border border-primary/20 animate-in slide-in-from-top-5 duration-300">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Sparkles size={14} className="text-primary animate-pulse" />
-                    <span className="text-sm font-medium">Live Preview</span>
+                    <span className="text-sm font-medium">Ready to add</span>
                   </div>
                   <div className="flex gap-1">
                     {getConfidenceBadge(parsedExpense.confidence.amount, "Amount")}
@@ -336,29 +365,9 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                     <div className="font-medium">{parsedExpense.category}</div>
                   </div>
                 </div>
-                {parsedExpense.amount > 0 && (
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      type="button"
-                      onClick={handleAcceptAiParsing}
-                      variant="default"
-                      size="sm"
-                      className="flex items-center gap-1 flex-1"
-                    >
-                      <Check size={14} />
-                      Use These Details
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={handleRejectAiParsing}
-                      variant="ghost"
-                      size="sm"
-                      className="flex items-center gap-1"
-                    >
-                      <X size={14} />
-                    </Button>
-                  </div>
-                )}
+                <div className="text-xs text-muted-foreground bg-muted/50 rounded p-2 text-center">
+                  Press <kbd className="px-1 py-0.5 bg-background rounded text-xs font-mono">Enter</kbd> to add this expense
+                </div>
               </div>
             )}
           </div>
