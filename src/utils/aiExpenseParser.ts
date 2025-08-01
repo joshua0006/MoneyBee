@@ -4,14 +4,28 @@ export interface ParsedExpense {
   amount: number;
   description: string;
   category: string;
+  type: 'expense' | 'income';
   confidence: {
     amount: number;
     description: number;
     category: number;
+    type: number;
   };
 }
 
 export class AIExpenseParser {
+  private static incomeKeywords = [
+    'salary', 'wage', 'wages', 'paycheck', 'pay', 'income', 'earn', 'earned', 'bonus',
+    'freelance', 'consulting', 'contract', 'payment', 'received', 'refund', 'cashback',
+    'dividend', 'interest', 'commission', 'tips', 'gift', 'allowance', 'reimbursement',
+    'return', 'rebate', 'profit', 'revenue', 'sold', 'selling'
+  ];
+
+  private static expenseKeywords = [
+    'buy', 'bought', 'purchase', 'purchased', 'spent', 'spend', 'paid for', 'cost',
+    'bill', 'fee', 'charge', 'subscription', 'expense', 'bought', 'order', 'ordered'
+  ];
+
   private static categoryKeywords = {
     'Food & Dining': [
       'coffee', 'starbucks', 'mcdonalds', 'restaurant', 'lunch', 'dinner', 'breakfast',
@@ -39,6 +53,18 @@ export class AIExpenseParser {
       'electric', 'electricity', 'water', 'internet', 'phone', 'cable',
       'utility', 'bill', 'rent', 'mortgage', 'insurance'
     ],
+    'Salary': [
+      'salary', 'wage', 'wages', 'paycheck', 'pay', 'income', 'bonus'
+    ],
+    'Freelance': [
+      'freelance', 'consulting', 'contract', 'commission', 'gig'
+    ],
+    'Investment': [
+      'dividend', 'interest', 'investment', 'stock', 'crypto', 'profit'
+    ],
+    'Business Income': [
+      'revenue', 'sales', 'sold', 'business', 'client'
+    ],
     'Other': []
   };
 
@@ -51,17 +77,22 @@ export class AIExpenseParser {
     // Extract and clean description
     const descriptionResult = this.extractDescription(normalizedText, amountResult.extracted);
     
-    // Suggest category
-    const categoryResult = this.suggestCategory(normalizedText);
+    // Detect transaction type
+    const typeResult = this.detectTransactionType(normalizedText);
+    
+    // Suggest category (context-aware based on type)
+    const categoryResult = this.suggestCategory(normalizedText, typeResult.type);
     
     return {
       amount: amountResult.amount,
       description: descriptionResult.description,
       category: categoryResult.category,
+      type: typeResult.type,
       confidence: {
         amount: amountResult.confidence,
         description: descriptionResult.confidence,
-        category: categoryResult.confidence
+        category: categoryResult.confidence,
+        type: typeResult.confidence
       }
     };
   }
@@ -147,7 +178,46 @@ export class AIExpenseParser {
     return { description: description || 'Expense', confidence };
   }
 
-  private static suggestCategory(text: string): { category: string; confidence: number } {
+  private static detectTransactionType(text: string): { type: 'expense' | 'income'; confidence: number } {
+    const words = text.toLowerCase().split(/\s+/);
+    let incomeScore = 0;
+    let expenseScore = 0;
+
+    // Check for income keywords
+    for (const keyword of this.incomeKeywords) {
+      if (words.some(word => word.includes(keyword) || keyword.includes(word))) {
+        incomeScore += 1;
+      }
+    }
+
+    // Check for expense keywords
+    for (const keyword of this.expenseKeywords) {
+      if (words.some(word => word.includes(keyword) || keyword.includes(word))) {
+        expenseScore += 1;
+      }
+    }
+
+    // Determine type and confidence
+    if (incomeScore > expenseScore) {
+      return {
+        type: 'income',
+        confidence: Math.min(0.9, 0.4 + (incomeScore * 0.2))
+      };
+    } else if (expenseScore > incomeScore) {
+      return {
+        type: 'expense',
+        confidence: Math.min(0.9, 0.4 + (expenseScore * 0.2))
+      };
+    } else {
+      // Default to expense with low confidence
+      return {
+        type: 'expense',
+        confidence: 0.3
+      };
+    }
+  }
+
+  private static suggestCategory(text: string, type: 'expense' | 'income' = 'expense'): { category: string; confidence: number } {
     const words = text.toLowerCase().split(/\s+/);
     let bestCategory = 'Other';
     let bestScore = 0;
@@ -155,6 +225,11 @@ export class AIExpenseParser {
 
     for (const [category, keywords] of Object.entries(this.categoryKeywords)) {
       if (category === 'Other') continue;
+      
+      // Skip income categories for expenses and vice versa
+      const incomeCategories = ['Salary', 'Freelance', 'Investment', 'Business Income'];
+      if (type === 'expense' && incomeCategories.includes(category)) continue;
+      if (type === 'income' && !incomeCategories.includes(category)) continue;
       
       let score = 0;
       let matches = 0;

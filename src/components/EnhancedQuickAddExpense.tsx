@@ -227,6 +227,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     setAmount(parsedExpense.amount.toString());
     setDescription(parsedExpense.description);
     setCategory(parsedExpense.category);
+    setType(parsedExpense.type);
     setAiInput("");
     setParsedExpense(null);
     setShowAiPreview(false);
@@ -346,28 +347,33 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                     <Sparkles size={14} className="text-primary animate-pulse" />
                     <span className="text-sm font-medium">Ready to add</span>
                   </div>
-                  <div className="flex gap-1">
-                    {getConfidenceBadge(parsedExpense.confidence.amount, "Amount")}
-                    {getConfidenceBadge(parsedExpense.confidence.category, "Category")}
-                  </div>
+                   <div className="flex gap-1">
+                     {getConfidenceBadge(parsedExpense.confidence.amount, "Amount")}
+                     {getConfidenceBadge(parsedExpense.confidence.type, "Type")}
+                     {getConfidenceBadge(parsedExpense.confidence.category, "Category")}
+                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3 text-sm">
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground text-xs">Amount</span>
-                    <div className="font-semibold text-lg text-primary">${parsedExpense.amount}</div>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground text-xs">Description</span>
-                    <div className="font-medium">{parsedExpense.description}</div>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground text-xs">Category</span>
-                    <div className="font-medium">{parsedExpense.category}</div>
-                  </div>
-                </div>
-                <div className="text-xs text-muted-foreground bg-muted/50 rounded p-2 text-center">
-                  Press <kbd className="px-1 py-0.5 bg-background rounded text-xs font-mono">Enter</kbd> to add this expense
-                </div>
+                 <div className="grid grid-cols-4 gap-3 text-sm">
+                   <div className="space-y-1">
+                     <span className="text-muted-foreground text-xs">Amount</span>
+                     <div className="font-semibold text-lg text-primary">${parsedExpense.amount}</div>
+                   </div>
+                   <div className="space-y-1">
+                     <span className="text-muted-foreground text-xs">Type</span>
+                     <div className="font-medium">{parsedExpense.type === 'income' ? '💰 Income' : '💳 Expense'}</div>
+                   </div>
+                   <div className="space-y-1">
+                     <span className="text-muted-foreground text-xs">Description</span>
+                     <div className="font-medium">{parsedExpense.description}</div>
+                   </div>
+                   <div className="space-y-1">
+                     <span className="text-muted-foreground text-xs">Category</span>
+                     <div className="font-medium">{parsedExpense.category}</div>
+                   </div>
+                 </div>
+                 <div className="text-xs text-muted-foreground bg-muted/50 rounded p-2 text-center">
+                   Press <kbd className="px-1 py-0.5 bg-background rounded text-xs font-mono">Enter</kbd> to add this {parsedExpense.type}
+                 </div>
               </div>
             )}
           </div>
