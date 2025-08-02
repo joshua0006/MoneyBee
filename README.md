@@ -1,8 +1,50 @@
-# Welcome to your Lovable project
+# Expense Tracker with AI Parsing
+
+A modern expense tracking application with AI-powered expense parsing using OpenAI.
 
 ## Project info
 
 **URL**: https://lovable.dev/projects/48cad12d-4f1c-4233-aae8-dd059f15e20a
+
+## Features
+
+### Core Functionality
+- **Quick Add Expenses**: Manual entry with smart suggestions
+- **AI-Powered Parsing**: Natural language expense parsing with OpenAI
+- **Budget Management**: Track spending against budgets
+- **Account Management**: Multiple account support
+- **Advanced Analytics**: Detailed expense analysis and charts
+
+### AI Features
+- **OpenAI Integration**: Advanced natural language processing for expense parsing
+- **Basic Parser Fallback**: Built-in parser when OpenAI is unavailable
+- **Smart Categorization**: Automatic category suggestion based on description
+- **Merchant Recognition**: Identifies store/merchant names from descriptions
+- **Confidence Scoring**: Visual indicators showing parsing accuracy
+
+## Setup
+
+### Prerequisites
+- This project uses Supabase for backend services
+- OpenAI API key for advanced AI parsing (optional - basic parser available as fallback)
+
+### OpenAI Setup (Optional)
+To enable advanced AI parsing with OpenAI:
+
+1. Get an OpenAI API key from [OpenAI Platform](https://platform.openai.com/)
+2. In your Supabase dashboard, go to Project Settings > Edge Functions > Secrets
+3. Add a new secret:
+   - Name: `OPENAI_API_KEY`
+   - Value: Your OpenAI API key (starts with `sk-`)
+
+## AI Parsing Examples
+
+The AI parser can understand natural language input like:
+
+- "coffee 5 bucks at starbucks" → Amount: $5, Description: "Coffee at Starbucks", Category: "Food & Dining"
+- "uber ride downtown 12.50" → Amount: $12.50, Description: "Uber ride downtown", Category: "Transportation"  
+- "grocery shopping 45 dollars walmart" → Amount: $45, Description: "Grocery shopping at Walmart", Category: "Shopping"
+- "salary deposit 2500" → Amount: $2500, Description: "Salary deposit", Type: "Income"
 
 ## How can I edit this code?
 
@@ -50,15 +92,31 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+## Technologies Used
 
-This project is built with:
+- **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui
+- **Backend**: Supabase (Database, Auth, Edge Functions)
+- **AI**: OpenAI GPT-4.1 for natural language processing
+- **Build Tool**: Vite
+- **UI Components**: Radix UI primitives with custom styling
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Architecture
+
+### Components
+- **EnhancedQuickAddExpense**: Main expense input component with AI integration
+- **OpenAIExpenseParser**: Handles OpenAI API calls via Supabase Edge Functions
+- **AIExpenseParser**: Basic fallback parser using keyword matching
+
+### Edge Functions
+- **parse-expense**: Supabase Edge Function that securely calls OpenAI API
+
+## Fallback Behavior
+
+If OpenAI is not configured or fails:
+- Automatically falls back to basic parser
+- Uses keyword-based categorization
+- Still provides smart suggestions and auto-completion
+- User experience remains seamless
 
 ## How can I deploy this project?
 

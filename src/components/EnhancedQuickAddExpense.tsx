@@ -9,6 +9,7 @@ import { Plus, Camera, Receipt, Zap, Sparkles, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getSmartSuggestions, type Expense, type Account } from "@/utils/expenseUtils";
 import { AIExpenseParser, type ParsedExpense } from "@/utils/aiExpenseParser";
+import { OpenAIExpenseParser, type OpenAIParsedExpense } from "@/utils/openaiExpenseParser";
 
 interface QuickAddExpenseProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -45,7 +46,10 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [aiMode, setAiMode] = useState(true);
   const [aiInput, setAiInput] = useState("");
   const [parsedExpense, setParsedExpense] = useState<ParsedExpense | null>(null);
+  const [openaiParsedExpense, setOpenaiParsedExpense] = useState<OpenAIParsedExpense | null>(null);
   const [showAiPreview, setShowAiPreview] = useState(false);
+  const [isParsingWithOpenAI, setIsParsingWithOpenAI] = useState(false);
+  const [useOpenAI, setUseOpenAI] = useState(OpenAIExpenseParser.isAvailable());
   
   const { toast } = useToast();
   const descriptionRef = useRef<HTMLInputElement>(null);
@@ -219,13 +223,46 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   }, [aiMode]);
 
   // Real-time AI parsing with debouncing
-  const debouncedParse = useCallback((input: string) => {
+  const debouncedParse = useCallback(async (input: string) => {
     if (!input.trim()) {
       setParsedExpense(null);
+      setOpenaiParsedExpense(null);
       setShowAiPreview(false);
       return;
     }
 
+    setIsParsingWithOpenAI(true);
+
+    try {
+      // Try OpenAI first if available
+      if (useOpenAI && OpenAIExpenseParser.isAvailable()) {
+        const openaiParsed = await OpenAIExpenseParser.parseExpenseText(input, categories);
+        if (openaiParsed) {
+          setOpenaiParsedExpense(openaiParsed);
+          setShowAiPreview(true);
+          
+          // Auto-accept if high confidence
+          const overallConfidence = OpenAIExpenseParser.getOverallConfidence(openaiParsed.confidence);
+          if (overallConfidence > 0.7 && openaiParsed.amount > 0) {
+            setAmount(openaiParsed.amount.toString());
+            setDescription(openaiParsed.description);
+            setCategory(openaiParsed.category);
+            setType(openaiParsed.type);
+          }
+          setIsParsingWithOpenAI(false);
+          return;
+        }
+      }
+    } catch (error) {
+      console.warn('OpenAI parsing failed, falling back to basic parser:', error);
+      toast({
+        title: "AI parsing failed",
+        description: "Using basic parser instead",
+        variant: "destructive",
+      });
+    }
+
+    // Fallback to basic parser
     const parsed = AIExpenseParser.parseExpenseText(input);
     setParsedExpense(parsed);
     setShowAiPreview(true);
@@ -236,7 +273,9 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       setDescription(parsed.description);
       setCategory(parsed.category);
     }
-  }, []);
+    
+    setIsParsingWithOpenAI(false);
+  }, [useOpenAI, categories, toast]);
 
   // Debounce the AI parsing
   useEffect(() => {
@@ -266,14 +305,16 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   };
 
   const handleAcceptAiParsing = () => {
-    if (!parsedExpense) return;
+    const expense = openaiParsedExpense || parsedExpense;
+    if (!expense) return;
     
-    setAmount(parsedExpense.amount.toString());
-    setDescription(parsedExpense.description);
-    setCategory(parsedExpense.category);
-    setType(parsedExpense.type);
+    setAmount(expense.amount.toString());
+    setDescription(expense.description);
+    setCategory(expense.category);
+    setType(expense.type);
     setAiInput("");
     setParsedExpense(null);
+    setOpenaiParsedExpense(null);
     setShowAiPreview(false);
     
     toast({
@@ -287,15 +328,18 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       
-      if (parsedExpense && parsedExpense.amount > 0) {
+      const expense = openaiParsedExpense || parsedExpense;
+      if (expense && expense.amount > 0) {
         // Auto-accept the parsing
-        setAmount(parsedExpense.amount.toString());
-        setDescription(parsedExpense.description);
-        setCategory(parsedExpense.category);
+        setAmount(expense.amount.toString());
+        setDescription(expense.description);
+        setCategory(expense.category);
+        setType(expense.type);
         
         // Clear AI input
         setAiInput("");
         setParsedExpense(null);
+        setOpenaiParsedExpense(null);
         setShowAiPreview(false);
         
         // Submit the form
@@ -312,11 +356,14 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
   const handleRejectAiParsing = () => {
     setParsedExpense(null);
+    setOpenaiParsedExpense(null);
     setShowAiPreview(false);
   };
 
   const getConfidenceBadge = (confidence: number, field: string) => {
-    const level = AIExpenseParser.getConfidenceLevel(confidence);
+    const level = openaiParsedExpense 
+      ? OpenAIExpenseParser.getConfidenceLevel(confidence)
+      : AIExpenseParser.getConfidenceLevel(confidence);
     const color = level === 'high' ? 'bg-green-500' : level === 'medium' ? 'bg-yellow-500' : 'bg-red-500';
     
     return (
@@ -361,17 +408,37 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Sparkles size={18} className="text-primary" />
-                  <span className="font-medium">Just type naturally</span>
+                  <span className="font-medium">
+                    {OpenAIExpenseParser.isAvailable() ? "AI-Powered Parser" : "Basic Parser"}
+                  </span>
+                  {isParsingWithOpenAI && (
+                    <div className="animate-spin">
+                      <Sparkles size={14} className="text-primary" />
+                    </div>
+                  )}
                 </div>
-                <Button
-                  type="button"
-                  onClick={() => setAiMode(false)}
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs"
-                >
-                  Manual Entry
-                </Button>
+                <div className="flex items-center gap-2">
+                  {OpenAIExpenseParser.isAvailable() && (
+                    <Button
+                      type="button"
+                      variant={useOpenAI ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setUseOpenAI(!useOpenAI)}
+                      className="text-xs"
+                    >
+                      {useOpenAI ? "🤖 OpenAI" : "⚡ Basic"}
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    onClick={() => setAiMode(false)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs"
+                  >
+                    Manual Entry
+                  </Button>
+                </div>
               </div>
               <Textarea
                 ref={aiInputRef}
@@ -384,40 +451,64 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             </div>
 
             {/* Real-time AI Preview */}
-            {showAiPreview && parsedExpense && parsedExpense.amount > 0 && (
+            {showAiPreview && (openaiParsedExpense || parsedExpense) && (openaiParsedExpense?.amount > 0 || parsedExpense?.amount > 0) && (
               <div className="space-y-3 p-4 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg border border-primary/20 animate-in slide-in-from-top-5 duration-300">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sparkles size={14} className="text-primary animate-pulse" />
-                    <span className="text-sm font-medium">Ready to add</span>
+                 <div className="flex items-center justify-between">
+                   <div className="flex items-center gap-2">
+                     <Sparkles size={14} className="text-primary animate-pulse" />
+                     <span className="text-sm font-medium">
+                       {openaiParsedExpense ? "🤖 OpenAI Parsed" : "⚡ Basic Parsed"}
+                     </span>
+                   </div>
+                    <div className="flex gap-1">
+                      {(() => {
+                        const expense = openaiParsedExpense || parsedExpense;
+                        return expense ? (
+                          <>
+                            {getConfidenceBadge(expense.confidence.amount, "Amount")}
+                            {getConfidenceBadge(expense.confidence.type, "Type")}
+                            {getConfidenceBadge(expense.confidence.category, "Category")}
+                          </>
+                        ) : null;
+                      })()}
+                    </div>
+                 </div>
+                  {(() => {
+                    const expense = openaiParsedExpense || parsedExpense;
+                    return expense ? (
+                      <div className="grid grid-cols-4 gap-3 text-sm">
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground text-xs">Amount</span>
+                          <div className="font-semibold text-lg text-primary">${expense.amount}</div>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground text-xs">Type</span>
+                          <div className="font-medium">{expense.type === 'income' ? '💰 Income' : '💳 Expense'}</div>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground text-xs">Description</span>
+                          <div className="font-medium">{expense.description}</div>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-muted-foreground text-xs">Category</span>
+                          <div className="font-medium">{expense.category}</div>
+                        </div>
+                      </div>
+                    ) : null;
+                  })()} 
+                  {openaiParsedExpense?.merchant && (
+                    <div className="text-xs text-muted-foreground">
+                      <span className="font-medium">Merchant:</span> {openaiParsedExpense.merchant}
+                    </div>
+                  )}
+                  {openaiParsedExpense?.reasoning && (
+                    <div className="text-xs text-muted-foreground bg-muted/30 rounded p-2">
+                      <span className="font-medium">AI Reasoning:</span> {openaiParsedExpense.reasoning}
+                    </div>
+                  )}
+                  <div className="text-xs text-muted-foreground bg-muted/50 rounded p-2 text-center">
+                    Press <kbd className="px-1 py-0.5 bg-background rounded text-xs font-mono">Enter</kbd> to add this {(openaiParsedExpense || parsedExpense)?.type}
                   </div>
-                   <div className="flex gap-1">
-                     {getConfidenceBadge(parsedExpense.confidence.amount, "Amount")}
-                     {getConfidenceBadge(parsedExpense.confidence.type, "Type")}
-                     {getConfidenceBadge(parsedExpense.confidence.category, "Category")}
-                   </div>
-                </div>
-                 <div className="grid grid-cols-4 gap-3 text-sm">
-                   <div className="space-y-1">
-                     <span className="text-muted-foreground text-xs">Amount</span>
-                     <div className="font-semibold text-lg text-primary">${parsedExpense.amount}</div>
-                   </div>
-                   <div className="space-y-1">
-                     <span className="text-muted-foreground text-xs">Type</span>
-                     <div className="font-medium">{parsedExpense.type === 'income' ? '💰 Income' : '💳 Expense'}</div>
-                   </div>
-                   <div className="space-y-1">
-                     <span className="text-muted-foreground text-xs">Description</span>
-                     <div className="font-medium">{parsedExpense.description}</div>
-                   </div>
-                   <div className="space-y-1">
-                     <span className="text-muted-foreground text-xs">Category</span>
-                     <div className="font-medium">{parsedExpense.category}</div>
-                   </div>
-                 </div>
-                 <div className="text-xs text-muted-foreground bg-muted/50 rounded p-2 text-center">
-                   Press <kbd className="px-1 py-0.5 bg-background rounded text-xs font-mono">Enter</kbd> to add this {parsedExpense.type}
-                 </div>
               </div>
             )}
           </div>
