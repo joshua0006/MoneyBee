@@ -125,16 +125,63 @@ Examples:
     // Parse the JSON response from OpenAI
     let parsedResult: ParsedExpenseResponse
     try {
-      // Clean the response in case OpenAI adds extra formatting
-      const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim()
-      parsedResult = JSON.parse(cleanContent)
+      // Enhanced JSON cleaning to handle various OpenAI response formats
+      let cleanContent = content.trim()
+      
+      // Remove code block markers
+      cleanContent = cleanContent.replace(/```json\n?|\n?```|```\n?/g, '')
+      
+      // Remove any leading/trailing text that isn't JSON
+      const jsonStart = cleanContent.indexOf('{')
+      const jsonEnd = cleanContent.lastIndexOf('}')
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        cleanContent = cleanContent.substring(jsonStart, jsonEnd + 1)
+      }
+      
+      // Parse the cleaned JSON
+      const rawResult = JSON.parse(cleanContent)
+      
+      // Normalize and validate the result with fallbacks
+      parsedResult = {
+        amount: Number(rawResult.amount) || 0,
+        description: String(rawResult.description || 'Expense'),
+        category: String(rawResult.category || 'Other'),
+        type: (rawResult.type === 'income' || rawResult.type === 'expense') ? rawResult.type : 'expense',
+        confidence: {
+          amount: Number(rawResult.confidence?.amount) || 0.5,
+          description: Number(rawResult.confidence?.description) || 0.5,
+          category: Number(rawResult.confidence?.category) || 0.5,
+          type: Number(rawResult.confidence?.type) || 0.5
+        },
+        merchant: rawResult.merchant ? String(rawResult.merchant) : undefined,
+        reasoning: rawResult.reasoning ? String(rawResult.reasoning) : undefined
+      }
+      
+      console.log('Successfully parsed OpenAI response:', JSON.stringify(parsedResult, null, 2))
+      
     } catch (parseError) {
+      console.error('Failed to parse OpenAI response:', {
+        error: parseError.message,
+        rawContent: content,
+        cleanedAttempt: content.replace(/```json\n?|\n?```|```\n?/g, '').trim()
+      })
       throw new Error(`Failed to parse OpenAI response: ${parseError.message}`)
     }
 
-    // Validate the response structure
-    if (!parsedResult.amount || !parsedResult.description || !parsedResult.category) {
-      throw new Error('Invalid response structure from OpenAI')
+    // Enhanced validation with better error messages
+    if (!parsedResult.amount || parsedResult.amount <= 0) {
+      console.error('Invalid amount in OpenAI response:', parsedResult)
+      throw new Error('Invalid response structure from OpenAI: missing or invalid amount')
+    }
+    
+    if (!parsedResult.description || parsedResult.description.trim() === '') {
+      console.error('Invalid description in OpenAI response:', parsedResult)
+      throw new Error('Invalid response structure from OpenAI: missing description')
+    }
+    
+    if (!parsedResult.category || parsedResult.category.trim() === '') {
+      console.error('Invalid category in OpenAI response:', parsedResult)
+      throw new Error('Invalid response structure from OpenAI: missing category')
     }
 
     return new Response(
