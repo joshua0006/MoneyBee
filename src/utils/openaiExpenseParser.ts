@@ -35,7 +35,11 @@ export class OpenAIExpenseParser {
 
       if (error) {
         console.error('Supabase function error:', error);
-        throw new Error(error.message || 'Failed to parse expense with OpenAI');
+        const errorMessage = error.message || 'Failed to parse expense with OpenAI';
+        if (errorMessage.includes('Failed to send a request to the Edge Function')) {
+          throw new Error('OpenAI parsing service is temporarily unavailable. Please try manual entry.');
+        }
+        throw new Error(errorMessage);
       }
 
       if (!data) {
