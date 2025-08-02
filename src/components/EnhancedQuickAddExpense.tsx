@@ -104,10 +104,10 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       return;
     }
     
-    if (!description.trim()) {
+    if (!description.trim() && type === 'expense') {
       toast({
         title: "Description Required",
-        description: "Please add a description for this " + type,
+        description: "Please add a description for this expense",
         variant: "destructive"
       });
       return;
@@ -120,8 +120,8 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
     const expense: Omit<Expense, 'id'> = {
       amount: type === 'income' ? parseSmartAmount(amount) : parseFloat(amount),
-      description: description.trim(),
-      category: finalCategory,
+      description: type === 'income' ? (description.trim() || 'Income') : description.trim(),
+      category: type === 'income' ? 'Income' : (category || suggestCategoryFromDescription(description) || "Other"),
       date: new Date(),
       type,
       accountId: accountId || accounts[0]?.id
@@ -492,75 +492,94 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             </div>
           </div>
 
-          {/* Description with Smart Suggestions */}
-          <div className="space-y-2 relative">
-            <label className="text-sm font-medium">Description</label>
-            <Input
-              ref={descriptionRef}
-              placeholder="What was this for?"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="transition-all duration-200"
-              disabled={isLoading}
-            />
-            
-            {/* Smart Suggestions Dropdown */}
-            {showSuggestions && (
-              <div className="absolute top-full left-0 right-0 z-10 bg-background border border-border rounded-md shadow-lg max-h-32 overflow-y-auto">
-                {suggestions.map((suggestion, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    className="w-full text-left px-3 py-2 hover:bg-muted transition-colors text-sm"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Zap size={12} className="text-primary" />
-                      {suggestion}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Description with Smart Suggestions - Only for Expenses */}
+          {type === 'expense' && (
+            <div className="space-y-2 relative">
+              <label className="text-sm font-medium">Description</label>
+              <Input
+                ref={descriptionRef}
+                placeholder="What was this for?"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="transition-all duration-200"
+                disabled={isLoading}
+              />
+              
+              {/* Smart Suggestions Dropdown */}
+              {showSuggestions && (
+                <div className="absolute top-full left-0 right-0 z-10 bg-background border border-border rounded-md shadow-lg max-h-32 overflow-y-auto">
+                  {suggestions.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="w-full text-left px-3 py-2 hover:bg-muted transition-colors text-sm"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Zap size={12} className="text-primary" />
+                        {suggestion}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-          {/* Category with Smart Suggestions */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Category</label>
-            
-            {/* Recent Categories Quick Select */}
-            {recentCategories.length > 0 && (
-              <div className="flex gap-2 mb-2">
-                <span className="text-xs text-muted-foreground self-center">Recent:</span>
-                {recentCategories.map((cat) => (
-                  <Button
-                    key={cat}
-                    type="button"
-                    variant={category === cat ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setCategory(cat)}
-                    className="text-xs"
-                    disabled={isLoading}
-                  >
-                    {cat}
-                  </Button>
-                ))}
-              </div>
-            )}
-            
-            <Select value={category} onValueChange={setCategory} disabled={isLoading}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Optional Description for Income */}
+          {type === 'income' && (
+            <div className="space-y-2 relative">
+              <label className="text-sm font-medium text-muted-foreground">Description (Optional)</label>
+              <Input
+                ref={descriptionRef}
+                placeholder="Salary, bonus, freelance... (optional)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="transition-all duration-200"
+                disabled={isLoading}
+              />
+            </div>
+          )}
+
+          {/* Category with Smart Suggestions - Only for Expenses */}
+          {type === 'expense' && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Category</label>
+              
+              {/* Recent Categories Quick Select */}
+              {recentCategories.length > 0 && (
+                <div className="flex gap-2 mb-2">
+                  <span className="text-xs text-muted-foreground self-center">Recent:</span>
+                  {recentCategories.map((cat) => (
+                    <Button
+                      key={cat}
+                      type="button"
+                      variant={category === cat ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCategory(cat)}
+                      className="text-xs"
+                      disabled={isLoading}
+                    >
+                      {cat}
+                    </Button>
+                  ))}
+                </div>
+              )}
+              
+              <Select value={category} onValueChange={setCategory} disabled={isLoading}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Account Selection */}
           {accounts.length > 1 && (
