@@ -1,13 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase environment variables not found. OpenAI parsing will not be available.');
-}
-
-const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+import { supabase } from '@/integrations/supabase/client';
 
 export interface OpenAIParsedExpense {
   amount: number;
@@ -29,10 +20,6 @@ export class OpenAIExpenseParser {
     text: string, 
     categories: string[]
   ): Promise<OpenAIParsedExpense | null> {
-    if (!supabase) {
-      console.warn('Supabase not configured, falling back to basic parser');
-      return null;
-    }
 
     if (!text.trim()) {
       throw new Error('Empty text provided');
@@ -102,6 +89,6 @@ export class OpenAIExpenseParser {
   }
 
   static isAvailable(): boolean {
-    return supabase !== null;
+    return true;
   }
 }
