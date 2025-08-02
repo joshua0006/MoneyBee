@@ -42,7 +42,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [isLoading, setIsLoading] = useState(false);
   
   // AI Recognition states
-  const [aiMode, setAiMode] = useState(false);
+  const [aiMode, setAiMode] = useState(true);
   const [aiInput, setAiInput] = useState("");
   const [parsedExpense, setParsedExpense] = useState<ParsedExpense | null>(null);
   const [showAiPreview, setShowAiPreview] = useState(false);
