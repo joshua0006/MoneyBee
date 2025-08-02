@@ -93,10 +93,21 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     
     // Validate amount based on type
     const validAmount = type === 'income' ? parseSmartAmount(amount) : parseFloat(amount);
-    if (!amount || validAmount <= 0 || !description.trim()) {
+    
+    // More specific validation errors
+    if (!amount || validAmount <= 0) {
       toast({
-        title: "Missing Information",
-        description: type === 'income' ? "Please enter a valid amount (e.g., 3.2k, $2,000) and description" : "Please enter an amount and description",
+        title: "Amount Required",
+        description: type === 'income' ? "Please enter a valid amount (e.g., 3.2k, $2,000)" : "Please enter a valid amount",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!description.trim()) {
+      toast({
+        title: "Description Required",
+        description: "Please add a description for this " + type,
         variant: "destructive"
       });
       return;
@@ -134,7 +145,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       
       toast({
         title: type === 'expense' ? "💳 Expense Added" : "💰 Income Added",
-        description: `$${amount} for ${description}`,
+        description: `$${validAmount.toLocaleString()} for ${description}`,
         duration: 2000
       });
     }, 300);
