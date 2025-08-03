@@ -175,19 +175,6 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
   const handleSmartAmountChange = (value: string) => {
     setAmount(value);
-    // Show parsed amount in real-time for income
-    if (type === 'income' && value) {
-      const parsed = parseSmartAmount(value);
-      if (parsed > 0 && parsed !== parseFloat(value)) {
-        // Show a subtle indicator of the parsed amount
-        setTimeout(() => {
-          const input = document.querySelector('input[type="number"]') as HTMLInputElement;
-          if (input) {
-            input.setAttribute('data-parsed', `$${parsed.toLocaleString()}`);
-          }
-        }, 100);
-      }
-    }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -289,21 +276,6 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   }, [aiInput, aiMode, debouncedParse]);
 
   // AI Parsing Functions
-  const handleAiParse = () => {
-    if (!aiInput.trim()) {
-      toast({
-        title: "No input to parse",
-        description: "Please enter some text to parse",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const parsed = AIExpenseParser.parseExpenseText(aiInput);
-    setParsedExpense(parsed);
-    setShowAiPreview(true);
-  };
-
   const handleAcceptAiParsing = () => {
     const expense = openaiParsedExpense || parsedExpense;
     if (!expense) return;
@@ -364,36 +336,34 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     const level = openaiParsedExpense 
       ? OpenAIExpenseParser.getConfidenceLevel(confidence)
       : AIExpenseParser.getConfidenceLevel(confidence);
-    const color = level === 'high' ? 'bg-green-500' : level === 'medium' ? 'bg-yellow-500' : 'bg-red-500';
+    const variant = level === 'high' ? 'default' : level === 'medium' ? 'secondary' : 'destructive';
     
     return (
-      <Badge variant="outline" className={`text-xs ${color} text-white border-none`}>
+      <Badge variant={variant} className="text-xs h-5 px-1">
         {field}: {Math.round(confidence * 100)}%
       </Badge>
     );
   };
 
   return (
-    <Card className="shadow-soft border-0 overflow-hidden">
-      <CardHeader className="pb-3 bg-gradient-to-r from-background to-muted/30">
+    <Card className="border border-border/50 bg-card">
+      <CardHeader className="pb-4 border-b border-border/30">
         <CardTitle className="text-lg flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-1 bg-primary/10 rounded-full">
-              <Plus size={16} className="text-primary" />
-            </div>
+            <Plus size={18} className="text-muted-foreground" />
             Quick Add
             {isLoading && (
-              <div className="animate-spin">
+              <div className="animate-spin opacity-60">
                 <Zap size={16} className="text-primary" />
               </div>
             )}
           </div>
           <Button
             type="button"
-            variant={aiMode ? "default" : "outline"}
+            variant={aiMode ? "default" : "ghost"}
             size="sm"
             onClick={() => setAiMode(!aiMode)}
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 text-sm"
           >
             <Sparkles size={14} />
             AI
@@ -401,263 +371,238 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-4">
-        {/* AI Input Mode - Primary Interface */}
+        {/* AI Input Mode */}
         {aiMode && type === 'expense' && (
-          <div className="space-y-4 mb-6">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sparkles size={18} className="text-primary" />
-                  <span className="font-medium">
-                    {OpenAIExpenseParser.isAvailable() ? "AI-Powered Parser" : "Basic Parser"}
-                  </span>
-                  {isParsingWithOpenAI && (
-                    <div className="animate-spin">
-                      <Sparkles size={14} className="text-primary" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  {OpenAIExpenseParser.isAvailable() && (
-                    <Button
-                      type="button"
-                      variant={useOpenAI ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setUseOpenAI(!useOpenAI)}
-                      className="text-xs"
-                    >
-                      {useOpenAI ? "🤖 OpenAI" : "⚡ Basic"}
-                    </Button>
-                  )}
+          <div className="space-y-3 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Sparkles size={16} className="text-primary" />
+                {OpenAIExpenseParser.isAvailable() ? "AI Parser" : "Basic Parser"}
+                {isParsingWithOpenAI && (
+                  <div className="animate-spin opacity-60">
+                    <Sparkles size={12} className="text-primary" />
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                {OpenAIExpenseParser.isAvailable() && (
                   <Button
                     type="button"
-                    onClick={() => setAiMode(false)}
+                    variant={useOpenAI ? "secondary" : "ghost"}
+                    size="sm"
+                    onClick={() => setUseOpenAI(!useOpenAI)}
+                    className="text-xs h-7 px-2"
+                  >
+                    {useOpenAI ? "🤖" : "⚡"}
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  onClick={() => setAiMode(false)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-7 px-2"
+                >
+                  Manual
+                </Button>
+              </div>
+            </div>
+            <Textarea
+              ref={aiInputRef}
+              placeholder="Type naturally: 'coffee $5', 'gas 25 bucks', 'lunch at subway 12 dollars' (Press Enter)"
+              value={aiInput}
+              onChange={(e) => setAiInput(e.target.value)}
+              onKeyDown={handleAiInputKeyDown}
+              className="min-h-[80px] resize-none"
+            />
+
+            {/* AI Preview */}
+            {showAiPreview && (openaiParsedExpense || parsedExpense) && (openaiParsedExpense?.amount > 0 || parsedExpense?.amount > 0) && (
+              <div className="p-3 bg-muted/30 rounded-md border border-border/50">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={12} className="text-primary" />
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {openaiParsedExpense ? "AI Parsed" : "Basic Parsed"}
+                    </span>
+                  </div>
+                  <div className="flex gap-1">
+                    {(() => {
+                      const expense = openaiParsedExpense || parsedExpense;
+                      return expense ? (
+                        <>
+                          {getConfidenceBadge(expense.confidence.amount, "Amount")}
+                          {getConfidenceBadge(expense.confidence.category, "Category")}
+                        </>
+                      ) : null;
+                    })()}
+                  </div>
+                </div>
+                {(() => {
+                  const expense = openaiParsedExpense || parsedExpense;
+                  return expense ? (
+                    <div className="grid grid-cols-3 gap-2 text-sm mb-2">
+                      <div>
+                        <span className="text-xs text-muted-foreground">Amount</span>
+                        <div className="font-medium">${expense.amount}</div>
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground">Description</span>
+                        <div className="font-medium truncate">{expense.description}</div>
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground">Category</span>
+                        <div className="font-medium truncate">{expense.category}</div>
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={handleAcceptAiParsing}
+                    variant="default"
+                    size="sm"
+                    className="flex-1 h-7 text-xs"
+                  >
+                    <Check size={12} className="mr-1" />
+                    Accept
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleRejectAiParsing}
                     variant="ghost"
                     size="sm"
-                    className="text-xs"
+                    className="px-2 h-7"
                   >
-                    Manual Entry
+                    <X size={12} />
                   </Button>
                 </div>
-              </div>
-              <Textarea
-                ref={aiInputRef}
-                placeholder="Try: 'coffee 5 bucks', 'gas $25', 'lunch at subway 12 dollars' (Press Enter to add)"
-                value={aiInput}
-                onChange={(e) => setAiInput(e.target.value)}
-                onKeyDown={handleAiInputKeyDown}
-                className="min-h-[100px] text-base bg-gradient-to-br from-background to-muted/20 border-primary/20 focus:border-primary/40 transition-all duration-200"
-              />
-            </div>
-
-            {/* Real-time AI Preview */}
-            {showAiPreview && (openaiParsedExpense || parsedExpense) && (openaiParsedExpense?.amount > 0 || parsedExpense?.amount > 0) && (
-              <div className="space-y-3 p-4 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg border border-primary/20 animate-in slide-in-from-top-5 duration-300">
-                 <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-2">
-                     <Sparkles size={14} className="text-primary animate-pulse" />
-                     <span className="text-sm font-medium">
-                       {openaiParsedExpense ? "🤖 OpenAI Parsed" : "⚡ Basic Parsed"}
-                     </span>
-                   </div>
-                    <div className="flex gap-1">
-                      {(() => {
-                        const expense = openaiParsedExpense || parsedExpense;
-                        return expense ? (
-                          <>
-                            {getConfidenceBadge(expense.confidence.amount, "Amount")}
-                            {getConfidenceBadge(expense.confidence.type, "Type")}
-                            {getConfidenceBadge(expense.confidence.category, "Category")}
-                          </>
-                        ) : null;
-                      })()}
-                    </div>
-                 </div>
-                  {(() => {
-                    const expense = openaiParsedExpense || parsedExpense;
-                    return expense ? (
-                      <div className="grid grid-cols-4 gap-3 text-sm">
-                        <div className="space-y-1">
-                          <span className="text-muted-foreground text-xs">Amount</span>
-                          <div className="font-semibold text-lg text-primary">${expense.amount}</div>
-                        </div>
-                        <div className="space-y-1">
-                          <span className="text-muted-foreground text-xs">Type</span>
-                          <div className="font-medium">{expense.type === 'income' ? '💰 Income' : '💳 Expense'}</div>
-                        </div>
-                        <div className="space-y-1">
-                          <span className="text-muted-foreground text-xs">Description</span>
-                          <div className="font-medium">{expense.description}</div>
-                        </div>
-                        <div className="space-y-1">
-                          <span className="text-muted-foreground text-xs">Category</span>
-                          <div className="font-medium">{expense.category}</div>
-                        </div>
-                      </div>
-                    ) : null;
-                  })()} 
-                  {openaiParsedExpense?.merchant && (
-                    <div className="text-xs text-muted-foreground">
-                      <span className="font-medium">Merchant:</span> {openaiParsedExpense.merchant}
-                    </div>
-                  )}
-                  {openaiParsedExpense?.reasoning && (
-                    <div className="text-xs text-muted-foreground bg-muted/30 rounded p-2">
-                      <span className="font-medium">AI Reasoning:</span> {openaiParsedExpense.reasoning}
-                    </div>
-                  )}
-                  <div className="text-xs text-muted-foreground bg-muted/50 rounded p-2 text-center">
-                    Press <kbd className="px-1 py-0.5 bg-background rounded text-xs font-mono">Enter</kbd> to add this {(openaiParsedExpense || parsedExpense)?.type}
-                  </div>
               </div>
             )}
           </div>
         )}
 
-        {/* Manual Entry Form or Always Show Form */}
+        {/* Manual Entry Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Type Toggle */}
-          <div className="flex gap-2 p-1 bg-muted rounded-lg">
-            <Button
-              type="button"
-              variant={type === 'expense' ? 'expense' : 'ghost'}
-              className="flex-1 relative overflow-hidden"
-              onClick={() => setType('expense')}
-              disabled={isLoading}
-            >
-              {type === 'expense' && (
-                <div className="absolute inset-0 bg-gradient-to-r from-expense to-expense/80" />
-              )}
-              <span className="relative">💳 Expense</span>
-            </Button>
-            <Button
-              type="button"
-              variant={type === 'income' ? 'income' : 'ghost'}
-              className="flex-1 relative overflow-hidden"
-              onClick={() => setType('income')}
-              disabled={isLoading}
-            >
-              {type === 'income' && (
-                <div className="absolute inset-0 bg-gradient-to-r from-income to-income/80" />
-              )}
-              <span className="relative">💰 Income</span>
-            </Button>
-          </div>
+          {(!aiMode || type === 'income') && (
+            <div className="flex bg-muted/50 p-1 rounded-md">
+              <Button
+                type="button"
+                variant={type === 'expense' ? 'default' : 'ghost'}
+                onClick={() => setType('expense')}
+                className={`flex-1 h-8 text-sm ${
+                  type === 'expense' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'hover:bg-background'
+                }`}
+              >
+                💳 Expense
+              </Button>
+              <Button
+                type="button"
+                variant={type === 'income' ? 'default' : 'ghost'}
+                onClick={() => setType('income')}
+                className={`flex-1 h-8 text-sm ${
+                  type === 'income' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'hover:bg-background'
+                }`}
+              >
+                💰 Income
+              </Button>
+            </div>
+          )}
 
           {/* Amount Input */}
           <div className="space-y-3">
-            <label className="text-sm font-medium">Amount</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-lg">$</span>
-              <Input
-                type={type === 'income' ? 'text' : 'number'}
-                step={type === 'income' ? undefined : '0.01'}
-                placeholder={type === 'income' ? '3.2k, $2,000, 5000...' : '0.00'}
-                value={amount}
-                onChange={(e) => handleSmartAmountChange(e.target.value)}
-                className="pl-8 text-lg font-semibold"
-                disabled={isLoading}
-              />
-              {type === 'income' && amount && parseSmartAmount(amount) !== parseFloat(amount) && parseSmartAmount(amount) > 0 && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-primary font-medium">
-                  ${parseSmartAmount(amount).toLocaleString()}
-                </div>
-              )}
-            </div>
+            <Input
+              type={type === 'income' ? 'text' : 'number'}
+              step={type === 'income' ? undefined : '0.01'}
+              placeholder={type === 'income' ? '3.2k, $2,000...' : 'Amount'}
+              value={amount}
+              onChange={(e) => handleSmartAmountChange(e.target.value)}
+              className="text-lg font-medium"
+              disabled={isLoading}
+            />
 
             {/* Quick Amount Buttons */}
-            <div className="grid grid-cols-6 gap-2">
-              {quickAmounts.map((quickAmount) => (
-                <Button
-                  key={quickAmount}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAmount(quickAmount)}
-                  className="text-xs hover:scale-105 transition-transform"
-                  disabled={isLoading}
-                >
-                  ${quickAmount}
-                </Button>
-              ))}
-            </div>
+            {type === 'expense' && (
+              <div className="flex flex-wrap gap-2">
+                {quickAmounts.map((quickAmount) => (
+                  <Button
+                    key={quickAmount}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleQuickAmount(quickAmount)}
+                    className="h-7 px-2 text-xs"
+                  >
+                    ${quickAmount}
+                  </Button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Description with Smart Suggestions - Only for Expenses */}
-          {type === 'expense' && (
-            <div className="space-y-2 relative">
-              <label className="text-sm font-medium">Description</label>
-              <Input
-                ref={descriptionRef}
-                placeholder="What was this for?"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="transition-all duration-200"
-                disabled={isLoading}
-              />
-              
-              {/* Smart Suggestions Dropdown */}
-              {showSuggestions && (
-                <div className="absolute top-full left-0 right-0 z-10 bg-background border border-border rounded-md shadow-lg max-h-32 overflow-y-auto">
-                  {suggestions.map((suggestion, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className="w-full text-left px-3 py-2 hover:bg-muted transition-colors text-sm"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Zap size={12} className="text-primary" />
-                        {suggestion}
-                      </span>
-                    </button>
-                  ))}
+          {/* Description */}
+          <div className="space-y-2 relative">
+            <Input
+              ref={descriptionRef}
+              type="text"
+              placeholder={type === 'income' ? "Income source (optional)" : "What did you buy?"}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="transition-colors"
+            />
+            
+            {/* Smart Suggestions */}
+            {showSuggestions && type === 'expense' && (
+              <div className="absolute top-full left-0 right-0 z-50 bg-popover border rounded-md shadow-md max-h-32 overflow-y-auto">
+                <div className="p-2 border-b">
+                  <span className="text-xs text-muted-foreground">Suggestions</span>
                 </div>
-              )}
-            </div>
-          )}
+                {suggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="w-full text-left px-3 py-2 hover:bg-muted text-sm"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-          {/* Optional Description for Income */}
-          {type === 'income' && (
-            <div className="space-y-2 relative">
-              <label className="text-sm font-medium text-muted-foreground">Description (Optional)</label>
-              <Input
-                ref={descriptionRef}
-                placeholder="Salary, bonus, freelance... (optional)"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="transition-all duration-200"
-                disabled={isLoading}
-              />
-            </div>
-          )}
-
-          {/* Category with Smart Suggestions - Only for Expenses */}
+          {/* Category Selection */}
           {type === 'expense' && (
             <div className="space-y-2">
-              <label className="text-sm font-medium">Category</label>
-              
-              {/* Recent Categories Quick Select */}
+              {/* Recent Categories */}
               {recentCategories.length > 0 && (
-                <div className="flex gap-2 mb-2">
-                  <span className="text-xs text-muted-foreground self-center">Recent:</span>
-                  {recentCategories.map((cat) => (
-                    <Button
-                      key={cat}
-                      type="button"
-                      variant={category === cat ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setCategory(cat)}
-                      className="text-xs"
-                      disabled={isLoading}
-                    >
-                      {cat}
-                    </Button>
-                  ))}
+                <div className="space-y-2">
+                  <span className="text-xs text-muted-foreground">Recent</span>
+                  <div className="flex flex-wrap gap-1">
+                    {recentCategories.map((recentCat) => (
+                      <Button
+                        key={recentCat}
+                        type="button"
+                        variant={category === recentCat ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCategory(recentCat)}
+                        className="h-7 px-2 text-xs"
+                      >
+                        {recentCat}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               )}
-              
-              <Select value={category} onValueChange={setCategory} disabled={isLoading}>
+
+              {/* Category Dropdown */}
+              <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
@@ -674,56 +619,70 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
           {/* Account Selection */}
           {accounts.length > 1 && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Account</label>
-              <Select value={accountId} onValueChange={setAccountId} disabled={isLoading}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select account" />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map(account => (
-                    <SelectItem key={account.id} value={account.id}>
-                      <div className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: account.color }}
-                        />
-                        {account.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={accountId} onValueChange={setAccountId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select account" />
+              </SelectTrigger>
+              <SelectContent>
+                {accounts.map((account) => (
+                  <SelectItem key={account.id} value={account.id}>
+                    {account.name} - ${account.balance.toLocaleString()}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
             <Button
               type="submit"
-              variant={type === 'expense' ? 'expense' : 'income'}
-              className="flex-1 relative overflow-hidden group"
-              disabled={isLoading}
+              disabled={isLoading || !amount}
+              className="flex-1 h-10"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              <Plus size={16} />
-              {isLoading ? 'Adding...' : `Add ${type === 'expense' ? 'Expense' : 'Income'}`}
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin">
+                    <Zap size={16} />
+                  </div>
+                  Adding...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Plus size={16} />
+                  Add {type === 'expense' ? 'Expense' : 'Income'}
+                  {amount && ` ($${parseFloat(amount) || 0})`}
+                </div>
+              )}
             </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="icon"
-              disabled={isLoading}
-              className="hover:scale-105 transition-transform"
+            
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-10 px-3"
+              onClick={() => {
+                toast({
+                  title: "📷 Camera",
+                  description: "Photo upload coming soon!",
+                  duration: 2000
+                });
+              }}
             >
               <Camera size={16} />
             </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="icon"
-              disabled={isLoading}
-              className="hover:scale-105 transition-transform"
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-10 px-3"
+              onClick={() => {
+                toast({
+                  title: "🧾 Receipt",
+                  description: "Receipt scanning coming soon!",
+                  duration: 2000
+                });
+              }}
             >
               <Receipt size={16} />
             </Button>
