@@ -212,6 +212,11 @@ const Index = () => {
                   src="/lovable-uploads/382e0197-d914-4661-9939-836788ff825a.png" 
                   alt="MoneyBee" 
                   className="w-5 h-5 object-contain hover:scale-105 transition-transform duration-200" 
+                  onLoad={() => console.log("MoneyBees logo loaded successfully")}
+                  onError={(e) => {
+                    console.error("MoneyBees logo failed to load:", e);
+                    console.log("Attempted path:", "/lovable-uploads/382e0197-d914-4661-9939-836788ff825a.png");
+                  }}
                 />
               </div>
               <h1 className="text-lg font-semibold bg-gradient-to-r from-bee-blue to-primary bg-clip-text text-transparent">
