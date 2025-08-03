@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ExpenseOverview } from "@/components/ExpenseOverview";
 import { EnhancedQuickAddExpense } from "@/components/EnhancedQuickAddExpense";
+import moneyBeesLogo from "@/assets/moneybees-logo.png";
 import { ExpenseList } from "@/components/ExpenseList";
 import { CategoryBreakdown } from "@/components/CategoryBreakdown";
 import { SearchAndFilter } from "@/components/SearchAndFilter";
@@ -209,14 +210,9 @@ const Index = () => {
             <div className="flex items-center gap-2">
               <div className="bg-gradient-to-br from-bee-gold to-accent p-1.5 rounded-lg shadow-md">
                 <img 
-                  src="/lovable-uploads/382e0197-d914-4661-9939-836788ff825a.png" 
+                  src={moneyBeesLogo} 
                   alt="MoneyBee" 
                   className="w-5 h-5 object-contain hover:scale-105 transition-transform duration-200" 
-                  onLoad={() => console.log("MoneyBees logo loaded successfully")}
-                  onError={(e) => {
-                    console.error("MoneyBees logo failed to load:", e);
-                    console.log("Attempted path:", "/lovable-uploads/382e0197-d914-4661-9939-836788ff825a.png");
-                  }}
                 />
               </div>
               <h1 className="text-lg font-semibold bg-gradient-to-r from-bee-blue to-primary bg-clip-text text-transparent">
