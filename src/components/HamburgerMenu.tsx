@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Menu, Search, Calendar, CreditCard, Clock, Download, Settings } from "lucide-react";
+import { Menu, Search, Calendar, CreditCard, Clock, Download, Settings, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { useClerk, useUser } from '@clerk/clerk-react';
 
 interface HamburgerMenuProps {
   onMenuItemClick: (item: string) => void;
@@ -10,6 +11,8 @@ interface HamburgerMenuProps {
 
 export const HamburgerMenu = ({ onMenuItemClick }: HamburgerMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { signOut } = useClerk();
+  const { user } = useUser();
 
   const menuItems = [
     { id: "search", icon: Search, label: "Search & Filter", description: "Find specific transactions" },
@@ -68,6 +71,41 @@ export const HamburgerMenu = ({ onMenuItemClick }: HamburgerMenuProps) => {
               </div>
             </div>
           </Button>
+
+          <Separator className="my-4" />
+
+          {/* User Section */}
+          <div className="space-y-2">
+            <div className="px-3 py-2 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-bee-gold flex items-center justify-center">
+                  <User size={16} className="text-bee-gold-foreground" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium text-sm truncate">
+                    {user?.firstName || user?.emailAddresses[0]?.emailAddress}
+                  </div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {user?.emailAddresses[0]?.emailAddress}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              variant="ghost"
+              onClick={() => signOut()}
+              className="w-full justify-start h-auto p-3 text-left text-destructive hover:text-destructive"
+            >
+              <div className="flex items-start gap-3">
+                <LogOut size={18} className="mt-0.5" />
+                <div>
+                  <div className="font-medium">Sign Out</div>
+                  <div className="text-xs text-muted-foreground">Logout from your account</div>
+                </div>
+              </div>
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

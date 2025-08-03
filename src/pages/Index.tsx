@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useUser, UserButton } from '@clerk/clerk-react';
 import { ExpenseOverview } from "@/components/ExpenseOverview";
 import { EnhancedQuickAddExpense } from "@/components/EnhancedQuickAddExpense";
 import moneyBeesLogo from "@/assets/moneybees-logo.png";
@@ -20,19 +21,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  saveExpensesToStorage, 
-  loadExpensesFromStorage, 
-  saveAccountsToStorage,
-  loadAccountsFromStorage,
-  saveBudgetsToStorage,
-  loadBudgetsFromStorage,
   exportExpensesAsCSV,
   type Expense,
   type Account,
   type Budget
 } from "@/utils/expenseUtils";
+import { useUserDataManager } from "@/utils/userExpenseUtils";
 
 const Index = () => {
+  const { user } = useUser();
+  const dataManager = useUserDataManager();
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -49,16 +47,26 @@ const Index = () => {
 
   // Load data on mount
   useEffect(() => {
-    const loadedExpenses = loadExpensesFromStorage();
-    const loadedAccounts = loadAccountsFromStorage();
-    const loadedBudgets = loadBudgetsFromStorage();
+    if (!user) return;
     
-    setAllExpenses(loadedExpenses);
-    setFilteredExpenses(loadedExpenses);
-    setAccounts(loadedAccounts);
-    setBudgets(loadedBudgets);
-    setIsLoading(false);
-  }, []);
+    try {
+      // Migrate any existing data to user-specific storage
+      dataManager.migrateData();
+      
+      const loadedExpenses = dataManager.loadExpenses();
+      const loadedAccounts = dataManager.loadAccounts();
+      const loadedBudgets = dataManager.loadBudgets();
+      
+      setAllExpenses(loadedExpenses);
+      setFilteredExpenses(loadedExpenses);
+      setAccounts(loadedAccounts);
+      setBudgets(loadedBudgets);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Failed to load user data:', error);
+      setIsLoading(false);
+    }
+  }, [user, dataManager]);
 
   // Sync filteredExpenses with allExpenses when no filters are active
   useEffect(() => {
@@ -69,22 +77,22 @@ const Index = () => {
 
   // Save data whenever data changes
   useEffect(() => {
-    if (!isLoading) {
-      saveExpensesToStorage(allExpenses);
+    if (!isLoading && user) {
+      dataManager.saveExpenses(allExpenses);
     }
-  }, [allExpenses, isLoading]);
+  }, [allExpenses, isLoading, user, dataManager]);
 
   useEffect(() => {
-    if (!isLoading) {
-      saveAccountsToStorage(accounts);
+    if (!isLoading && user) {
+      dataManager.saveAccounts(accounts);
     }
-  }, [accounts, isLoading]);
+  }, [accounts, isLoading, user, dataManager]);
 
   useEffect(() => {
-    if (!isLoading) {
-      saveBudgetsToStorage(budgets);
+    if (!isLoading && user) {
+      dataManager.saveBudgets(budgets);
     }
-  }, [budgets, isLoading]);
+  }, [budgets, isLoading, user, dataManager]);
 
   const handleAddExpense = (expense: Omit<Expense, 'id'>) => {
     const newExpense: Expense = {
@@ -219,10 +227,19 @@ const Index = () => {
                 MoneyBee Tracker
               </h1>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-xs px-2 py-1">
                 {allExpenses.length}
               </Badge>
+              <UserButton 
+                appearance={{
+                  elements: {
+                    avatarBox: "w-8 h-8",
+                    userButtonPopoverCard: "shadow-large",
+                    userButtonPopoverActionButton: "hover:bg-muted"
+                  }
+                }}
+              />
             </div>
           </div>
         </div>
