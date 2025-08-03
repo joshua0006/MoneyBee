@@ -14,7 +14,8 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Wallet, TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Settings, Clock } from "lucide-react";
+import { TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Settings, Clock } from "lucide-react";
+import moneyBeesLogo from "@/assets/moneybees-logo.png";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -208,7 +209,11 @@ const Index = () => {
             <HamburgerMenu onMenuItemClick={setActiveMenuItem} />
             <div className="flex items-center gap-2">
               <div className="bg-gradient-to-br from-bee-gold to-accent p-1.5 rounded-lg shadow-md">
-                <Wallet className="text-primary-foreground" size={18} />
+                <img 
+                  src={moneyBeesLogo} 
+                  alt="MoneyBee" 
+                  className="w-5 h-5 object-contain hover:scale-105 transition-transform duration-200" 
+                />
               </div>
               <h1 className="text-lg font-semibold bg-gradient-to-r from-bee-blue to-primary bg-clip-text text-transparent">
                 MoneyBee Tracker
