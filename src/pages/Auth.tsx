@@ -14,7 +14,7 @@ export default function Auth() {
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-2 p-3 gradient-gold rounded-full shadow-gold">
             <img 
-              src="/src/assets/moneybees-logo.png" 
+              src="/assets/moneybees-logo.png" 
               alt="MoneyBees" 
               className="w-8 h-8"
             />
@@ -56,7 +56,6 @@ export default function Auth() {
                         footerActionLink: 'text-bee-blue hover:text-bee-blue/80'
                       }
                     }}
-                    signUpUrl="#"
                     fallbackRedirectUrl="/"
                   />
                 </div>
@@ -76,7 +75,6 @@ export default function Auth() {
                         footerActionLink: 'text-bee-blue hover:text-bee-blue/80'
                       }
                     }}
-                    signInUrl="#"
                     fallbackRedirectUrl="/"
                   />
                 </div>
