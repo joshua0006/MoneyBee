@@ -45,7 +45,6 @@ export default function Auth() {
               <TabsContent value="sign-in" className="mt-6">
                 <div className="flex justify-center">
                   <SignIn 
-                    path="/sign-in"
                     appearance={{
                       elements: {
                         formButtonPrimary: 'gradient-blue bee-button',
@@ -58,7 +57,6 @@ export default function Auth() {
                       }
                     }}
                     fallbackRedirectUrl="/"
-                    signUpUrl="/sign-up"
                   />
                 </div>
               </TabsContent>
@@ -66,7 +64,6 @@ export default function Auth() {
               <TabsContent value="sign-up" className="mt-6">
                 <div className="flex justify-center">
                   <SignUp 
-                    path="/sign-up"
                     appearance={{
                       elements: {
                         formButtonPrimary: 'gradient-blue bee-button',
@@ -79,7 +76,6 @@ export default function Auth() {
                       }
                     }}
                     fallbackRedirectUrl="/"
-                    signInUrl="/sign-in"
                   />
                 </div>
               </TabsContent>
