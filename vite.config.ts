@@ -19,4 +19,12 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      external: mode === 'development' ? [] : undefined,
+    },
+  },
+  optimizeDeps: {
+    include: ['@capacitor/core', '@capacitor/camera', '@capacitor/filesystem']
+  }
 }));
