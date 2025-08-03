@@ -190,15 +190,15 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header with Hamburger Menu */}
       <div className="bg-gradient-to-r from-card via-muted/30 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-sm">
-        <div className="max-w-lg mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between min-h-[44px]">
             <HamburgerMenu onMenuItemClick={setActiveMenuItem} />
             <div className="flex items-center gap-2">
               <Wallet className="text-primary" size={20} />
               <h1 className="text-lg font-semibold">Expense Tracker</h1>
             </div>
             <div className="flex gap-2">
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="text-xs px-2 py-1">
                 {allExpenses.length}
               </Badge>
             </div>
@@ -208,7 +208,7 @@ const Index = () => {
 
 
       {/* Main Content */}
-      <div className="max-w-lg mx-auto px-4 py-6 pb-20">
+      <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-20">
         {/* Home Tab Content */}
         {activeTab === "home" && (
           <div className="space-y-6">

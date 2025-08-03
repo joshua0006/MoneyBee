@@ -23,13 +23,13 @@ export const ExpenseOverview = ({
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-center">Monthly Overview</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
           {/* Circular Progress Indicators */}
-          <div className="flex justify-around items-center">
+          <div className="flex justify-around items-center gap-4 sm:gap-6">
             {/* Income Circle */}
-            <div className="text-center">
-              <div className="relative w-20 h-20 mx-auto mb-2">
-                <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 36 36">
+            <div className="text-center flex-1">
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-2">
+                <svg className="w-16 h-16 sm:w-20 sm:h-20 transform -rotate-90" viewBox="0 0 36 36">
                   <path
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     fill="none"
@@ -46,17 +46,17 @@ export const ExpenseOverview = ({
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-sm font-bold text-income">{incomePercentage}%</span>
+                  <span className="text-xs sm:text-sm font-bold text-income">{incomePercentage}%</span>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">Income</p>
-              <p className="font-semibold text-income">${totalIncome.toFixed(2)}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Income</p>
+              <p className="text-sm sm:text-base font-semibold text-income">${totalIncome.toFixed(2)}</p>
             </div>
 
             {/* Expenses Circle */}
-            <div className="text-center">
-              <div className="relative w-20 h-20 mx-auto mb-2">
-                <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 36 36">
+            <div className="text-center flex-1">
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-2">
+                <svg className="w-16 h-16 sm:w-20 sm:h-20 transform -rotate-90" viewBox="0 0 36 36">
                   <path
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     fill="none"
@@ -73,18 +73,18 @@ export const ExpenseOverview = ({
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-sm font-bold text-expense">{expensePercentage}%</span>
+                  <span className="text-xs sm:text-sm font-bold text-expense">{expensePercentage}%</span>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">Expenses</p>
-              <p className="font-semibold text-expense">${totalExpenses.toFixed(2)}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Expenses</p>
+              <p className="text-sm sm:text-base font-semibold text-expense">${totalExpenses.toFixed(2)}</p>
             </div>
           </div>
 
           {/* Net Total */}
-          <div className="text-center pt-4 border-t">
+          <div className="text-center pt-3 sm:pt-4 border-t">
             <p className="text-sm text-muted-foreground">Net Total</p>
-            <p className={`text-2xl font-bold ${netTotal >= 0 ? 'text-success' : 'text-expense'}`}>
+            <p className={`text-xl sm:text-2xl font-bold ${netTotal >= 0 ? 'text-success' : 'text-expense'}`}>
               ${netTotal.toFixed(2)}
             </p>
           </div>

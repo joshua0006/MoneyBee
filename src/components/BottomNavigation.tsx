@@ -19,7 +19,7 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddExpense }: Botto
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
-      <div className="max-w-lg mx-auto px-4 py-2">
+      <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-2">
         <div className="flex items-center justify-around">
           {navItems.map((item) => (
             <Button
@@ -28,7 +28,7 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddExpense }: Botto
               size={item.isSpecial ? "lg" : "sm"}
               onClick={item.isSpecial ? onAddExpense : () => onTabChange(item.id)}
               className={cn(
-                "flex flex-col items-center gap-1 h-auto py-2 px-3",
+                "flex flex-col items-center gap-1 h-auto py-2 px-2 sm:px-3 min-h-[44px] min-w-[44px]",
                 item.isSpecial && "h-12 w-12 rounded-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200",
                 !item.isSpecial && activeTab === item.id && "text-primary bg-primary/10",
                 !item.isSpecial && "text-muted-foreground hover:text-foreground"
