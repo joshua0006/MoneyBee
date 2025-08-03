@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Camera, Receipt, Zap, Sparkles, Check, X } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Camera, Receipt, Zap, Sparkles, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getSmartSuggestions, type Expense, type Account } from "@/utils/expenseUtils";
 import { AIExpenseParser, type ParsedExpense } from "@/utils/aiExpenseParser";
@@ -46,10 +46,9 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   // AI Recognition states
   const [aiMode, setAiMode] = useState(true);
   const [aiInput, setAiInput] = useState("");
-  const [parsedExpense, setParsedExpense] = useState<ParsedExpense | null>(null);
-  const [openaiParsedExpense, setOpenaiParsedExpense] = useState<OpenAIParsedExpense | null>(null);
-  const [showAiPreview, setShowAiPreview] = useState(false);
   const [isParsingWithOpenAI, setIsParsingWithOpenAI] = useState(false);
+  const [autoSubmit, setAutoSubmit] = useState(false);
+  const [aiParseSuccess, setAiParseSuccess] = useState(false);
   const [useOpenAI, setUseOpenAI] = useState(OpenAIExpenseParser.isAvailable());
   
   const { toast } = useToast();
@@ -143,11 +142,10 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       setIsRecurring(false);
       setShowSuggestions(false);
       setIsLoading(false);
+      setAiParseSuccess(false);
       
       // Reset AI mode
       setAiInput("");
-      setParsedExpense(null);
-      setShowAiPreview(false);
       
       toast({
         title: type === 'expense' ? "💳 Expense Added" : "💰 Income Added",
@@ -211,12 +209,10 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     }
   }, [aiMode]);
 
-  // Real-time AI parsing with debouncing
+  // Real-time AI parsing with auto-fill
   const debouncedParse = useCallback(async (input: string) => {
     if (!input.trim()) {
-      setParsedExpense(null);
-      setOpenaiParsedExpense(null);
-      setShowAiPreview(false);
+      setAiParseSuccess(false);
       return;
     }
 
@@ -227,16 +223,25 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       if (useOpenAI && OpenAIExpenseParser.isAvailable()) {
         const openaiParsed = await OpenAIExpenseParser.parseExpenseText(input, categories);
         if (openaiParsed) {
-          setOpenaiParsedExpense(openaiParsed);
-          setShowAiPreview(true);
-          
-          // Auto-accept if high confidence
+          // Auto-fill form fields directly
           const overallConfidence = OpenAIExpenseParser.getOverallConfidence(openaiParsed.confidence);
-          if (overallConfidence > 0.7 && openaiParsed.amount > 0) {
+          if (overallConfidence > 0.6 && openaiParsed.amount > 0) {
             setAmount(openaiParsed.amount.toString());
             setDescription(openaiParsed.description);
             setCategory(openaiParsed.category);
             setType(openaiParsed.type);
+            setAiParseSuccess(true);
+            
+            // Auto-submit if enabled and high confidence
+            if (autoSubmit && overallConfidence > 0.8) {
+              setTimeout(() => {
+                const form = document.querySelector('form');
+                if (form) {
+                  const submitEvent = new Event('submit', { bubbles: true });
+                  form.dispatchEvent(submitEvent);
+                }
+              }, 500);
+            }
           }
           setIsParsingWithOpenAI(false);
           return;
@@ -244,27 +249,32 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       }
     } catch (error) {
       console.warn('OpenAI parsing failed, falling back to basic parser:', error);
-      toast({
-        title: "AI parsing failed",
-        description: "Using basic parser instead",
-        variant: "destructive",
-      });
     }
 
     // Fallback to basic parser
     const parsed = AIExpenseParser.parseExpenseText(input);
-    setParsedExpense(parsed);
-    setShowAiPreview(true);
     
-    // Auto-accept if decent confidence (amount > 50% and has valid amount)
+    // Auto-fill if decent confidence
     if (parsed.confidence.amount > 0.5 && parsed.amount > 0) {
       setAmount(parsed.amount.toString());
       setDescription(parsed.description);
       setCategory(parsed.category);
+      setAiParseSuccess(true);
+      
+      // Auto-submit if enabled
+      if (autoSubmit && parsed.confidence.amount > 0.7) {
+        setTimeout(() => {
+          const form = document.querySelector('form');
+          if (form) {
+            const submitEvent = new Event('submit', { bubbles: true });
+            form.dispatchEvent(submitEvent);
+          }
+        }, 500);
+      }
     }
     
     setIsParsingWithOpenAI(false);
-  }, [useOpenAI, categories, toast]);
+  }, [useOpenAI, categories, autoSubmit]);
 
   // Debounce the AI parsing
   useEffect(() => {
@@ -277,46 +287,13 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     return () => clearTimeout(timeoutId);
   }, [aiInput, aiMode, debouncedParse]);
 
-  // AI Parsing Functions
-  const handleAcceptAiParsing = () => {
-    const expense = openaiParsedExpense || parsedExpense;
-    if (!expense) return;
-    
-    setAmount(expense.amount.toString());
-    setDescription(expense.description);
-    setCategory(expense.category);
-    setType(expense.type);
-    setAiInput("");
-    setParsedExpense(null);
-    setOpenaiParsedExpense(null);
-    setShowAiPreview(false);
-    
-    toast({
-      title: "✨ AI parsing applied",
-      description: "Ready to submit",
-      duration: 2000
-    });
-  };
-
+  // Handle Enter key in AI input
   const handleAiInputKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       
-      const expense = openaiParsedExpense || parsedExpense;
-      if (expense && expense.amount > 0) {
-        // Auto-accept the parsing
-        setAmount(expense.amount.toString());
-        setDescription(expense.description);
-        setCategory(expense.category);
-        setType(expense.type);
-        
-        // Clear AI input
-        setAiInput("");
-        setParsedExpense(null);
-        setOpenaiParsedExpense(null);
-        setShowAiPreview(false);
-        
-        // Submit the form
+      // Submit the form if fields are filled
+      if (amount && description) {
         setTimeout(() => {
           const form = document.querySelector('form');
           if (form) {
@@ -327,14 +304,6 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       }
     }
   };
-
-  const handleRejectAiParsing = () => {
-    setParsedExpense(null);
-    setOpenaiParsedExpense(null);
-    setShowAiPreview(false);
-  };
-
-  // Confidence badges removed for cleaner UI
 
   return (
     <Card className="border border-border/50 bg-card">
@@ -347,6 +316,9 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               <div className="animate-spin opacity-60">
                 <Zap size={16} className="text-primary" />
               </div>
+            )}
+            {aiParseSuccess && (
+              <CheckCircle2 size={16} className="text-green-500" />
             )}
           </div>
           <Button
@@ -375,7 +347,15 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 text-xs">
+                  <span className="text-muted-foreground">Auto-submit</span>
+                  <Switch
+                    checked={autoSubmit}
+                    onCheckedChange={setAutoSubmit}
+                    className="scale-75"
+                  />
+                </div>
                 {OpenAIExpenseParser.isAvailable() && (
                   <Button
                     type="button"
@@ -387,82 +367,16 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                     {useOpenAI ? "🤖" : "⚡"}
                   </Button>
                 )}
-                <Button
-                  type="button"
-                  onClick={() => setAiMode(false)}
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs h-7 px-2"
-                >
-                  Manual
-                </Button>
               </div>
             </div>
             <Textarea
               ref={aiInputRef}
-              placeholder="Type naturally: 'coffee $5', 'gas 25 bucks', 'lunch at subway 12 dollars' (Press Enter)"
+              placeholder="Type naturally: 'coffee $5', 'gas 25 bucks', 'lunch at subway 12 dollars' (Press Enter to submit)"
               value={aiInput}
               onChange={(e) => setAiInput(e.target.value)}
               onKeyDown={handleAiInputKeyDown}
               className="min-h-[80px] resize-none"
             />
-
-            {/* AI Preview */}
-            {showAiPreview && (openaiParsedExpense || parsedExpense) && (openaiParsedExpense?.amount > 0 || parsedExpense?.amount > 0) && (
-              <div className="p-3 bg-muted/30 rounded-md border border-border/50">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Sparkles size={12} className="text-primary" />
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {openaiParsedExpense ? "AI Parsed" : "Basic Parsed"}
-                    </span>
-                  </div>
-                  <div className="flex gap-1">
-                    {/* Confidence badges removed for cleaner UI */}
-                  </div>
-                </div>
-                {(() => {
-                  const expense = openaiParsedExpense || parsedExpense;
-                  return expense ? (
-                    <div className="grid grid-cols-3 gap-2 text-sm mb-2">
-                      <div>
-                        <span className="text-xs text-muted-foreground">Amount</span>
-                        <div className="font-medium">${expense.amount}</div>
-                      </div>
-                      <div>
-                        <span className="text-xs text-muted-foreground">Description</span>
-                        <div className="font-medium truncate">{expense.description}</div>
-                      </div>
-                      <div>
-                        <span className="text-xs text-muted-foreground">Category</span>
-                        <div className="font-medium truncate">{expense.category}</div>
-                      </div>
-                    </div>
-                  ) : null;
-                })()}
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    onClick={handleAcceptAiParsing}
-                    variant="default"
-                    size="sm"
-                    className="flex-1 h-7 text-xs"
-                  >
-                    <Check size={12} className="mr-1" />
-                    Accept
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleRejectAiParsing}
-                    variant="ghost"
-                    size="sm"
-                    className="px-2 h-7"
-                  >
-                    <X size={12} />
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
@@ -683,11 +597,6 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             <label htmlFor="makeRecurring" className="text-sm font-medium cursor-pointer">
               Make this recurring
             </label>
-            {isRecurring && (
-              <Badge variant="secondary" className="text-xs">
-                Set up in Recurring tab
-              </Badge>
-            )}
           </div>
         </form>
       </CardContent>
