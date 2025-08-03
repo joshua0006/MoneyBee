@@ -21,6 +21,8 @@ const buttonVariants = cva(
         expense: "bg-expense text-expense-foreground hover:bg-expense/90 shadow-lg",
         income: "bg-income text-income-foreground hover:bg-income/90 shadow-lg",
         success: "bg-success text-success-foreground hover:bg-success/90 shadow-lg",
+        "bee-blue": "bg-bee-blue text-bee-blue-foreground hover:bg-bee-blue/90 shadow-lg",
+        "bee-gold": "bg-bee-gold text-primary-foreground hover:bg-bee-gold/90 shadow-lg",
       },
       size: {
         default: "h-10 px-4 py-2",

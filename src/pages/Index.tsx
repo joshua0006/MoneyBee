@@ -207,8 +207,12 @@ const Index = () => {
           <div className="flex items-center justify-between min-h-[44px]">
             <HamburgerMenu onMenuItemClick={setActiveMenuItem} />
             <div className="flex items-center gap-2">
-              <Wallet className="text-primary" size={20} />
-              <h1 className="text-lg font-semibold">Expense Tracker</h1>
+              <div className="bg-gradient-to-br from-bee-gold to-accent p-1.5 rounded-lg shadow-md">
+                <Wallet className="text-primary-foreground" size={18} />
+              </div>
+              <h1 className="text-lg font-semibold bg-gradient-to-r from-bee-blue to-primary bg-clip-text text-transparent">
+                MoneyBee Tracker
+              </h1>
             </div>
             <div className="flex gap-2">
               <Badge variant="secondary" className="text-xs px-2 py-1">
