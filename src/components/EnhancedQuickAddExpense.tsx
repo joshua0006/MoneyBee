@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Camera, Receipt, Zap, Sparkles, CheckCircle2 } from "lucide-react";
+import { Plus, Camera, Receipt, Zap, Sparkles, CheckCircle2, Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getSmartSuggestions, type Expense, type Account } from "@/utils/expenseUtils";
 import { EnhancedExpenseParser, type ParsedExpense } from "@/utils/enhancedExpenseParser";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuickAddExpenseProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -41,6 +42,8 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [autoSubmit, setAutoSubmit] = useState(false);
   const [aiParseSuccess, setAiParseSuccess] = useState(false);
   const [parsedData, setParsedData] = useState<ParsedExpense | null>(null);
+  const [useFallback, setUseFallback] = useState(true);
+  const [isUsingFallback, setIsUsingFallback] = useState(false);
   
   const { toast } = useToast();
   const descriptionRef = useRef<HTMLInputElement>(null);
@@ -204,7 +207,36 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     }
   }, [aiMode]);
 
-  // Real-time enhanced parsing with auto-fill
+  // OpenAI fallback for category re-classification
+  const tryFallbackParsing = async (text: string, localCategory: string, localConfidence: number) => {
+    if (!useFallback) return null;
+    
+    setIsUsingFallback(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('parse-expense-fallback', {
+        body: {
+          text,
+          localCategory,
+          localConfidence
+        }
+      });
+
+      if (error) {
+        console.error('Fallback parsing error:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Fallback parsing failed:', error);
+      return null;
+    } finally {
+      setIsUsingFallback(false);
+    }
+  };
+
+  // Real-time enhanced parsing with auto-fill and fallback
   const debouncedParse = useCallback(async (input: string) => {
     if (!input.trim()) {
       setAiParseSuccess(false);
@@ -215,21 +247,35 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     setIsParsing(true);
 
     try {
-      // Use enhanced parser
+      // Use enhanced parser first
       const parsed = EnhancedExpenseParser.parseExpenseText(input);
-      setParsedData(parsed);
+      let finalParsed = { ...parsed };
+      
+      // Check if we should use OpenAI fallback for category
+      const overallConfidence = EnhancedExpenseParser.getOverallConfidence(parsed.confidence);
+      if (parsed.category === 'Other' && parsed.confidence.category < 0.6 && useFallback) {
+        const fallbackResult = await tryFallbackParsing(input, parsed.category, parsed.confidence.category);
+        
+        if (fallbackResult?.shouldUpdate && fallbackResult.suggestedCategory !== 'Other') {
+          finalParsed.category = fallbackResult.suggestedCategory;
+          finalParsed.confidence.category = fallbackResult.confidence;
+          finalParsed.reasoning = `Local: ${parsed.reasoning || 'Basic parsing'} | AI: ${fallbackResult.reasoning}`;
+        }
+      }
+      
+      setParsedData(finalParsed);
       
       // Auto-fill form fields if confidence is decent
-      const overallConfidence = EnhancedExpenseParser.getOverallConfidence(parsed.confidence);
-      if (overallConfidence > 0.5 && parsed.amount > 0) {
-        setAmount(parsed.amount.toString());
-        setDescription(parsed.description);
-        setCategory(parsed.category);
-        setType(parsed.type);
+      const finalConfidence = EnhancedExpenseParser.getOverallConfidence(finalParsed.confidence);
+      if (finalConfidence > 0.5 && finalParsed.amount > 0) {
+        setAmount(finalParsed.amount.toString());
+        setDescription(finalParsed.description);
+        setCategory(finalParsed.category);
+        setType(finalParsed.type);
         setAiParseSuccess(true);
         
         // Auto-submit if enabled and high confidence
-        if (autoSubmit && overallConfidence > 0.8) {
+        if (autoSubmit && finalConfidence > 0.8) {
           setTimeout(() => {
             const form = document.querySelector('form');
             if (form) {
@@ -245,7 +291,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     }
     
     setIsParsing(false);
-  }, [categories, autoSubmit]);
+  }, [categories, autoSubmit, useFallback]);
 
   // Debounce the AI parsing
   useEffect(() => {
@@ -318,7 +364,15 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 text-xs">
+                  <span className="text-muted-foreground">AI Fallback</span>
+                  <Switch
+                    checked={useFallback}
+                    onCheckedChange={setUseFallback}
+                    className="scale-75"
+                  />
+                </div>
                 <div className="flex items-center gap-1 text-xs">
                   <span className="text-muted-foreground">Auto-submit</span>
                   <Switch
@@ -349,6 +403,12 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                   )}`}>
                     {Math.round(EnhancedExpenseParser.getOverallConfidence(parsedData.confidence) * 100)}% confidence
                   </span>
+                  {isUsingFallback && (
+                    <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 border border-blue-200 flex items-center gap-1">
+                      <Bot className="h-3 w-3" />
+                      AI Fallback
+                    </span>
+                  )}
                 </div>
                 <div className="text-xs space-y-1">
                   <div>Amount: ${parsedData.amount} ({Math.round(parsedData.confidence.amount * 100)}%)</div>
