@@ -347,51 +347,41 @@ const Index = () => {
 
         {/* Add Expense Sheet */}
         <Sheet open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
-          <SheetContent side="bottom" className="h-[90vh] rounded-t-xl">
-            <SheetHeader>
-              <SheetTitle>Add Transaction</SheetTitle>
-            </SheetHeader>
-            <div className="mt-6">
-              <EnhancedQuickAddExpense 
-                onAddExpense={(expense) => {
-                  handleAddExpense(expense);
-                  setIsAddExpenseOpen(false);
-                  toast({
-                    title: "✅ Transaction Added",
-                    description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} recorded`,
-                    duration: 3000
-                  });
-                }}
-                existingExpenses={allExpenses}
-                accounts={accounts}
-              />
-            </div>
+          <SheetContent side="bottom" className="h-[95vh] sm:h-[90vh] rounded-t-xl p-0">
+            <EnhancedQuickAddExpense 
+              onAddExpense={(expense) => {
+                handleAddExpense(expense);
+                setIsAddExpenseOpen(false);
+                toast({
+                  title: "✅ Transaction Added",
+                  description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} recorded`,
+                  duration: 3000
+                });
+              }}
+              existingExpenses={allExpenses}
+              accounts={accounts}
+            />
           </SheetContent>
         </Sheet>
 
         {/* Edit Expense Sheet */}
         <Sheet open={!!editingExpense} onOpenChange={(open) => !open && setEditingExpense(null)}>
-          <SheetContent side="bottom" className="h-[90vh] rounded-t-xl">
-            <SheetHeader>
-              <SheetTitle>Edit Transaction</SheetTitle>
-            </SheetHeader>
-            <div className="mt-6">
-              {editingExpense && (
-                <EnhancedQuickAddExpense 
-                  onAddExpense={(expense) => {
-                    handleUpdateExpense(expense);
-                    toast({
-                      title: "✅ Transaction Updated",
-                      description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} updated`,
-                      duration: 3000
-                    });
-                  }}
-                  existingExpenses={allExpenses}
-                  accounts={accounts}
-                  editingExpense={editingExpense}
-                />
-              )}
-            </div>
+          <SheetContent side="bottom" className="h-[95vh] sm:h-[90vh] rounded-t-xl p-0">
+            {editingExpense && (
+              <EnhancedQuickAddExpense 
+                onAddExpense={(expense) => {
+                  handleUpdateExpense(expense);
+                  toast({
+                    title: "✅ Transaction Updated",
+                    description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} updated`,
+                    duration: 3000
+                  });
+                }}
+                existingExpenses={allExpenses}
+                accounts={accounts}
+                editingExpense={editingExpense}
+              />
+            )}
           </SheetContent>
         </Sheet>
 

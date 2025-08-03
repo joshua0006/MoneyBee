@@ -1,16 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Camera, Receipt, Zap, Sparkles, CheckCircle2, Bot } from "lucide-react";
+import { Plus, Camera, Receipt, Zap, Sparkles, CheckCircle2, Bot, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getSmartSuggestions, type Expense, type Account } from "@/utils/expenseUtils";
 import { EnhancedExpenseParser, type ParsedExpense } from "@/utils/enhancedExpenseParser";
 import { supabase } from "@/integrations/supabase/client";
 import { ReceiptScanner } from "@/components/ReceiptScanner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface QuickAddExpenseProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -338,51 +338,53 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     }
   };
 
+  const isMobile = useIsMobile();
+
   return (
-    <Card className="border border-border/50 bg-card">
-      <CardHeader className="pb-4 border-b border-border/30">
-        <CardTitle className="text-lg flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Plus size={18} className="text-muted-foreground" />
-            Quick Add
-            {isLoading && (
-              <div className="animate-spin opacity-60">
-                <Zap size={16} className="text-primary" />
-              </div>
-            )}
-            {aiParseSuccess && (
-              <CheckCircle2 size={16} className="text-green-500" />
-            )}
-          </div>
-          <Button
-            type="button"
-            variant={aiMode ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setAiMode(!aiMode)}
-            className="flex items-center gap-1 text-sm"
-          >
-            <Sparkles size={14} />
-            AI
-          </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-4">
+    <div className="h-full bg-background">
+      {/* Mobile Header */}
+      <div className="flex items-center justify-between p-4 border-b border-border/30">
+        <div className="flex items-center gap-2">
+          <div className="text-lg font-semibold">Quick Add</div>
+          {isLoading && (
+            <div className="animate-spin opacity-60">
+              <Zap size={16} className="text-primary" />
+            </div>
+          )}
+          {aiParseSuccess && (
+            <CheckCircle2 size={16} className="text-green-500" />
+          )}
+        </div>
+        <Button
+          type="button"
+          variant={aiMode ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setAiMode(!aiMode)}
+          className="flex items-center gap-1"
+        >
+          <Sparkles size={14} />
+          AI
+        </Button>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto p-4 space-y-4">
         {/* AI Input Mode */}
         {aiMode && type === 'expense' && (
-          <div className="space-y-3 mb-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Sparkles size={16} className="text-primary" />
-                Enhanced AI Parser
+                AI Parser
                 {isParsing && (
                   <div className="animate-spin opacity-60">
                     <Sparkles size={12} className="text-primary" />
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 text-xs">
-                  <span className="text-muted-foreground">AI Fallback</span>
+                  <span className="hidden sm:inline text-muted-foreground">Fallback</span>
                   <Switch
                     checked={useFallback}
                     onCheckedChange={setUseFallback}
@@ -390,7 +392,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                   />
                 </div>
                 <div className="flex items-center gap-1 text-xs">
-                  <span className="text-muted-foreground">Auto-submit</span>
+                  <span className="hidden sm:inline text-muted-foreground">Auto</span>
                   <Switch
                     checked={autoSubmit}
                     onCheckedChange={setAutoSubmit}
@@ -401,42 +403,33 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             </div>
             <Textarea
               ref={aiInputRef}
-              placeholder="Type naturally: 'coffee $5', 'gas 25 bucks', 'lunch at subway 12 dollars' (Press Enter to submit)"
+              placeholder="Say it naturally: 'coffee $5' or 'gas 25 bucks'"
               value={aiInput}
               onChange={(e) => setAiInput(e.target.value)}
               onKeyDown={handleAiInputKeyDown}
-              className="min-h-[80px] resize-none"
+              className="min-h-[60px] resize-none text-base"
             />
             
-            {/* Parsed Data Display */}
+            {/* Parsed Data Display - Compact */}
             {parsedData && (
-              <div className="mt-2 p-2 bg-muted rounded-lg">
+              <div className="p-3 bg-muted/50 rounded-lg border">
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">Parsed Data</span>
-                  <span className={`text-xs px-2 py-1 rounded border ${EnhancedExpenseParser.getConfidenceColor(
+                  <span className="text-sm font-medium">AI Parsed</span>
+                  <span className={`text-xs px-2 py-1 rounded ${EnhancedExpenseParser.getConfidenceColor(
                     EnhancedExpenseParser.getOverallConfidence(parsedData.confidence)
                   )}`}>
-                    {Math.round(EnhancedExpenseParser.getOverallConfidence(parsedData.confidence) * 100)}% confidence
+                    {Math.round(EnhancedExpenseParser.getOverallConfidence(parsedData.confidence) * 100)}%
                   </span>
                   {isUsingFallback && (
-                    <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 border border-blue-200 flex items-center gap-1">
-                      <Bot className="h-3 w-3" />
-                      AI Fallback
-                    </span>
+                    <Bot className="h-3 w-3 text-blue-600" />
                   )}
                 </div>
-                <div className="text-xs space-y-1">
-                  <div>Amount: ${parsedData.amount} ({Math.round(parsedData.confidence.amount * 100)}%)</div>
-                  <div>Description: {parsedData.description} ({Math.round(parsedData.confidence.description * 100)}%)</div>
-                  <div>Category: {parsedData.category} ({Math.round(parsedData.confidence.category * 100)}%)</div>
-                  <div>Type: {parsedData.type} ({Math.round(parsedData.confidence.type * 100)}%)</div>
-                  {parsedData.merchant && (
-                    <div className="text-blue-600">Merchant: {parsedData.merchant}</div>
-                  )}
-                  {parsedData.reasoning && (
-                    <div className="text-muted-foreground">Reasoning: {parsedData.reasoning}</div>
-                  )}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>Amount: ${parsedData.amount}</div>
+                  <div>Type: {parsedData.type}</div>
+                  <div className="col-span-2">Description: {parsedData.description}</div>
+                  <div className="col-span-2">Category: {parsedData.category}</div>
                 </div>
               </div>
             )}
@@ -445,29 +438,29 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
         {/* Manual Entry Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Type Toggle */}
+          {/* Type Toggle - Prominent */}
           {(!aiMode || type === 'income') && (
-            <div className="flex bg-muted/50 p-1 rounded-md">
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
-                variant={type === 'expense' ? 'default' : 'ghost'}
+                variant={type === 'expense' ? 'default' : 'outline'}
                 onClick={() => setType('expense')}
-                className={`flex-1 h-8 text-sm ${
+                className={`h-10 text-sm font-medium ${
                   type === 'expense' 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'hover:bg-background'
+                    ? 'bg-expense text-expense-foreground' 
+                    : 'border-dashed'
                 }`}
               >
                 💳 Expense
               </Button>
               <Button
                 type="button"
-                variant={type === 'income' ? 'default' : 'ghost'}
+                variant={type === 'income' ? 'default' : 'outline'}
                 onClick={() => setType('income')}
-                className={`flex-1 h-8 text-sm ${
+                className={`h-10 text-sm font-medium ${
                   type === 'income' 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'hover:bg-background'
+                    ? 'bg-income text-income-foreground' 
+                    : 'border-dashed'
                 }`}
               >
                 💰 Income
@@ -475,21 +468,49 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             </div>
           )}
 
-          {/* Amount Input */}
+          {/* Amount Input - Large and Prominent */}
           <div className="space-y-3">
-            <Input
-              type={type === 'income' ? 'text' : 'number'}
-              step={type === 'income' ? undefined : '0.01'}
-              placeholder={type === 'income' ? '3.2k, $2,000...' : 'Amount'}
-              value={amount}
-              onChange={(e) => handleSmartAmountChange(e.target.value)}
-              className="text-lg font-medium"
-              disabled={isLoading}
-            />
+            <div className="relative">
+              <Input
+                type={type === 'income' ? 'text' : 'number'}
+                step={type === 'income' ? undefined : '0.01'}
+                placeholder={type === 'income' ? '3.2k, $2,000...' : '0.00'}
+                value={amount}
+                onChange={(e) => handleSmartAmountChange(e.target.value)}
+                className="text-2xl font-bold h-16 pl-8 text-center"
+                disabled={isLoading}
+              />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-2xl font-bold text-muted-foreground">
+                $
+              </div>
+              {/* Camera and Receipt buttons inline */}
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setShowReceiptScanner(true)}
+                  disabled={isLoading}
+                >
+                  <Camera size={16} />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setShowReceiptScanner(true)}
+                  disabled={isLoading}
+                >
+                  <Receipt size={16} />
+                </Button>
+              </div>
+            </div>
 
-            {/* Quick Amount Buttons */}
+            {/* Quick Amount Buttons - Mobile Grid */}
             {type === 'expense' && (
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-6 gap-2">
                 {quickAmounts.map((quickAmount) => (
                   <Button
                     key={quickAmount}
@@ -497,7 +518,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                     variant="outline"
                     size="sm"
                     onClick={() => handleQuickAmount(quickAmount)}
-                    className="h-7 px-2 text-xs"
+                    className="h-8 text-xs"
                   >
                     ${quickAmount}
                   </Button>
@@ -537,14 +558,14 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             )}
           </div>
 
-          {/* Category Selection */}
+          {/* Category Selection - Grid Layout */}
           {type === 'expense' && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {/* Recent Categories */}
               {recentCategories.length > 0 && (
                 <div className="space-y-2">
-                  <span className="text-xs text-muted-foreground">Recent</span>
-                  <div className="flex flex-wrap gap-1">
+                  <span className="text-xs font-medium text-muted-foreground">Recently Used</span>
+                  <div className="flex gap-2">
                     {recentCategories.map((recentCat) => (
                       <Button
                         key={recentCat}
@@ -552,7 +573,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                         variant={category === recentCat ? "default" : "outline"}
                         size="sm"
                         onClick={() => setCategory(recentCat)}
-                        className="h-7 px-2 text-xs"
+                        className="h-8 px-3 text-xs flex-1"
                       >
                         {recentCat}
                       </Button>
@@ -561,15 +582,58 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                 </div>
               )}
 
-              {/* Category Dropdown */}
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
+              {/* Category Grid */}
+              <div className="space-y-2">
+                <span className="text-xs font-medium text-muted-foreground">Categories</span>
+                <div className="grid grid-cols-3 gap-2">
+                  {categories.slice(0, 9).map((cat) => (
+                    <Button
+                      key={cat}
+                      type="button"
+                      variant={category === cat ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCategory(cat)}
+                      className="h-10 text-xs"
+                    >
+                      {cat}
+                    </Button>
+                  ))}
+                </div>
+                
+                {/* More Categories Dropdown */}
+                {categories.length > 9 && (
+                  <Select 
+                    value={category && !categories.slice(0, 9).includes(category) ? category : ""} 
+                    onValueChange={setCategory}
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue placeholder="More categories..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.slice(9).map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Account Selection */}
+          {accounts.length > 1 && (
+            <div className="space-y-2">
+              <span className="text-xs font-medium text-muted-foreground">Account</span>
+              <Select value={accountId} onValueChange={setAccountId}>
+                <SelectTrigger className="h-10">
+                  <SelectValue placeholder="Select account" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      {account.name} - ${account.balance.toLocaleString()}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -577,86 +641,52 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             </div>
           )}
 
-          {/* Account Selection */}
-          {accounts.length > 1 && (
-            <Select value={accountId} onValueChange={setAccountId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select account" />
-              </SelectTrigger>
-              <SelectContent>
-                {accounts.map((account) => (
-                  <SelectItem key={account.id} value={account.id}>
-                    {account.name} - ${account.balance.toLocaleString()}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Make Recurring Option - Compact */}
+          {type === 'expense' && (
+            <div className="flex items-center gap-3 p-3 bg-muted/20 rounded-lg">
+              <input
+                type="checkbox"
+                id="makeRecurring"
+                checked={isRecurring}
+                onChange={(e) => setIsRecurring(e.target.checked)}
+                className="rounded"
+              />
+              <label htmlFor="makeRecurring" className="text-sm cursor-pointer flex-1">
+                Make this recurring
+              </label>
+            </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
+          {/* Action Button - Full Width */}
+          <div className="pt-4">
             <Button
               type="submit"
               disabled={isLoading || !amount}
-              className="flex-1 h-10"
+              className="w-full h-12 text-base font-medium"
+              variant={type === 'expense' ? 'expense' : 'income'}
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="animate-spin">
-                    <Zap size={16} />
+                    <Zap size={18} />
                   </div>
                   Adding...
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Plus size={16} />
+                  <Plus size={18} />
                   {editingExpense ? 'Update' : 'Add'} {type === 'expense' ? 'Expense' : 'Income'}
-                  {amount && ` ($${parseFloat(amount) || 0})`}
+                  {amount && ` • $${parseFloat(amount) || 0}`}
                 </div>
               )}
             </Button>
-            
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-10 px-3"
-              onClick={() => setShowReceiptScanner(true)}
-              disabled={isLoading}
-            >
-              <Camera size={16} />
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-10 px-3"
-              onClick={() => setShowReceiptScanner(true)}
-              disabled={isLoading}
-            >
-              <Receipt size={16} />
-            </Button>
-          </div>
-
-          {/* Make Recurring Option */}
-          <div className="flex items-center space-x-2 p-3 bg-muted/30 rounded-lg mt-4">
-            <input
-              type="checkbox"
-              id="makeRecurring"
-              checked={isRecurring}
-              onChange={(e) => setIsRecurring(e.target.checked)}
-              className="rounded border-input"
-            />
-            <label htmlFor="makeRecurring" className="text-sm font-medium cursor-pointer">
-              Make this recurring
-            </label>
           </div>
         </form>
-      </CardContent>
+      </div>
       
       {/* Receipt Scanner Modal */}
       {showReceiptScanner && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
           <ReceiptScanner
             onExpenseExtracted={(expenseData) => {
               // Fill the form with extracted data
@@ -686,6 +716,6 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
           />
         </div>
       )}
-    </Card>
+    </div>
   );
 };
