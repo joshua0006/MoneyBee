@@ -10,8 +10,10 @@ import { CalendarView } from "@/components/CalendarView";
 import { BudgetManager } from "@/components/BudgetManager";
 import { AccountManager } from "@/components/AccountManager";
 import { RecurringTransactionManager } from "@/components/RecurringTransactionManager";
+import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wallet, TrendingUp, BarChart3, Search, Plus, PieChart, Calendar, Target, Settings, Clock } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Wallet, TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Settings, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +38,7 @@ const Index = () => {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [mainTab, setMainTab] = useState("overview");
   const [moreTab, setMoreTab] = useState("search");
@@ -211,14 +214,10 @@ const Index = () => {
       {/* Main Content with Tabs */}
       <div className="max-w-lg mx-auto px-4 py-6">
         <Tabs value={mainTab} onValueChange={setMainTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1">
+          <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1">
             <TabsTrigger value="overview" className="flex items-center gap-1 text-xs">
               <BarChart3 size={14} />
               Overview
-            </TabsTrigger>
-            <TabsTrigger value="add" className="flex items-center gap-1 text-xs">
-              <Plus size={14} />
-              Add
             </TabsTrigger>
             <TabsTrigger value="more" className="flex items-center gap-1 text-xs">
               <Settings size={14} />
@@ -251,13 +250,6 @@ const Index = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="add" className="space-y-6">
-            <EnhancedQuickAddExpense 
-              onAddExpense={handleAddExpense}
-              existingExpenses={allExpenses}
-              accounts={accounts}
-            />
-          </TabsContent>
 
           <TabsContent value="more" className="space-y-6">
             <Tabs value={moreTab} onValueChange={setMoreTab} className="space-y-4">
@@ -353,6 +345,33 @@ const Index = () => {
           onDelete={handleDeleteExpense}
           onEdit={handleEditExpense}
         />
+
+        {/* Add Expense Sheet */}
+        <Sheet open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
+          <SheetContent side="bottom" className="h-[90vh] rounded-t-xl">
+            <SheetHeader>
+              <SheetTitle>Add Transaction</SheetTitle>
+            </SheetHeader>
+            <div className="mt-6">
+              <EnhancedQuickAddExpense 
+                onAddExpense={(expense) => {
+                  handleAddExpense(expense);
+                  setIsAddExpenseOpen(false);
+                  toast({
+                    title: "✅ Transaction Added",
+                    description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} recorded`,
+                    duration: 3000
+                  });
+                }}
+                existingExpenses={allExpenses}
+                accounts={accounts}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Floating Action Button */}
+        <FloatingActionButton onClick={() => setIsAddExpenseOpen(true)} />
       </div>
     </div>
   );
