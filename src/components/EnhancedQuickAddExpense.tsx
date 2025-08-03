@@ -8,8 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Camera, Receipt, Zap, Sparkles, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getSmartSuggestions, type Expense, type Account } from "@/utils/expenseUtils";
-import { AIExpenseParser, type ParsedExpense } from "@/utils/aiExpenseParser";
-import { OpenAIExpenseParser, type OpenAIParsedExpense } from "@/utils/openaiExpenseParser";
+import { EnhancedExpenseParser, type ParsedExpense } from "@/utils/enhancedExpenseParser";
 
 interface QuickAddExpenseProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -38,10 +37,10 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   // AI Recognition states
   const [aiMode, setAiMode] = useState(true);
   const [aiInput, setAiInput] = useState("");
-  const [isParsingWithOpenAI, setIsParsingWithOpenAI] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
   const [autoSubmit, setAutoSubmit] = useState(false);
   const [aiParseSuccess, setAiParseSuccess] = useState(false);
-  const [useOpenAI, setUseOpenAI] = useState(OpenAIExpenseParser.isAvailable());
+  const [parsedData, setParsedData] = useState<ParsedExpense | null>(null);
   
   const { toast } = useToast();
   const descriptionRef = useRef<HTMLInputElement>(null);
@@ -205,72 +204,48 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     }
   }, [aiMode]);
 
-  // Real-time AI parsing with auto-fill
+  // Real-time enhanced parsing with auto-fill
   const debouncedParse = useCallback(async (input: string) => {
     if (!input.trim()) {
       setAiParseSuccess(false);
+      setParsedData(null);
       return;
     }
 
-    setIsParsingWithOpenAI(true);
+    setIsParsing(true);
 
     try {
-      // Try OpenAI first if available
-      if (useOpenAI && OpenAIExpenseParser.isAvailable()) {
-        const openaiParsed = await OpenAIExpenseParser.parseExpenseText(input, categories);
-        if (openaiParsed) {
-          // Auto-fill form fields directly
-          const overallConfidence = OpenAIExpenseParser.getOverallConfidence(openaiParsed.confidence);
-          if (overallConfidence > 0.6 && openaiParsed.amount > 0) {
-            setAmount(openaiParsed.amount.toString());
-            setDescription(openaiParsed.description);
-            setCategory(openaiParsed.category);
-            setType(openaiParsed.type);
-            setAiParseSuccess(true);
-            
-            // Auto-submit if enabled and high confidence
-            if (autoSubmit && overallConfidence > 0.8) {
-              setTimeout(() => {
-                const form = document.querySelector('form');
-                if (form) {
-                  const submitEvent = new Event('submit', { bubbles: true });
-                  form.dispatchEvent(submitEvent);
-                }
-              }, 500);
+      // Use enhanced parser
+      const parsed = EnhancedExpenseParser.parseExpenseText(input);
+      setParsedData(parsed);
+      
+      // Auto-fill form fields if confidence is decent
+      const overallConfidence = EnhancedExpenseParser.getOverallConfidence(parsed.confidence);
+      if (overallConfidence > 0.5 && parsed.amount > 0) {
+        setAmount(parsed.amount.toString());
+        setDescription(parsed.description);
+        setCategory(parsed.category);
+        setType(parsed.type);
+        setAiParseSuccess(true);
+        
+        // Auto-submit if enabled and high confidence
+        if (autoSubmit && overallConfidence > 0.8) {
+          setTimeout(() => {
+            const form = document.querySelector('form');
+            if (form) {
+              const submitEvent = new Event('submit', { bubbles: true });
+              form.dispatchEvent(submitEvent);
             }
-          }
-          setIsParsingWithOpenAI(false);
-          return;
+          }, 500);
         }
       }
     } catch (error) {
-      console.warn('OpenAI parsing failed, falling back to basic parser:', error);
-    }
-
-    // Fallback to basic parser
-    const parsed = AIExpenseParser.parseExpenseText(input);
-    
-    // Auto-fill if decent confidence
-    if (parsed.confidence.amount > 0.5 && parsed.amount > 0) {
-      setAmount(parsed.amount.toString());
-      setDescription(parsed.description);
-      setCategory(parsed.category);
-      setAiParseSuccess(true);
-      
-      // Auto-submit if enabled
-      if (autoSubmit && parsed.confidence.amount > 0.7) {
-        setTimeout(() => {
-          const form = document.querySelector('form');
-          if (form) {
-            const submitEvent = new Event('submit', { bubbles: true });
-            form.dispatchEvent(submitEvent);
-          }
-        }, 500);
-      }
+      console.warn('Enhanced parsing failed:', error);
+      setAiParseSuccess(false);
     }
     
-    setIsParsingWithOpenAI(false);
-  }, [useOpenAI, categories, autoSubmit]);
+    setIsParsing(false);
+  }, [categories, autoSubmit]);
 
   // Debounce the AI parsing
   useEffect(() => {
@@ -336,8 +311,8 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Sparkles size={16} className="text-primary" />
-                {OpenAIExpenseParser.isAvailable() ? "AI Parser" : "Basic Parser"}
-                {isParsingWithOpenAI && (
+                Enhanced AI Parser
+                {isParsing && (
                   <div className="animate-spin opacity-60">
                     <Sparkles size={12} className="text-primary" />
                   </div>
@@ -352,17 +327,6 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                     className="scale-75"
                   />
                 </div>
-                {OpenAIExpenseParser.isAvailable() && (
-                  <Button
-                    type="button"
-                    variant={useOpenAI ? "secondary" : "ghost"}
-                    size="sm"
-                    onClick={() => setUseOpenAI(!useOpenAI)}
-                    className="text-xs h-7 px-2"
-                  >
-                    {useOpenAI ? "🤖" : "⚡"}
-                  </Button>
-                )}
               </div>
             </div>
             <Textarea
@@ -373,6 +337,33 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               onKeyDown={handleAiInputKeyDown}
               className="min-h-[80px] resize-none"
             />
+            
+            {/* Parsed Data Display */}
+            {parsedData && (
+              <div className="mt-2 p-2 bg-muted rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Parsed Data</span>
+                  <span className={`text-xs px-2 py-1 rounded border ${EnhancedExpenseParser.getConfidenceColor(
+                    EnhancedExpenseParser.getOverallConfidence(parsedData.confidence)
+                  )}`}>
+                    {Math.round(EnhancedExpenseParser.getOverallConfidence(parsedData.confidence) * 100)}% confidence
+                  </span>
+                </div>
+                <div className="text-xs space-y-1">
+                  <div>Amount: ${parsedData.amount} ({Math.round(parsedData.confidence.amount * 100)}%)</div>
+                  <div>Description: {parsedData.description} ({Math.round(parsedData.confidence.description * 100)}%)</div>
+                  <div>Category: {parsedData.category} ({Math.round(parsedData.confidence.category * 100)}%)</div>
+                  <div>Type: {parsedData.type} ({Math.round(parsedData.confidence.type * 100)}%)</div>
+                  {parsedData.merchant && (
+                    <div className="text-blue-600">Merchant: {parsedData.merchant}</div>
+                  )}
+                  {parsedData.reasoning && (
+                    <div className="text-muted-foreground">Reasoning: {parsedData.reasoning}</div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
