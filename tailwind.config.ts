@@ -75,6 +75,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				'bee-gold': {
+					DEFAULT: 'hsl(var(--bee-gold))',
+					foreground: 'hsl(var(--bee-gold-foreground))'
+				},
+				'bee-blue': {
+					DEFAULT: 'hsl(var(--bee-blue))',
+					foreground: 'hsl(var(--bee-blue-foreground))'
 				}
 			},
 			borderRadius: {
