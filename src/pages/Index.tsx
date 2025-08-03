@@ -58,6 +58,13 @@ const Index = () => {
     setIsLoading(false);
   }, []);
 
+  // Sync filteredExpenses with allExpenses when no filters are active
+  useEffect(() => {
+    if (!activeMenuItem || activeMenuItem !== "search") {
+      setFilteredExpenses(allExpenses);
+    }
+  }, [allExpenses, activeMenuItem]);
+
   // Save data whenever data changes
   useEffect(() => {
     if (!isLoading) {
@@ -83,6 +90,7 @@ const Index = () => {
       id: Date.now().toString()
     };
     setAllExpenses(prev => [newExpense, ...prev]);
+    setFilteredExpenses(prev => [newExpense, ...prev]);
   };
 
   const handleAddAccount = (account: Omit<Account, 'id'>) => {
