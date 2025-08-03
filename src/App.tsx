@@ -20,9 +20,14 @@ const App = () => (
           <Route 
             path="/" 
             element={
-              <SignedIn>
-                <Index />
-              </SignedIn>
+              <>
+                <SignedIn>
+                  <Index />
+                </SignedIn>
+                <SignedOut>
+                  <Auth />
+                </SignedOut>
+              </>
             } 
           />
           <Route 
