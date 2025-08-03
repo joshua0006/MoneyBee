@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import moneyBeesLogo from '@/assets/moneybees-logo.png'
 
 export default function Auth() {
   const [activeTab, setActiveTab] = useState('sign-in')
@@ -14,7 +15,7 @@ export default function Auth() {
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-2 p-3 gradient-gold rounded-full shadow-gold">
             <img 
-              src="/assets/moneybees-logo.png" 
+              src={moneyBeesLogo} 
               alt="MoneyBees" 
               className="w-8 h-8"
             />
