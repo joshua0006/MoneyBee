@@ -20,16 +20,8 @@ interface QuickAddExpenseProps {
 }
 
 const categories = [
-  "Food & Dining",
-  "Transportation", 
-  "Shopping",
-  "Entertainment",
-  "Bills & Utilities",
-  "Healthcare",
-  "Travel",
-  "Education",
-  "Personal Care",
-  "Other"
+  'Food', 'Entertainment', 'Transport', 'Groceries', 'Housing', 'Clothing',
+  'Utilities', 'Health', 'Education', 'Insurance', 'Tax', 'Work', 'Donations', 'Other'
 ];
 
 const quickAmounts = [5, 10, 15, 20, 25, 50];

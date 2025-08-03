@@ -18,16 +18,8 @@ interface QuickAddExpenseProps {
 }
 
 const categories = [
-  "Food & Dining",
-  "Transportation", 
-  "Shopping",
-  "Entertainment",
-  "Bills & Utilities",
-  "Healthcare",
-  "Travel",
-  "Education",
-  "Personal Care",
-  "Other"
+  'Food', 'Entertainment', 'Transport', 'Groceries', 'Housing', 'Clothing', 
+  'Utilities', 'Health', 'Education', 'Insurance', 'Tax', 'Work', 'Donations', 'Other'
 ];
 
 const quickAmounts = [5, 10, 15, 20, 25, 50];
@@ -72,15 +64,19 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     const lowerDesc = desc.toLowerCase();
     
     const categoryMap: Record<string, string[]> = {
-      "Food & Dining": ["coffee", "restaurant", "lunch", "dinner", "breakfast", "food", "pizza", "burger", "cafe"],
-      "Transportation": ["gas", "fuel", "uber", "taxi", "bus", "train", "parking", "metro"],
-      "Shopping": ["store", "mall", "amazon", "target", "walmart", "clothes", "shoes"],
-      "Entertainment": ["movie", "cinema", "netflix", "spotify", "game", "concert", "theater"],
-      "Bills & Utilities": ["electric", "water", "phone", "internet", "rent", "mortgage", "insurance"],
-      "Healthcare": ["doctor", "pharmacy", "medicine", "hospital", "dental", "prescription"],
-      "Travel": ["hotel", "flight", "vacation", "trip", "booking", "airbnb"],
-      "Education": ["school", "book", "course", "tuition", "university", "college"],
-      "Personal Care": ["haircut", "salon", "beauty", "spa", "gym", "fitness"]
+      "Food": ["coffee", "restaurant", "lunch", "dinner", "breakfast", "food", "pizza", "burger", "cafe", "bar"],
+      "Groceries": ["grocery", "groceries", "supermarket", "walmart", "target", "costco", "produce", "market"],
+      "Transport": ["gas", "fuel", "uber", "taxi", "bus", "train", "parking", "lyft", "flight", "metro"],
+      "Entertainment": ["movie", "cinema", "netflix", "spotify", "game", "concert", "theater", "streaming"],
+      "Health": ["doctor", "pharmacy", "medicine", "hospital", "dental", "prescription", "gym", "fitness"],
+      "Utilities": ["electric", "water", "phone", "internet", "cable", "utility", "bill"],
+      "Housing": ["rent", "mortgage", "property", "hoa", "maintenance", "repair", "home"],
+      "Clothing": ["clothes", "clothing", "shirt", "pants", "shoes", "dress", "fashion"],
+      "Insurance": ["insurance", "premium", "coverage", "policy", "auto", "health"],
+      "Education": ["school", "book", "course", "tuition", "university", "college", "training"],
+      "Tax": ["tax", "taxes", "irs", "filing", "deduction", "refund"],
+      "Work": ["office", "supplies", "business", "work", "conference", "equipment"],
+      "Donations": ["charity", "donation", "church", "nonprofit", "give", "foundation"]
     };
 
     for (const [cat, keywords] of Object.entries(categoryMap)) {

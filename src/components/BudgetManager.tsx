@@ -20,8 +20,8 @@ interface BudgetManagerProps {
 }
 
 const CATEGORIES = [
-  'Food & Dining', 'Transportation', 'Shopping', 'Entertainment',
-  'Bills & Utilities', 'Healthcare', 'Travel', 'Education', 'Other'
+  'Food', 'Entertainment', 'Transport', 'Groceries', 'Housing', 'Clothing',
+  'Utilities', 'Health', 'Education', 'Insurance', 'Tax', 'Work', 'Donations', 'Other'
 ];
 
 export const BudgetManager = ({ 

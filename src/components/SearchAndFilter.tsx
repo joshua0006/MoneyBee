@@ -24,15 +24,19 @@ interface SearchAndFilterProps {
 
 const categories = [
   "All Categories",
-  "Food & Dining",
-  "Transportation", 
-  "Shopping",
-  "Entertainment",
-  "Bills & Utilities",
-  "Healthcare",
-  "Travel",
+  "Food",
+  "Entertainment", 
+  "Transport",
+  "Groceries",
+  "Housing",
+  "Clothing",
+  "Utilities",
+  "Health",
   "Education",
-  "Personal Care",
+  "Insurance",
+  "Tax",
+  "Work",
+  "Donations",
   "Other"
 ];
 

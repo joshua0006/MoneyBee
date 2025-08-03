@@ -55,9 +55,8 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
   });
 
   const categories = [
-    'Food & Dining', 'Transportation', 'Shopping', 'Entertainment', 'Bills & Utilities',
-    'Healthcare', 'Travel', 'Education', 'Gifts', 'Personal Care', 'Salary', 'Freelance',
-    'Investments', 'Rental Income', 'Business', 'Other'
+    'Food', 'Entertainment', 'Transport', 'Groceries', 'Housing', 'Clothing',
+    'Utilities', 'Health', 'Education', 'Insurance', 'Tax', 'Work', 'Donations', 'Other'
   ];
 
   useEffect(() => {

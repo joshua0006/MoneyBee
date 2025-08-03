@@ -1,5 +1,3 @@
-import nlp from 'compromise';
-
 export interface ParsedExpense {
   amount: number;
   description: string;
@@ -15,43 +13,79 @@ export interface ParsedExpense {
 
 export class AIExpenseParser {
   private static incomeKeywords = [
-    'salary', 'wage', 'wages', 'paycheck', 'pay', 'income', 'earn', 'earned', 'bonus',
-    'freelance', 'consulting', 'contract', 'payment', 'received', 'refund', 'cashback',
-    'dividend', 'interest', 'commission', 'tips', 'gift', 'allowance', 'reimbursement',
-    'return', 'rebate', 'profit', 'revenue', 'sold', 'selling'
+    'salary', 'wage', 'pay', 'bonus', 'received', 'deposit', 'refund',
+    'freelance', 'consulting', 'dividend', 'interest', 'sold', 'income'
   ];
 
   private static expenseKeywords = [
-    'buy', 'bought', 'purchase', 'purchased', 'spent', 'spend', 'paid for', 'cost',
-    'bill', 'fee', 'charge', 'subscription', 'expense', 'bought', 'order', 'ordered'
+    'paid', 'bought', 'spent', 'purchase', 'cost', 'fee', 'charge',
+    'bill', 'rent', 'subscription', 'expense'
   ];
 
-  private static categoryKeywords = {
-    'Food & Dining': [
+  private static categoryKeywords: Record<string, string[]> = {
+    'Food': [
       'coffee', 'starbucks', 'mcdonalds', 'restaurant', 'lunch', 'dinner', 'breakfast',
-      'food', 'pizza', 'burger', 'sandwich', 'grocery', 'supermarket', 'cafe',
-      'bar', 'pub', 'drink', 'beer', 'wine', 'soda', 'snack', 'eat', 'meal'
+      'food', 'pizza', 'burger', 'sandwich', 'cafe', 'bar', 'pub', 'drink', 'beer', 
+      'wine', 'soda', 'snack', 'eat', 'meal', 'dine', 'dining', 'takeout', 'delivery'
     ],
-    'Transportation': [
+    'Groceries': [
+      'grocery', 'groceries', 'supermarket', 'walmart', 'target', 'costco', 'safeway',
+      'kroger', 'produce', 'vegetables', 'fruits', 'meat', 'dairy', 'bread', 'milk',
+      'eggs', 'shopping', 'market', 'store'
+    ],
+    'Transport': [
       'gas', 'fuel', 'uber', 'taxi', 'bus', 'train', 'parking', 'toll',
       'subway', 'metro', 'flight', 'airline', 'car', 'garage', 'shell', 'bp',
-      'exxon', 'chevron', 'station'
-    ],
-    'Shopping': [
-      'amazon', 'target', 'walmart', 'store', 'shopping', 'buy', 'purchase',
-      'clothes', 'shirt', 'shoes', 'electronics', 'phone', 'computer', 'book'
+      'exxon', 'chevron', 'station', 'lyft', 'rideshare', 'commute', 'travel'
     ],
     'Entertainment': [
-      'movie', 'cinema', 'netflix', 'spotify', 'game', 'concert', 'ticket',
-      'theater', 'show', 'entertainment', 'fun', 'hobby'
+      'movie', 'cinema', 'netflix', 'spotify', 'game', 'gaming', 'concert', 'ticket',
+      'theater', 'show', 'entertainment', 'fun', 'hobby', 'streaming', 'subscription',
+      'youtube', 'disney', 'hulu', 'music', 'festival', 'amusement', 'park'
     ],
-    'Healthcare': [
+    'Health': [
       'doctor', 'hospital', 'pharmacy', 'medicine', 'dentist', 'clinic',
-      'health', 'medical', 'prescription', 'insurance'
+      'health', 'medical', 'prescription', 'cvs', 'walgreens', 'therapy',
+      'checkup', 'surgery', 'treatment', 'wellness', 'fitness', 'gym'
     ],
-    'Bills & Utilities': [
+    'Utilities': [
       'electric', 'electricity', 'water', 'internet', 'phone', 'cable',
-      'utility', 'bill', 'rent', 'mortgage', 'insurance'
+      'utility', 'bill', 'gas', 'heating', 'cooling', 'wifi', 'broadband',
+      'cell', 'mobile', 'power', 'energy', 'sewer', 'trash', 'garbage'
+    ],
+    'Housing': [
+      'rent', 'mortgage', 'property', 'hoa', 'maintenance', 'repair', 'home',
+      'house', 'apartment', 'condo', 'landlord', 'lease', 'deposit', 'taxes',
+      'homeowners', 'renovation', 'improvement', 'furnishing', 'furniture'
+    ],
+    'Clothing': [
+      'clothes', 'clothing', 'shirt', 'pants', 'shoes', 'dress', 'jacket',
+      'jeans', 'fashion', 'apparel', 'outfit', 'wardrobe', 'nike', 'adidas',
+      'h&m', 'zara', 'uniqlo', 'gap', 'shopping', 'wear', 'accessories'
+    ],
+    'Insurance': [
+      'insurance', 'premium', 'coverage', 'policy', 'auto', 'health', 'life',
+      'home', 'renters', 'car', 'medical', 'dental', 'vision', 'disability',
+      'liability', 'deductible', 'claim'
+    ],
+    'Education': [
+      'school', 'tuition', 'education', 'course', 'class', 'training', 'workshop',
+      'seminar', 'certification', 'degree', 'college', 'university', 'books',
+      'supplies', 'learning', 'study', 'academy', 'online'
+    ],
+    'Tax': [
+      'tax', 'taxes', 'irs', 'filing', 'deduction', 'refund', 'accountant',
+      'preparation', 'federal', 'state', 'income', 'property', 'sales'
+    ],
+    'Work': [
+      'office', 'supplies', 'business', 'work', 'lunch', 'commute', 'parking',
+      'conference', 'meeting', 'travel', 'expense', 'professional', 'equipment',
+      'software', 'tools', 'uniform', 'training'
+    ],
+    'Donations': [
+      'charity', 'donation', 'donate', 'church', 'nonprofit', 'give', 'giving',
+      'foundation', 'fundraiser', 'contribution', 'tithe', 'volunteer', 'support',
+      'red cross', 'salvation army', 'goodwill'
     ],
     'Salary': [
       'salary', 'wage', 'wages', 'paycheck', 'pay', 'income', 'bonus'
@@ -118,26 +152,28 @@ export class AIExpenseParser {
       
       if (matches.length > 0) {
         const match = matches[0];
-        const extractedAmount = parseFloat(match[1] || match[0].replace('$', ''));
+        const numValue = parseFloat(match[1]);
         
-        if (!isNaN(extractedAmount) && extractedAmount > 0) {
-          amount = extractedAmount;
-          confidence = 1 - (i * 0.15); // Higher confidence for more specific patterns
+        if (!isNaN(numValue) && numValue > 0) {
+          amount = numValue;
+          confidence = Math.max(0.9 - (i * 0.15), 0.3); // Higher confidence for earlier patterns
           extractedAmounts.push(match[0]);
           break;
         }
       }
     }
 
-    // Try to extract written numbers using NLP
+    // Handle written numbers (basic)
     if (amount === 0) {
-      const doc = nlp(text);
-      const numbers = doc.numbers();
-      
-      if (numbers.length > 0) {
-        const numberText = numbers.text();
-        const numValue = parseFloat(numberText);
-        if (!isNaN(numValue) && numValue > 0) {
+      const writtenNumbers = {
+        'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+        'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+        'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50,
+        'hundred': 100, 'thousand': 1000
+      };
+
+      for (const [numberText, numValue] of Object.entries(writtenNumbers)) {
+        if (text.includes(numberText)) {
           amount = numValue;
           confidence = 0.6;
           extractedAmounts.push(numberText);
