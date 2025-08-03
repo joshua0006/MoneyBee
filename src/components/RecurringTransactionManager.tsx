@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
@@ -209,6 +209,24 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
   const inactiveTransactions = recurringTransactions.filter(r => !r.isActive);
   const upcomingTransactions = getUpcomingRecurring(activeTransactions, 30);
 
+  // Check if accounts exist
+  if (accounts.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">No Accounts Found</h2>
+          <p className="text-muted-foreground mb-6">
+            You need to create at least one account before setting up recurring transactions.
+          </p>
+          <Button onClick={() => window.location.reload()}>
+            Refresh Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -229,6 +247,11 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
               <DialogTitle>
                 {editingTransaction ? 'Edit Recurring Transaction' : 'Add Recurring Transaction'}
               </DialogTitle>
+              <DialogDescription>
+                {editingTransaction 
+                  ? 'Update your recurring transaction details' 
+                  : 'Set up a transaction that repeats automatically'}
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               {/* Amount and Type */}
