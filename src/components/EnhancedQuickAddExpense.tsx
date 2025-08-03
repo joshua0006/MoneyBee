@@ -16,6 +16,7 @@ interface QuickAddExpenseProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => void;
   existingExpenses: Expense[];
   accounts: Account[];
+  editingExpense?: Expense;
 }
 
 const categories = [
@@ -25,7 +26,7 @@ const categories = [
 
 const quickAmounts = [5, 10, 15, 20, 25, 50];
 
-export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accounts }: QuickAddExpenseProps) => {
+export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accounts, editingExpense }: QuickAddExpenseProps) => {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
@@ -135,17 +136,17 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     setTimeout(() => {
       onAddExpense(expense);
       
-      // Reset form
-      setAmount("");
-      setDescription("");
-      setCategory("");
-      setIsRecurring(false);
-      setShowSuggestions(false);
+      // Reset form only if not editing
+      if (!editingExpense) {
+        setAmount("");
+        setDescription("");
+        setCategory("");
+        setIsRecurring(false);
+        setShowSuggestions(false);
+        setAiInput("");
+      }
       setIsLoading(false);
       setAiParseSuccess(false);
-      
-      // Reset AI mode
-      setAiInput("");
       
       toast({
         title: type === 'expense' ? "💳 Expense Added" : "💰 Income Added",
@@ -202,12 +203,25 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
   const recentCategories = getLastUsedCategories();
 
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (editingExpense) {
+      setAmount(editingExpense.amount.toString());
+      setDescription(editingExpense.description);
+      setCategory(editingExpense.category);
+      setType(editingExpense.type);
+      setAccountId(editingExpense.accountId || accounts[0]?.id || "");
+      // Disable AI mode when editing
+      setAiMode(false);
+    }
+  }, [editingExpense, accounts]);
+
   // Auto-focus AI input when component mounts
   useEffect(() => {
-    if (aiMode && aiInputRef.current) {
+    if (aiMode && aiInputRef.current && !editingExpense) {
       setTimeout(() => aiInputRef.current?.focus(), 100);
     }
-  }, [aiMode]);
+  }, [aiMode, editingExpense]);
 
   // OpenAI fallback for category re-classification
   const tryFallbackParsing = async (text: string, localCategory: string, localConfidence: number) => {
@@ -596,7 +610,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               ) : (
                 <div className="flex items-center gap-2">
                   <Plus size={16} />
-                  Add {type === 'expense' ? 'Expense' : 'Income'}
+                  {editingExpense ? 'Update' : 'Add'} {type === 'expense' ? 'Expense' : 'Income'}
                   {amount && ` ($${parseFloat(amount) || 0})`}
                 </div>
               )}

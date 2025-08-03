@@ -54,7 +54,8 @@ export const ExpenseList = ({ expenses, onExpenseClick }: ExpenseListProps) => {
         {sortedExpenses.map((expense) => (
           <div
             key={expense.id}
-            className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-background to-muted/30 hover:shadow-sm transition-all duration-200"
+            onClick={() => onExpenseClick?.(expense)}
+            className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-background to-muted/30 hover:shadow-md hover:scale-[1.01] transition-all duration-200 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               {/* Type Icon */}

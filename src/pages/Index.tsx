@@ -40,6 +40,7 @@ const Index = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("home");
   const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
@@ -140,9 +141,21 @@ const Index = () => {
   };
 
   const handleEditExpense = (expense: Expense) => {
-    setAllExpenses(prev => prev.map(e => e.id === expense.id ? expense : e));
-    setFilteredExpenses(prev => prev.map(e => e.id === expense.id ? expense : e));
+    setEditingExpense(expense);
     setIsDetailOpen(false);
+  };
+
+  const handleUpdateExpense = (updatedExpense: Omit<Expense, 'id'>) => {
+    if (!editingExpense) return;
+    
+    const updated: Expense = {
+      ...updatedExpense,
+      id: editingExpense.id
+    };
+    
+    setAllExpenses(prev => prev.map(e => e.id === editingExpense.id ? updated : e));
+    setFilteredExpenses(prev => prev.map(e => e.id === editingExpense.id ? updated : e));
+    setEditingExpense(null);
   };
 
   const handleExport = () => {
@@ -352,6 +365,32 @@ const Index = () => {
                 existingExpenses={allExpenses}
                 accounts={accounts}
               />
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Edit Expense Sheet */}
+        <Sheet open={!!editingExpense} onOpenChange={(open) => !open && setEditingExpense(null)}>
+          <SheetContent side="bottom" className="h-[90vh] rounded-t-xl">
+            <SheetHeader>
+              <SheetTitle>Edit Transaction</SheetTitle>
+            </SheetHeader>
+            <div className="mt-6">
+              {editingExpense && (
+                <EnhancedQuickAddExpense 
+                  onAddExpense={(expense) => {
+                    handleUpdateExpense(expense);
+                    toast({
+                      title: "✅ Transaction Updated",
+                      description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} updated`,
+                      duration: 3000
+                    });
+                  }}
+                  existingExpenses={allExpenses}
+                  accounts={accounts}
+                  editingExpense={editingExpense}
+                />
+              )}
             </div>
           </SheetContent>
         </Sheet>
