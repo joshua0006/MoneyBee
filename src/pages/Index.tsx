@@ -15,7 +15,6 @@ import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Settings, Clock } from "lucide-react";
-import moneyBeesLogo from "@/assets/moneybees-logo.png";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -210,7 +209,7 @@ const Index = () => {
             <div className="flex items-center gap-2">
               <div className="bg-gradient-to-br from-bee-gold to-accent p-1.5 rounded-lg shadow-md">
                 <img 
-                  src={moneyBeesLogo} 
+                  src="/lovable-uploads/382e0197-d914-4661-9939-836788ff825a.png" 
                   alt="MoneyBee" 
                   className="w-5 h-5 object-contain hover:scale-105 transition-transform duration-200" 
                 />
