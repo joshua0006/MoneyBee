@@ -38,6 +38,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [category, setCategory] = useState("");
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [accountId, setAccountId] = useState(accounts[0]?.id || "");
+  const [isRecurring, setIsRecurring] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -139,6 +140,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       setAmount("");
       setDescription("");
       setCategory("");
+      setIsRecurring(false);
       setShowSuggestions(false);
       setIsLoading(false);
       
@@ -686,6 +688,25 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             >
               <Receipt size={16} />
             </Button>
+          </div>
+
+          {/* Make Recurring Option */}
+          <div className="flex items-center space-x-2 p-3 bg-muted/30 rounded-lg mt-4">
+            <input
+              type="checkbox"
+              id="makeRecurring"
+              checked={isRecurring}
+              onChange={(e) => setIsRecurring(e.target.checked)}
+              className="rounded border-input"
+            />
+            <label htmlFor="makeRecurring" className="text-sm font-medium cursor-pointer">
+              Make this recurring
+            </label>
+            {isRecurring && (
+              <Badge variant="secondary" className="text-xs">
+                Set up in Recurring tab
+              </Badge>
+            )}
           </div>
         </form>
       </CardContent>

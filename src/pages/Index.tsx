@@ -9,8 +9,9 @@ import { TransactionDetail } from "@/components/TransactionDetail";
 import { CalendarView } from "@/components/CalendarView";
 import { BudgetManager } from "@/components/BudgetManager";
 import { AccountManager } from "@/components/AccountManager";
+import { RecurringTransactionManager } from "@/components/RecurringTransactionManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wallet, TrendingUp, BarChart3, Search, Plus, PieChart, Calendar, Target, Settings } from "lucide-react";
+import { Wallet, TrendingUp, BarChart3, Search, Plus, PieChart, Calendar, Target, Settings, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -260,25 +261,29 @@ const Index = () => {
 
           <TabsContent value="more" className="space-y-6">
             <Tabs value={moreTab} onValueChange={setMoreTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5 bg-muted/30 p-1">
+              <TabsList className="grid w-full grid-cols-6 bg-muted/30 p-1">
                 <TabsTrigger value="search" className="flex flex-col items-center gap-1 text-xs p-2">
-                  <Search size={16} />
+                  <Search size={14} />
                   Search
                 </TabsTrigger>
+                <TabsTrigger value="recurring" className="flex flex-col items-center gap-1 text-xs p-2">
+                  <Clock size={14} />
+                  Recurring
+                </TabsTrigger>
                 <TabsTrigger value="calendar" className="flex flex-col items-center gap-1 text-xs p-2">
-                  <Calendar size={16} />
+                  <Calendar size={14} />
                   Calendar
                 </TabsTrigger>
                 <TabsTrigger value="budget" className="flex flex-col items-center gap-1 text-xs p-2">
-                  <Target size={16} />
+                  <Target size={14} />
                   Budget
                 </TabsTrigger>
                 <TabsTrigger value="accounts" className="flex flex-col items-center gap-1 text-xs p-2">
-                  <Wallet size={16} />
+                  <Wallet size={14} />
                   Accounts
                 </TabsTrigger>
                 <TabsTrigger value="analytics" className="flex flex-col items-center gap-1 text-xs p-2">
-                  <PieChart size={16} />
+                  <PieChart size={14} />
                   Analytics
                 </TabsTrigger>
               </TabsList>
@@ -292,6 +297,15 @@ const Index = () => {
                 <ExpenseList 
                   expenses={filteredExpenses} 
                   onExpenseClick={handleExpenseClick}
+                />
+              </TabsContent>
+
+              <TabsContent value="recurring" className="space-y-4">
+                <RecurringTransactionManager 
+                  accounts={accounts}
+                  onGenerateExpenses={(expenses) => {
+                    expenses.forEach(expense => handleAddExpense(expense));
+                  }}
                 />
               </TabsContent>
 

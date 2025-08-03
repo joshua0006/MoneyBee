@@ -26,6 +26,7 @@ interface Expense {
   location?: string;
   tags?: string[];
   recurring?: boolean;
+  recurringId?: string;
 }
 
 // Local storage utilities
