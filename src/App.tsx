@@ -31,6 +31,22 @@ const App = () => (
             } 
           />
           <Route 
+            path="/sign-in" 
+            element={
+              <SignedOut>
+                <Auth />
+              </SignedOut>
+            } 
+          />
+          <Route 
+            path="/sign-up" 
+            element={
+              <SignedOut>
+                <Auth />
+              </SignedOut>
+            } 
+          />
+          <Route 
             path="/auth" 
             element={
               <SignedOut>
