@@ -89,6 +89,16 @@ export default {
 					foreground: 'hsl(var(--bee-amber-foreground))'
 				}
 			},
+			boxShadow: {
+				'soft': 'var(--shadow-soft)',
+				'medium': 'var(--shadow-medium)',
+				'large': 'var(--shadow-large)',
+				'expense': 'var(--shadow-expense)',
+				'income': 'var(--shadow-income)',
+				'blue': 'var(--shadow-blue)',
+				'gold': 'var(--shadow-gold)',
+				'glow': 'var(--shadow-glow)'
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
