@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getSmartSuggestions, type Expense, type Account } from "@/utils/expenseUtils";
 import { EnhancedExpenseParser, type ParsedExpense } from "@/utils/enhancedExpenseParser";
 import { supabase } from "@/integrations/supabase/client";
+import { ReceiptScanner } from "@/components/ReceiptScanner";
 
 interface QuickAddExpenseProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -43,6 +44,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [aiParseSuccess, setAiParseSuccess] = useState(false);
   const [parsedData, setParsedData] = useState<ParsedExpense | null>(null);
   const [useFallback, setUseFallback] = useState(true);
+  const [showReceiptScanner, setShowReceiptScanner] = useState(false);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
   
   const { toast } = useToast();
@@ -605,13 +607,8 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               variant="outline"
               size="sm"
               className="h-10 px-3"
-              onClick={() => {
-                toast({
-                  title: "📷 Camera",
-                  description: "Photo upload coming soon!",
-                  duration: 2000
-                });
-              }}
+              onClick={() => setShowReceiptScanner(true)}
+              disabled={isLoading}
             >
               <Camera size={16} />
             </Button>
@@ -620,13 +617,8 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               variant="outline"
               size="sm"
               className="h-10 px-3"
-              onClick={() => {
-                toast({
-                  title: "🧾 Receipt",
-                  description: "Receipt scanning coming soon!",
-                  duration: 2000
-                });
-              }}
+              onClick={() => setShowReceiptScanner(true)}
+              disabled={isLoading}
             >
               <Receipt size={16} />
             </Button>
@@ -647,6 +639,39 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
           </div>
         </form>
       </CardContent>
+      
+      {/* Receipt Scanner Modal */}
+      {showReceiptScanner && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <ReceiptScanner
+            onExpenseExtracted={(expenseData) => {
+              // Fill the form with extracted data
+              setAmount(expenseData.amount.toString());
+              setDescription(expenseData.description);
+              setCategory(expenseData.category);
+              setType(expenseData.type);
+              
+              // Auto-submit if confidence is high and auto-submit is enabled
+              const avgConfidence = (
+                expenseData.confidence.amount +
+                expenseData.confidence.description +
+                expenseData.confidence.category
+              ) / 3;
+              
+              setShowReceiptScanner(false);
+              
+              if (autoSubmit && avgConfidence > 0.8) {
+                // Use setTimeout to allow state updates to complete
+                setTimeout(() => {
+                  const formEvent = new Event('submit', { bubbles: true, cancelable: true });
+                  document.querySelector('form')?.dispatchEvent(formEvent);
+                }, 100);
+              }
+            }}
+            onClose={() => setShowReceiptScanner(false)}
+          />
+        </div>
+      )}
     </Card>
   );
 };
