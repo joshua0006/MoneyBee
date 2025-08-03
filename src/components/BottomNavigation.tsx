@@ -28,7 +28,7 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddExpense }: Botto
               onClick={item.isSpecial ? onAddExpense : () => onTabChange(item.id)}
               className={cn(
                 "flex flex-col items-center gap-1 h-auto py-2 px-2 sm:px-3 min-h-[44px] min-w-[44px]",
-                item.isSpecial && "h-12 w-12 rounded-full bg-gradient-to-br from-bee-gold to-accent hover:from-bee-gold/90 hover:to-accent/90 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200",
+                item.isSpecial && "h-12 w-12 rounded-full gradient-gold bee-button bee-glow hover:scale-110 transition-all duration-300",
                 !item.isSpecial && activeTab === item.id && "text-bee-blue bg-bee-blue/10",
                 !item.isSpecial && "text-muted-foreground hover:text-foreground"
               )}

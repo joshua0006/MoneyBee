@@ -15,16 +15,16 @@ interface CategoryBreakdownProps {
 }
 
 const categoryColors: Record<string, string> = {
-  "Food & Dining": "hsl(25 95% 53%)",
-  "Transportation": "hsl(217 91% 60%)", 
-  "Shopping": "hsl(271 91% 65%)",
-  "Entertainment": "hsl(336 84% 61%)",
-  "Bills & Utilities": "hsl(0 73% 69%)",
-  "Healthcare": "hsl(142 71% 45%)",
-  "Travel": "hsl(187 85% 53%)",
-  "Education": "hsl(231 48% 48%)",
-  "Personal Care": "hsl(45 93% 47%)",
-  "Other": "hsl(220 9% 46%)"
+  "Food & Dining": "hsl(20 88% 58%)",
+  "Transportation": "hsl(220 85% 58%)", 
+  "Shopping": "hsl(280 85% 65%)",
+  "Entertainment": "hsl(340 80% 62%)",
+  "Bills & Utilities": "hsl(15 85% 65%)",
+  "Healthcare": "hsl(158 65% 48%)",
+  "Travel": "hsl(200 85% 58%)",
+  "Education": "hsl(240 75% 60%)",
+  "Personal Care": "hsl(43 92% 58%)",
+  "Other": "hsl(210 20% 52%)"
 };
 
 export const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
@@ -46,7 +46,7 @@ export const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
     .slice(0, 6); // Show top 6 categories
 
   return (
-    <Card className="shadow-soft border-0">
+    <Card className="glass-card expense-card">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg">Spending by Category</CardTitle>
       </CardHeader>

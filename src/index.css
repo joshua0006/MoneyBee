@@ -8,61 +8,77 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 45 35% 96%;
-    --foreground: 220 15% 15%;
+    /* Enhanced Bee-Themed Base Colors */
+    --background: 45 40% 97%;
+    --foreground: 210 20% 12%;
 
-    --card: 48 45% 98%;
-    --card-foreground: 220 15% 15%;
+    --card: 45 50% 98%;
+    --card-foreground: 210 20% 12%;
 
-    --popover: 48 45% 98%;
-    --popover-foreground: 220 15% 15%;
+    --popover: 45 50% 98%;
+    --popover-foreground: 210 20% 12%;
 
-    --primary: 207 90% 54%;
-    --primary-foreground: 48 95% 95%;
+    /* Primary - Deeper Bee Blue */
+    --primary: 220 85% 58%;
+    --primary-foreground: 45 95% 96%;
 
-    --secondary: 48 35% 92%;
-    --secondary-foreground: 220 20% 20%;
+    /* Secondary - Warm Honey */
+    --secondary: 45 60% 88%;
+    --secondary-foreground: 210 25% 20%;
 
-    --muted: 48 30% 90%;
-    --muted-foreground: 220 15% 45%;
+    /* Muted - Soft Cream */
+    --muted: 45 40% 92%;
+    --muted-foreground: 210 15% 48%;
 
-    --accent: 45 95% 65%;
-    --accent-foreground: 220 15% 15%;
+    /* Accent - Warm Honey Gold */
+    --accent: 43 92% 58%;
+    --accent-foreground: 210 20% 12%;
 
-    --destructive: 15 85% 55%;
-    --destructive-foreground: 48 95% 95%;
+    /* Destructive - Warm Terracotta */
+    --destructive: 20 88% 58%;
+    --destructive-foreground: 45 95% 96%;
 
-    --border: 48 25% 85%;
-    --input: 48 25% 85%;
-    --ring: 207 90% 54%;
+    --border: 45 30% 88%;
+    --input: 45 30% 88%;
+    --ring: 220 85% 58%;
 
-    /* MoneyBees Design System */
-    --expense: 25 85% 55%;
-    --expense-foreground: 48 95% 95%;
-    --expense-light: 25 65% 75%;
+    /* Enhanced MoneyBees Design System */
+    --expense: 20 88% 58%;
+    --expense-foreground: 45 95% 96%;
+    --expense-light: 20 68% 78%;
     
-    --income: 45 100% 65%;
-    --income-foreground: 220 15% 15%;
-    --income-light: 45 80% 80%;
+    --income: 158 65% 48%;
+    --income-foreground: 45 95% 96%;
+    --income-light: 158 45% 68%;
     
-    --success: 45 95% 50%;
-    --success-foreground: 220 15% 15%;
+    --success: 158 65% 48%;
+    --success-foreground: 45 95% 96%;
     
-    --bee-blue: 207 90% 54%;
-    --bee-blue-foreground: 48 95% 95%;
-    --bee-gold: 45 100% 65%;
-    --bee-brown: 25 65% 45%;
+    /* Bee Brand Colors */
+    --bee-blue: 220 85% 58%;
+    --bee-blue-foreground: 45 95% 96%;
+    --bee-gold: 43 92% 58%;
+    --bee-gold-foreground: 210 20% 12%;
+    --bee-amber: 45 95% 60%;
+    --bee-amber-foreground: 210 20% 12%;
     
-    --gradient-expense: linear-gradient(135deg, hsl(25 85% 55%), hsl(25 75% 65%));
-    --gradient-income: linear-gradient(135deg, hsl(45 100% 65%), hsl(45 90% 75%));
-    --gradient-card: linear-gradient(135deg, hsl(48 45% 98%), hsl(45 35% 95%));
-    --gradient-blue: linear-gradient(135deg, hsl(207 90% 54%), hsl(207 80% 64%));
+    /* Enhanced Gradients */
+    --gradient-expense: linear-gradient(135deg, hsl(20 88% 58%) 0%, hsl(25 78% 68%) 100%);
+    --gradient-income: linear-gradient(135deg, hsl(158 65% 48%) 0%, hsl(158 55% 58%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(45 50% 98%) 0%, hsl(43 40% 95%) 100%);
+    --gradient-blue: linear-gradient(135deg, hsl(220 85% 58%) 0%, hsl(218 75% 68%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(43 92% 58%) 0%, hsl(45 82% 68%) 100%);
+    --gradient-amber: linear-gradient(135deg, hsl(45 95% 60%) 0%, hsl(43 85% 70%) 100%);
     
-    --shadow-soft: 0 2px 20px hsl(45 30% 20% / 0.08);
-    --shadow-medium: 0 4px 30px hsl(45 30% 20% / 0.12);
-    --shadow-expense: 0 4px 20px hsl(25 85% 55% / 0.25);
-    --shadow-income: 0 4px 20px hsl(45 100% 65% / 0.25);
-    --shadow-blue: 0 4px 20px hsl(207 90% 54% / 0.25);
+    /* Enhanced Shadows with Bee Colors */
+    --shadow-soft: 0 2px 20px hsl(210 20% 12% / 0.06);
+    --shadow-medium: 0 4px 30px hsl(210 20% 12% / 0.10);
+    --shadow-large: 0 8px 40px hsl(210 20% 12% / 0.15);
+    --shadow-expense: 0 4px 20px hsl(20 88% 58% / 0.25);
+    --shadow-income: 0 4px 20px hsl(158 65% 48% / 0.25);
+    --shadow-blue: 0 4px 20px hsl(220 85% 58% / 0.25);
+    --shadow-gold: 0 4px 20px hsl(43 92% 58% / 0.30);
+    --shadow-glow: 0 0 40px hsl(43 92% 58% / 0.15);
 
     --radius: 0.75rem;
 
@@ -84,33 +100,71 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 220 35% 8%;
-    --foreground: 45 30% 92%;
+    /* Enhanced Dark Mode with Bee Theme */
+    --background: 210 40% 6%;
+    --foreground: 45 35% 92%;
 
-    --card: 220 30% 12%;
-    --card-foreground: 45 30% 92%;
+    --card: 210 35% 9%;
+    --card-foreground: 45 35% 92%;
 
-    --popover: 220 30% 12%;
-    --popover-foreground: 45 30% 92%;
+    --popover: 210 35% 9%;
+    --popover-foreground: 45 35% 92%;
 
-    --primary: 207 85% 65%;
-    --primary-foreground: 220 35% 8%;
+    --primary: 220 80% 68%;
+    --primary-foreground: 210 40% 6%;
 
-    --secondary: 220 20% 18%;
-    --secondary-foreground: 45 30% 85%;
+    --secondary: 210 25% 15%;
+    --secondary-foreground: 45 30% 88%;
 
-    --muted: 220 20% 15%;
-    --muted-foreground: 45 20% 65%;
+    --muted: 210 25% 12%;
+    --muted-foreground: 45 20% 68%;
 
-    --accent: 45 90% 70%;
-    --accent-foreground: 220 35% 8%;
+    --accent: 43 88% 65%;
+    --accent-foreground: 210 40% 6%;
 
-    --destructive: 15 80% 60%;
-    --destructive-foreground: 45 30% 92%;
+    --destructive: 20 85% 65%;
+    --destructive-foreground: 45 35% 92%;
 
-    --border: 220 20% 18%;
-    --input: 220 20% 18%;
-    --ring: 207 85% 65%;
+    --border: 210 25% 15%;
+    --input: 210 25% 15%;
+    --ring: 220 80% 68%;
+    
+    /* Dark Mode Bee Colors */
+    --expense: 20 85% 65%;
+    --expense-foreground: 45 35% 92%;
+    --expense-light: 20 65% 75%;
+    
+    --income: 158 60% 55%;
+    --income-foreground: 45 35% 92%;
+    --income-light: 158 40% 65%;
+    
+    --success: 158 60% 55%;
+    --success-foreground: 45 35% 92%;
+    
+    --bee-blue: 220 80% 68%;
+    --bee-blue-foreground: 210 40% 6%;
+    --bee-gold: 43 88% 65%;
+    --bee-gold-foreground: 210 40% 6%;
+    --bee-amber: 45 90% 68%;
+    --bee-amber-foreground: 210 40% 6%;
+    
+    /* Dark Mode Gradients */
+    --gradient-expense: linear-gradient(135deg, hsl(20 85% 65%) 0%, hsl(25 75% 70%) 100%);
+    --gradient-income: linear-gradient(135deg, hsl(158 60% 55%) 0%, hsl(158 50% 60%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(210 35% 9%) 0%, hsl(210 30% 12%) 100%);
+    --gradient-blue: linear-gradient(135deg, hsl(220 80% 68%) 0%, hsl(218 70% 72%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(43 88% 65%) 0%, hsl(45 78% 70%) 100%);
+    --gradient-amber: linear-gradient(135deg, hsl(45 90% 68%) 0%, hsl(43 80% 72%) 100%);
+    
+    /* Dark Mode Shadows */
+    --shadow-soft: 0 2px 20px hsl(210 40% 2% / 0.25);
+    --shadow-medium: 0 4px 30px hsl(210 40% 2% / 0.35);
+    --shadow-large: 0 8px 40px hsl(210 40% 2% / 0.45);
+    --shadow-expense: 0 4px 20px hsl(20 85% 65% / 0.30);
+    --shadow-income: 0 4px 20px hsl(158 60% 55% / 0.30);
+    --shadow-blue: 0 4px 20px hsl(220 80% 68% / 0.30);
+    --shadow-gold: 0 4px 20px hsl(43 88% 65% / 0.35);
+    --shadow-glow: 0 0 40px hsl(43 88% 65% / 0.20);
     --sidebar-background: 220 35% 10%;
     --sidebar-foreground: 45 30% 88%;
     --sidebar-primary: 207 85% 65%;
@@ -133,30 +187,61 @@ All colors MUST be HSL.
 }
 
 @layer components {
-  /* Custom progress bar styling */
+  /* Enhanced progress bar styling */
   .progress-bar {
-    transition: width 0.5s ease-out;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  /* Smooth animations for expense tracker */
+  /* Enhanced animations for expense tracker */
   .expense-card {
-    @apply transition-all duration-300 hover:shadow-medium;
+    @apply transition-all duration-300 hover:shadow-large hover:scale-[1.02];
   }
   
   .expense-item {
-    @apply transition-all duration-200 hover:bg-muted/30;
+    @apply transition-all duration-200 hover:bg-muted/40 hover:scale-[1.01];
   }
   
-  /* Custom gradients */
+  /* Enhanced gradient utilities */
   .gradient-expense {
     background: var(--gradient-expense);
+    box-shadow: var(--shadow-expense);
   }
   
   .gradient-income {
     background: var(--gradient-income);
+    box-shadow: var(--shadow-income);
   }
   
   .gradient-card {
     background: var(--gradient-card);
+  }
+  
+  .gradient-blue {
+    background: var(--gradient-blue);
+    box-shadow: var(--shadow-blue);
+  }
+  
+  .gradient-gold {
+    background: var(--gradient-gold);
+    box-shadow: var(--shadow-gold);
+  }
+  
+  .gradient-amber {
+    background: var(--gradient-amber);
+  }
+  
+  /* Glass morphism effect */
+  .glass-card {
+    @apply backdrop-blur-sm bg-card/80 border border-border/50;
+    box-shadow: var(--shadow-medium);
+  }
+  
+  /* Bee-themed interactive elements */
+  .bee-button {
+    @apply transition-all duration-300 hover:shadow-gold hover:scale-105;
+  }
+  
+  .bee-glow {
+    box-shadow: var(--shadow-glow);
   }
 }

@@ -19,7 +19,7 @@ export const ExpenseOverview = ({
   return (
     <div className="space-y-4">
       {/* Main Overview Card */}
-      <Card className="shadow-soft border-0">
+      <Card className="glass-card expense-card">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-center">Monthly Overview</CardTitle>
         </CardHeader>

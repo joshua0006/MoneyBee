@@ -83,6 +83,10 @@ export default {
 				'bee-blue': {
 					DEFAULT: 'hsl(var(--bee-blue))',
 					foreground: 'hsl(var(--bee-blue-foreground))'
+				},
+				'bee-amber': {
+					DEFAULT: 'hsl(var(--bee-amber))',
+					foreground: 'hsl(var(--bee-amber-foreground))'
 				}
 			},
 			borderRadius: {
