@@ -334,18 +334,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     setShowAiPreview(false);
   };
 
-  const getConfidenceBadge = (confidence: number, field: string) => {
-    const level = openaiParsedExpense 
-      ? OpenAIExpenseParser.getConfidenceLevel(confidence)
-      : AIExpenseParser.getConfidenceLevel(confidence);
-    const variant = level === 'high' ? 'default' : level === 'medium' ? 'secondary' : 'destructive';
-    
-    return (
-      <Badge variant={variant} className="text-xs h-5 px-1">
-        {field}: {Math.round(confidence * 100)}%
-      </Badge>
-    );
-  };
+  // Confidence badges removed for cleaner UI
 
   return (
     <Card className="border border-border/50 bg-card">
@@ -429,15 +418,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                     </span>
                   </div>
                   <div className="flex gap-1">
-                    {(() => {
-                      const expense = openaiParsedExpense || parsedExpense;
-                      return expense ? (
-                        <>
-                          {getConfidenceBadge(expense.confidence.amount, "Amount")}
-                          {getConfidenceBadge(expense.confidence.category, "Category")}
-                        </>
-                      ) : null;
-                    })()}
+                    {/* Confidence badges removed for cleaner UI */}
                   </div>
                 </div>
                 {(() => {

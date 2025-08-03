@@ -10,7 +10,8 @@ import { CalendarView } from "@/components/CalendarView";
 import { BudgetManager } from "@/components/BudgetManager";
 import { AccountManager } from "@/components/AccountManager";
 import { RecurringTransactionManager } from "@/components/RecurringTransactionManager";
-import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { BottomNavigation } from "@/components/BottomNavigation";
+import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Wallet, TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Settings, Clock } from "lucide-react";
@@ -40,8 +41,8 @@ const Index = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [mainTab, setMainTab] = useState("overview");
-  const [moreTab, setMoreTab] = useState("search");
+  const [activeTab, setActiveTab] = useState("home");
+  const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Load data on mount
@@ -154,8 +155,8 @@ const Index = () => {
   };
 
   const handleViewAllTransactions = () => {
-    setMainTab("more");
-    setMoreTab("search");
+    setActiveTab("more");
+    setActiveMenuItem("search");
   };
 
   const totalIncome = allExpenses
@@ -179,162 +180,139 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Enhanced Header */}
+      {/* Header with Hamburger Menu */}
       <div className="bg-gradient-to-r from-card via-muted/30 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-sm">
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-expense/10 rounded-xl shadow-sm">
-                <Wallet className="h-6 w-6 text-expense" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-                  Expense Tracker
-                </h1>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm text-muted-foreground">Smart expense management</p>
-                  <Badge variant="secondary" className="text-xs">
-                    {allExpenses.length} transactions
-                  </Badge>
-                </div>
-              </div>
+            <HamburgerMenu onMenuItemClick={setActiveMenuItem} />
+            <div className="flex items-center gap-2">
+              <Wallet className="text-primary" size={20} />
+              <h1 className="text-lg font-semibold">Expense Tracker</h1>
             </div>
             <div className="flex gap-2">
-              <div className="p-2 bg-income/10 rounded-xl shadow-sm">
-                <TrendingUp className="h-5 w-5 text-income" />
-              </div>
-              <div className="p-2 bg-primary/10 rounded-xl shadow-sm">
-                <BarChart3 className="h-5 w-5 text-primary" />
-              </div>
+              <Badge variant="secondary" className="text-xs">
+                {allExpenses.length}
+              </Badge>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content with Tabs */}
-      <div className="max-w-lg mx-auto px-4 py-6">
-        <Tabs value={mainTab} onValueChange={setMainTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1">
-            <TabsTrigger value="overview" className="flex items-center gap-1 text-xs">
-              <BarChart3 size={14} />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="more" className="flex items-center gap-1 text-xs">
-              <Settings size={14} />
-              More
-            </TabsTrigger>
-          </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            {/* Overview */}
+      {/* Main Content */}
+      <div className="max-w-lg mx-auto px-4 py-6 pb-20">
+        {/* Home Tab Content */}
+        {activeTab === "home" && (
+          <div className="space-y-6">
             <ExpenseOverview 
               totalIncome={totalIncome}
               totalExpenses={totalExpenses}
             />
-
-            {/* Category Breakdown */}
-            <CategoryBreakdown expenses={allExpenses} />
-
-            {/* Recent Transactions */}
-            <ExpenseList 
-              expenses={allExpenses.slice(0, 5)} 
-              onExpenseClick={handleExpenseClick}
+            
+            <CategoryBreakdown 
+              expenses={filteredExpenses}
             />
             
-            {allExpenses.length > 5 && (
-              <div className="text-center">
-                <Button variant="outline" size="sm" onClick={handleViewAllTransactions}>
-                  View All {allExpenses.length} Transactions
-                </Button>
-              </div>
+            {filteredExpenses.length > 0 && (
+              <ExpenseList
+                expenses={filteredExpenses.slice(0, 10)} // Show only recent 10
+                onExpenseClick={handleExpenseClick}
+              />
             )}
-          </TabsContent>
+          </div>
+        )}
 
+        {/* Stats Tab Content */}
+        {activeTab === "stats" && (
+          <div className="space-y-6">
+            <AdvancedAnalytics 
+              expenses={filteredExpenses}
+            />
+            <CategoryBreakdown 
+              expenses={filteredExpenses}
+            />
+          </div>
+        )}
 
-          <TabsContent value="more" className="space-y-6">
-            <Tabs value={moreTab} onValueChange={setMoreTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-6 bg-muted/30 p-1">
-                <TabsTrigger value="search" className="flex flex-col items-center gap-1 text-xs p-2">
-                  <Search size={14} />
-                  Search
-                </TabsTrigger>
-                <TabsTrigger value="recurring" className="flex flex-col items-center gap-1 text-xs p-2">
-                  <Clock size={14} />
-                  Recurring
-                </TabsTrigger>
-                <TabsTrigger value="calendar" className="flex flex-col items-center gap-1 text-xs p-2">
-                  <Calendar size={14} />
-                  Calendar
-                </TabsTrigger>
-                <TabsTrigger value="budget" className="flex flex-col items-center gap-1 text-xs p-2">
-                  <Target size={14} />
-                  Budget
-                </TabsTrigger>
-                <TabsTrigger value="accounts" className="flex flex-col items-center gap-1 text-xs p-2">
-                  <Wallet size={14} />
-                  Accounts
-                </TabsTrigger>
-                <TabsTrigger value="analytics" className="flex flex-col items-center gap-1 text-xs p-2">
-                  <PieChart size={14} />
-                  Analytics
-                </TabsTrigger>
-              </TabsList>
+        {/* Budget Tab Content */}
+        {activeTab === "budget" && (
+          <div className="space-y-6">
+            <BudgetManager 
+              budgets={budgets}
+              expenses={filteredExpenses}
+              onAddBudget={handleAddBudget}
+              onUpdateBudget={handleUpdateBudget}
+              onDeleteBudget={handleDeleteBudget}
+            />
+          </div>
+        )}
 
-              <TabsContent value="search" className="space-y-4">
-                <SearchAndFilter 
-                  expenses={allExpenses}
-                  onFilteredResults={handleFilteredResults}
-                  onExport={handleExport}
-                />
-                <ExpenseList 
-                  expenses={filteredExpenses} 
-                  onExpenseClick={handleExpenseClick}
-                />
-              </TabsContent>
+        {/* More Tab Content */}
+        {activeTab === "more" && (
+          <div className="space-y-6">
+            <div className="text-center py-8">
+              <h2 className="text-lg font-semibold mb-2">More Options</h2>
+              <p className="text-muted-foreground text-sm">
+                Access advanced features through the menu button in the top left
+              </p>
+            </div>
+          </div>
+        )}
 
-              <TabsContent value="recurring" className="space-y-4">
-                <RecurringTransactionManager 
-                  accounts={accounts}
-                  onGenerateExpenses={(expenses) => {
-                    expenses.forEach(expense => handleAddExpense(expense));
-                  }}
-                />
-              </TabsContent>
+        {/* Menu Item Content */}
+        {activeMenuItem === "search" && (
+          <div className="space-y-6">
+            <SearchAndFilter 
+              expenses={allExpenses}
+              onFilteredResults={handleFilteredResults}
+              onExport={handleExport}
+            />
+          </div>
+        )}
 
-              <TabsContent value="calendar" className="space-y-4">
-                <CalendarView 
-                  expenses={allExpenses}
-                  onDateSelect={setSelectedDate}
-                  selectedDate={selectedDate}
-                />
-              </TabsContent>
+        {activeMenuItem === "calendar" && (
+          <div className="space-y-6">
+            <CalendarView 
+              expenses={filteredExpenses}
+              onDateSelect={setSelectedDate}
+              selectedDate={selectedDate}
+            />
+          </div>
+        )}
 
-              <TabsContent value="budget" className="space-y-4">
-                <BudgetManager 
-                  budgets={budgets}
-                  expenses={allExpenses}
-                  onAddBudget={handleAddBudget}
-                  onUpdateBudget={handleUpdateBudget}
-                  onDeleteBudget={handleDeleteBudget}
-                />
-              </TabsContent>
+        {activeMenuItem === "accounts" && (
+          <div className="space-y-6">
+            <AccountManager 
+              accounts={accounts}
+              expenses={filteredExpenses}
+              onAddAccount={handleAddAccount}
+              onUpdateAccount={handleUpdateAccount}
+              onDeleteAccount={handleDeleteAccount}
+            />
+          </div>
+        )}
 
-              <TabsContent value="accounts" className="space-y-4">
-                <AccountManager 
-                  accounts={accounts}
-                  expenses={allExpenses}
-                  onAddAccount={handleAddAccount}
-                  onUpdateAccount={handleUpdateAccount}
-                  onDeleteAccount={handleDeleteAccount}
-                />
-              </TabsContent>
+        {activeMenuItem === "recurring" && (
+          <div className="space-y-6">
+            <RecurringTransactionManager 
+              accounts={accounts}
+              onGenerateExpenses={(expenses) => {
+                expenses.forEach(expense => handleAddExpense(expense));
+              }}
+            />
+          </div>
+        )}
 
-              <TabsContent value="analytics" className="space-y-4">
-                <AdvancedAnalytics expenses={allExpenses} />
-              </TabsContent>
-            </Tabs>
-          </TabsContent>
-        </Tabs>
+        {activeMenuItem === "export" && (
+          <div className="space-y-6 text-center py-8">
+            <h2 className="text-lg font-semibold mb-4">Export Data</h2>
+            <Button onClick={handleExport} className="flex items-center gap-2">
+              <TrendingUp size={16} />
+              Export All Data
+            </Button>
+          </div>
+        )}
+      </div>
 
         {/* Transaction Detail Modal */}
         <TransactionDetail 
@@ -370,9 +348,15 @@ const Index = () => {
           </SheetContent>
         </Sheet>
 
-        {/* Floating Action Button */}
-        <FloatingActionButton onClick={() => setIsAddExpenseOpen(true)} />
-      </div>
+      {/* Bottom Navigation */}
+      <BottomNavigation 
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          setActiveMenuItem(null); // Clear menu item when switching tabs
+        }}
+        onAddExpense={() => setIsAddExpenseOpen(true)}
+      />
     </div>
   );
 };
