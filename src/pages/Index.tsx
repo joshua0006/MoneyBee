@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useUser, UserButton } from '@clerk/clerk-react';
+import { supabase } from "@/integrations/supabase/client";
 import { ExpenseOverview } from "@/components/ExpenseOverview";
 import { EnhancedQuickAddExpense } from "@/components/EnhancedQuickAddExpense";
 import moneyBeesLogo from "@/assets/moneybees-logo.png";
@@ -16,7 +16,7 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Settings, Clock } from "lucide-react";
+import { TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Settings, Clock, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -26,11 +26,9 @@ import {
   type Account,
   type Budget
 } from "@/utils/expenseUtils";
-import { useUserDataManager } from "@/utils/userExpenseUtils";
 
 const Index = () => {
-  const { user } = useUser();
-  const dataManager = useUserDataManager();
+  const [user, setUser] = useState<any>(null);
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -45,28 +43,31 @@ const Index = () => {
   const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Load data on mount
+  // Get current user and load data
   useEffect(() => {
-    if (!user) return;
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      
+      if (user) {
+        try {
+          const loadedExpenses = JSON.parse(localStorage.getItem(`${user.id}_expense_tracker_data`) || '[]');
+          const loadedAccounts = JSON.parse(localStorage.getItem(`${user.id}_expense_tracker_accounts`) || '[]');
+          const loadedBudgets = JSON.parse(localStorage.getItem(`${user.id}_expense_tracker_budgets`) || '[]');
+          
+          setAllExpenses(loadedExpenses.map((e: any) => ({ ...e, date: new Date(e.date) })));
+          setFilteredExpenses(loadedExpenses.map((e: any) => ({ ...e, date: new Date(e.date) })));
+          setAccounts(loadedAccounts);
+          setBudgets(loadedBudgets.map((b: any) => ({ ...b, startDate: new Date(b.startDate) })));
+        } catch (error) {
+          console.error('Failed to load user data:', error);
+        }
+      }
+      setIsLoading(false);
+    };
     
-    try {
-      // Migrate any existing data to user-specific storage
-      dataManager.migrateData();
-      
-      const loadedExpenses = dataManager.loadExpenses();
-      const loadedAccounts = dataManager.loadAccounts();
-      const loadedBudgets = dataManager.loadBudgets();
-      
-      setAllExpenses(loadedExpenses);
-      setFilteredExpenses(loadedExpenses);
-      setAccounts(loadedAccounts);
-      setBudgets(loadedBudgets);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Failed to load user data:', error);
-      setIsLoading(false);
-    }
-  }, [user, dataManager]);
+    getUser();
+  }, []);
 
   // Sync filteredExpenses with allExpenses when no filters are active
   useEffect(() => {
@@ -78,21 +79,29 @@ const Index = () => {
   // Save data whenever data changes
   useEffect(() => {
     if (!isLoading && user) {
-      dataManager.saveExpenses(allExpenses);
+      const serializedExpenses = allExpenses.map(expense => ({
+        ...expense,
+        date: expense.date.toISOString()
+      }));
+      localStorage.setItem(`${user.id}_expense_tracker_data`, JSON.stringify(serializedExpenses));
     }
-  }, [allExpenses, isLoading, user, dataManager]);
+  }, [allExpenses, isLoading, user]);
 
   useEffect(() => {
     if (!isLoading && user) {
-      dataManager.saveAccounts(accounts);
+      localStorage.setItem(`${user.id}_expense_tracker_accounts`, JSON.stringify(accounts));
     }
-  }, [accounts, isLoading, user, dataManager]);
+  }, [accounts, isLoading, user]);
 
   useEffect(() => {
     if (!isLoading && user) {
-      dataManager.saveBudgets(budgets);
+      const serializedBudgets = budgets.map(budget => ({
+        ...budget,
+        startDate: budget.startDate.toISOString()
+      }));
+      localStorage.setItem(`${user.id}_expense_tracker_budgets`, JSON.stringify(serializedBudgets));
     }
-  }, [budgets, isLoading, user, dataManager]);
+  }, [budgets, isLoading, user]);
 
   const handleAddExpense = (expense: Omit<Expense, 'id'>) => {
     const newExpense: Expense = {
@@ -231,15 +240,17 @@ const Index = () => {
               <Badge variant="secondary" className="text-xs px-2 py-1">
                 {allExpenses.length}
               </Badge>
-              <UserButton 
-                appearance={{
-                  elements: {
-                    avatarBox: "w-8 h-8",
-                    userButtonPopoverCard: "shadow-large",
-                    userButtonPopoverActionButton: "hover:bg-muted"
-                  }
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-2"
+                onClick={async () => {
+                  await supabase.auth.signOut({ scope: 'global' });
+                  window.location.href = '/auth';
                 }}
-              />
+              >
+                <LogOut size={16} />
+              </Button>
             </div>
           </div>
         </div>

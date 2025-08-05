@@ -3,7 +3,7 @@ import { Menu, Search, Calendar, CreditCard, Clock, Download, Settings, LogOut, 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { useClerk, useUser } from '@clerk/clerk-react';
+import { supabase } from "@/integrations/supabase/client";
 
 interface HamburgerMenuProps {
   onMenuItemClick: (item: string) => void;
@@ -11,8 +11,15 @@ interface HamburgerMenuProps {
 
 export const HamburgerMenu = ({ onMenuItemClick }: HamburgerMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { signOut } = useClerk();
-  const { user } = useUser();
+  
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut({ scope: 'global' });
+      window.location.href = '/auth';
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   const menuItems = [
     { id: "search", icon: Search, label: "Search & Filter", description: "Find specific transactions" },
@@ -83,10 +90,10 @@ export const HamburgerMenu = ({ onMenuItemClick }: HamburgerMenuProps) => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="font-medium text-sm truncate">
-                    {user?.firstName || user?.emailAddresses[0]?.emailAddress}
+                    User Account
                   </div>
                   <div className="text-xs text-muted-foreground truncate">
-                    {user?.emailAddresses[0]?.emailAddress}
+                    Signed in
                   </div>
                 </div>
               </div>
@@ -94,7 +101,7 @@ export const HamburgerMenu = ({ onMenuItemClick }: HamburgerMenuProps) => {
 
             <Button
               variant="ghost"
-              onClick={() => signOut()}
+              onClick={handleSignOut}
               className="w-full justify-start h-auto p-3 text-left text-destructive hover:text-destructive"
             >
               <div className="flex items-start gap-3">

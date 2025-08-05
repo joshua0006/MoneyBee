@@ -1,4 +1,4 @@
-import { useUser } from '@clerk/clerk-react';
+import { supabase } from "@/integrations/supabase/client";
 import { Expense, Account, Budget } from './expenseUtils';
 
 // User-specific storage utilities
@@ -129,16 +129,8 @@ export const migrateToUserStorage = (userId: string): void => {
   }
 };
 
-// Hook to get user-specific data management functions
-export const useUserDataManager = () => {
-  const { user } = useUser();
-  
-  if (!user) {
-    throw new Error('User must be authenticated to use data manager');
-  }
-  
-  const userId = user.id;
-  
+// Simple data management functions (no hooks needed since we handle auth in components)
+export const createUserDataManager = (userId: string) => {
   return {
     userId,
     saveExpenses: (expenses: Expense[]) => saveUserExpensesToStorage(userId, expenses),
