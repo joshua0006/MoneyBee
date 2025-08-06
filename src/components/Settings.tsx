@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useClerk, useUser } from '@clerk/clerk-react';
+import { useTheme } from "next-themes";
 import { 
   User, 
   Bell, 
@@ -17,7 +18,6 @@ import {
   LogOut,
   Moon,
   Sun,
-  Smartphone,
   Mail
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -26,10 +26,58 @@ export const Settings = () => {
   const { user } = useUser();
   const { signOut } = useClerk();
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   
-  const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  const [biometrics, setBiometrics] = useState(false);
+  const [notifications, setNotifications] = useState(() => {
+    return localStorage.getItem('notifications') !== 'false';
+  });
+
+  const isDarkMode = theme === 'dark';
+
+  useEffect(() => {
+    localStorage.setItem('notifications', notifications.toString());
+  }, [notifications]);
+
+  const handleNotificationChange = async (checked: boolean) => {
+    setNotifications(checked);
+    
+    if (checked && 'Notification' in window) {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          toast({
+            title: "Notifications enabled",
+            description: "You'll receive push notifications for important updates.",
+          });
+        } else {
+          toast({
+            title: "Notification permission denied",
+            description: "Please enable notifications in your browser settings.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Notification setup failed",
+          description: "Unable to set up notifications.",
+          variant: "destructive",
+        });
+      }
+    } else if (!checked) {
+      toast({
+        title: "Notifications disabled",
+        description: "You won't receive push notifications.",
+      });
+    }
+  };
+
+  const handleDarkModeChange = (checked: boolean) => {
+    setTheme(checked ? 'dark' : 'light');
+    toast({
+      title: `${checked ? 'Dark' : 'Light'} mode enabled`,
+      description: `Switched to ${checked ? 'dark' : 'light'} theme.`,
+    });
+  };
 
   const handleSignOut = async () => {
     try {
@@ -119,31 +167,19 @@ export const Settings = () => {
             <Switch
               id="notifications"
               checked={notifications}
-              onCheckedChange={setNotifications}
+              onCheckedChange={handleNotificationChange}
             />
           </div>
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {darkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              {isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
               <Label htmlFor="dark-mode">Dark Mode</Label>
             </div>
             <Switch
               id="dark-mode"
-              checked={darkMode}
-              onCheckedChange={setDarkMode}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Smartphone className="h-4 w-4" />
-              <Label htmlFor="biometrics">Biometric Login</Label>
-            </div>
-            <Switch
-              id="biometrics"
-              checked={biometrics}
-              onCheckedChange={setBiometrics}
+              checked={isDarkMode}
+              onCheckedChange={handleDarkModeChange}
             />
           </div>
         </CardContent>
