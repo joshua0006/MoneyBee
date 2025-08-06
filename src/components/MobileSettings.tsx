@@ -218,15 +218,31 @@ export const MobileSettings: React.FC<MobileSettingsProps> = ({ onClose }) => {
                 </div>
                 <Select 
                   value={settings.theme} 
-                  onValueChange={(value: 'light' | 'dark' | 'auto') => saveSettings({ theme: value })}
+                  onValueChange={(value: 'light' | 'dark' | 'auto') => {
+                    saveSettings({ theme: value });
+                    // Apply theme immediately
+                    if (value === 'dark') {
+                      document.documentElement.classList.add('dark');
+                    } else if (value === 'light') {
+                      document.documentElement.classList.remove('dark');
+                    } else {
+                      // Auto theme - check system preference
+                      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                      if (prefersDark) {
+                        document.documentElement.classList.add('dark');
+                      } else {
+                        document.documentElement.classList.remove('dark');
+                      }
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="auto">Auto</SelectItem>
+                    <SelectItem value="light">Light 🌞</SelectItem>
+                    <SelectItem value="dark">Dark 🌙</SelectItem>
+                    <SelectItem value="auto">Auto ⚡</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

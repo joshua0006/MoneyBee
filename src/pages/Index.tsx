@@ -29,27 +29,37 @@ import { ProgressiveLoader } from "@/components/ProgressiveLoader";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { MobileSettings } from "@/components/MobileSettings";
 import { mobileService } from "@/utils/mobileService";
-import { 
-  exportExpensesAsCSV,
-  type Expense,
-  type Account,
-  type Budget
-} from "@/utils/expenseUtils";
+import { useAppData } from "@/hooks/useAppData";
+import { exportExpensesAsCSV } from "@/utils/expenseUtils";
+import type { Expense, Account, Budget } from "@/types/app";
 
 const Index = () => {
   const { user } = useUser();
   const { signOut } = useClerk();
   const navigate = useNavigate();
-  const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
+  const {
+    expenses: allExpenses,
+    accounts,
+    budgets,
+    isLoading,
+    addExpense: saveExpense,
+    updateExpense: updateExpenseData,
+    deleteExpense: removeExpense,
+    addAccount: saveAccount,
+    updateAccount: updateAccountData,
+    deleteAccount: removeAccount,
+    addBudget: saveBudget,
+    updateBudget: updateBudgetData,
+    deleteBudget: removeBudget,
+    refreshData
+  } = useAppData();
+  
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [budgets, setBudgets] = useState<Budget[]>([]);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("home");
   const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
   const { toast } = useToast();
@@ -79,25 +89,6 @@ const Index = () => {
     }
   ];
 
-  // Get current user and load data
-  useEffect(() => {
-    if (user) {
-      try {
-        const loadedExpenses = JSON.parse(localStorage.getItem(`${user.id}_expense_tracker_data`) || '[]');
-        const loadedAccounts = JSON.parse(localStorage.getItem(`${user.id}_expense_tracker_accounts`) || '[]');
-        const loadedBudgets = JSON.parse(localStorage.getItem(`${user.id}_expense_tracker_budgets`) || '[]');
-        
-        setAllExpenses(loadedExpenses.map((e: any) => ({ ...e, date: new Date(e.date) })));
-        setFilteredExpenses(loadedExpenses.map((e: any) => ({ ...e, date: new Date(e.date) })));
-        setAccounts(loadedAccounts);
-        setBudgets(loadedBudgets.map((b: any) => ({ ...b, startDate: new Date(b.startDate) })));
-      } catch (error) {
-        console.error('Failed to load user data:', error);
-      }
-      setIsLoading(false);
-    }
-  }, [user]);
-
   // Sync filteredExpenses with allExpenses when no filters are active
   useEffect(() => {
     if (!activeMenuItem || activeMenuItem !== "search") {
@@ -105,75 +96,33 @@ const Index = () => {
     }
   }, [allExpenses, activeMenuItem]);
 
-  // Save data whenever data changes
-  useEffect(() => {
-    if (!isLoading && user) {
-      const serializedExpenses = allExpenses.map(expense => ({
-        ...expense,
-        date: expense.date.toISOString()
-      }));
-      localStorage.setItem(`${user.id}_expense_tracker_data`, JSON.stringify(serializedExpenses));
-    }
-  }, [allExpenses, isLoading, user]);
-
-  useEffect(() => {
-    if (!isLoading && user) {
-      localStorage.setItem(`${user.id}_expense_tracker_accounts`, JSON.stringify(accounts));
-    }
-  }, [accounts, isLoading, user]);
-
-  useEffect(() => {
-    if (!isLoading && user) {
-      const serializedBudgets = budgets.map(budget => ({
-        ...budget,
-        startDate: budget.startDate.toISOString()
-      }));
-      localStorage.setItem(`${user.id}_expense_tracker_budgets`, JSON.stringify(serializedBudgets));
-    }
-  }, [budgets, isLoading, user]);
-
-  const handleAddExpense = (expense: Omit<Expense, 'id'>) => {
-    const newExpense: Expense = {
-      ...expense,
-      id: Date.now().toString()
-    };
-    setAllExpenses(prev => [newExpense, ...prev]);
-    setFilteredExpenses(prev => [newExpense, ...prev]);
-    
-    // Mobile feedback
+  const handleAddExpense = async (expense: Omit<Expense, 'id'>) => {
+    await saveExpense(expense);
     mobileService.successHaptic();
   };
 
-  const handleAddAccount = (account: Omit<Account, 'id'>) => {
-    const newAccount: Account = {
-      ...account,
-      id: Date.now().toString()
-    };
-    setAccounts(prev => [...prev, newAccount]);
+  const handleAddAccount = async (account: Omit<Account, 'id'>) => {
+    await saveAccount(account);
   };
 
-  const handleUpdateAccount = (updatedAccount: Account) => {
-    setAccounts(prev => prev.map(acc => acc.id === updatedAccount.id ? updatedAccount : acc));
+  const handleUpdateAccount = async (updatedAccount: Account) => {
+    await updateAccountData(updatedAccount.id, updatedAccount);
   };
 
-  const handleDeleteAccount = (id: string) => {
-    setAccounts(prev => prev.filter(acc => acc.id !== id));
+  const handleDeleteAccount = async (id: string) => {
+    await removeAccount(id);
   };
 
-  const handleAddBudget = (budget: Omit<Budget, 'id'>) => {
-    const newBudget: Budget = {
-      ...budget,
-      id: Date.now().toString()
-    };
-    setBudgets(prev => [...prev, newBudget]);
+  const handleAddBudget = async (budget: Omit<Budget, 'id'>) => {
+    await saveBudget(budget);
   };
 
-  const handleUpdateBudget = (updatedBudget: Budget) => {
-    setBudgets(prev => prev.map(budget => budget.id === updatedBudget.id ? updatedBudget : budget));
+  const handleUpdateBudget = async (updatedBudget: Budget) => {
+    await updateBudgetData(updatedBudget.id, updatedBudget);
   };
 
-  const handleDeleteBudget = (id: string) => {
-    setBudgets(prev => prev.filter(budget => budget.id !== id));
+  const handleDeleteBudget = async (id: string) => {
+    await removeBudget(id);
   };
 
   const handleFilteredResults = (filtered: Expense[]) => {
@@ -185,9 +134,8 @@ const Index = () => {
     setIsDetailOpen(true);
   };
 
-  const handleDeleteExpense = (id: string) => {
-    setAllExpenses(prev => prev.filter(e => e.id !== id));
-    setFilteredExpenses(prev => prev.filter(e => e.id !== id));
+  const handleDeleteExpense = async (id: string) => {
+    await removeExpense(id);
     mobileService.errorHaptic();
   };
 
@@ -196,16 +144,10 @@ const Index = () => {
     setIsDetailOpen(false);
   };
 
-  const handleUpdateExpense = (updatedExpense: Omit<Expense, 'id'>) => {
+  const handleUpdateExpense = async (updatedExpense: Omit<Expense, 'id'>) => {
     if (!editingExpense) return;
     
-    const updated: Expense = {
-      ...updatedExpense,
-      id: editingExpense.id
-    };
-    
-    setAllExpenses(prev => prev.map(e => e.id === editingExpense.id ? updated : e));
-    setFilteredExpenses(prev => prev.map(e => e.id === editingExpense.id ? updated : e));
+    await updateExpenseData(editingExpense.id, updatedExpense);
     setEditingExpense(null);
   };
 
@@ -242,16 +184,8 @@ const Index = () => {
 
   // Refresh handler for pull-to-refresh
   const handleRefresh = async () => {
-    // Simulate data refresh
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // In a real app, you'd fetch fresh data here
-    // For now, just show a success message
-    toast({
-      title: "Data refreshed",
-      description: "Your expenses are up to date",
-      duration: 2000
-    });
+    mobileService.lightHaptic();
+    await refreshData();
   };
 
   if (isLoading) {
@@ -472,7 +406,7 @@ const Index = () => {
       </PullToRefresh>
 
         {/* Transaction Detail Modal */}
-        <TransactionDetail 
+          <TransactionDetail 
           expense={selectedExpense}
           account={accounts.find(acc => acc.id === selectedExpense?.accountId)}
           isOpen={isDetailOpen}
