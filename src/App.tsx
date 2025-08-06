@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { SignedIn, SignedOut } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/clerk-react';
 import Index from "./pages/Index";
 import ClerkAuth from "./pages/ClerkAuth";
 import NotFound from "./pages/NotFound";
@@ -11,6 +11,16 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
+  const { isSignedIn, isLoaded } = useAuth();
+
+  // Show loading while Clerk is initializing
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -21,29 +31,11 @@ const App = () => {
           <Routes>
             <Route 
               path="/" 
-              element={
-                <>
-                  <SignedIn>
-                    <Index />
-                  </SignedIn>
-                  <SignedOut>
-                    <Navigate to="/auth" replace />
-                  </SignedOut>
-                </>
-              } 
+              element={isSignedIn ? <Index /> : <Navigate to="/auth" replace />} 
             />
             <Route 
               path="/auth" 
-              element={
-                <>
-                  <SignedOut>
-                    <ClerkAuth />
-                  </SignedOut>
-                  <SignedIn>
-                    <Navigate to="/" replace />
-                  </SignedIn>
-                </>
-              } 
+              element={!isSignedIn ? <ClerkAuth /> : <Navigate to="/" replace />} 
             />
             <Route path="*" element={<NotFound />} />
           </Routes>
