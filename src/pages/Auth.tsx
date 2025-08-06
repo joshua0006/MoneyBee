@@ -134,20 +134,37 @@ export default function Auth() {
   };
 
   const handleGoogleSignIn = async () => {
+    console.log("🚀 Starting Google OAuth flow...");
+    console.log("Current URL:", window.location.href);
+    console.log("Redirect URL:", `${window.location.origin}/`);
+    
+    setLoading(true);
+    
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/`
         }
       });
-      if (error) throw error;
+      
+      console.log("OAuth response:", { data, error });
+      
+      if (error) {
+        console.error("❌ OAuth error:", error);
+        throw error;
+      }
+      
+      console.log("✅ OAuth initiated successfully");
     } catch (error: any) {
+      console.error("❌ Google sign-in error:", error);
       toast({
         title: "Google sign in failed",
         description: error.message || "An error occurred during Google sign in.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
