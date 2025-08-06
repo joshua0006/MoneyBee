@@ -15,6 +15,10 @@ import {
   calculateMilestones,
   formatCurrency,
   formatLargeCurrency,
+  getMotivationalMessage,
+  getTimelineGoals,
+  getInspirationalQuotes,
+  getAchievementCards,
   SimulationParams,
   SimulationScenario
 } from "@/utils/simulationUtils";
@@ -39,6 +43,23 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
   const milestones = useMemo(() => {
     return calculateMilestones(projections);
   }, [projections]);
+
+  const motivationalMessage = useMemo(() => {
+    return getMotivationalMessage(baseline, projections);
+  }, [baseline, projections]);
+
+  const timelineGoals = useMemo(() => {
+    return getTimelineGoals(projections);
+  }, [projections]);
+
+  const achievementCards = useMemo(() => {
+    return getAchievementCards(projections, baseline);
+  }, [projections, baseline]);
+
+  const inspirationalQuote = useMemo(() => {
+    const quotes = getInspirationalQuotes();
+    return quotes[Math.floor(Math.random() * quotes.length)];
+  }, []);
 
   // Scenario comparison data
   const scenarioComparison = useMemo(() => {
@@ -140,6 +161,69 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
+          {/* Motivational Message */}
+          <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold mb-2">Your Financial Journey</h3>
+                <p className="text-muted-foreground mb-4">{motivationalMessage}</p>
+                <div className="text-sm italic text-muted-foreground border-l-2 border-primary/30 pl-4">
+                  "{inspirationalQuote}"
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Achievement Cards */}
+          <div className="grid grid-cols-2 gap-4">
+            {achievementCards.map((card, index) => (
+              <Card key={index} className="relative overflow-hidden">
+                <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-10`}></div>
+                <CardContent className="pt-6 relative">
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">{card.icon}</div>
+                    <div className="text-lg font-bold">{card.value}</div>
+                    <div className="text-sm font-medium">{card.title}</div>
+                    <div className="text-xs text-muted-foreground">{card.subtitle}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Timeline Goals */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Your Financial Timeline
+              </CardTitle>
+              <CardDescription>
+                Key milestones on your wealth-building journey
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {timelineGoals.map((goal, index) => (
+                  <div key={index} className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 border">
+                    <div className="flex-shrink-0">
+                      <Badge variant="secondary" className="bg-primary/10 text-primary">
+                        {goal.timeframe}
+                      </Badge>
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium">{goal.goal}</div>
+                      <div className="text-sm text-muted-foreground">{goal.description}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-primary">{formatLargeCurrency(goal.amount)}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Net Worth Projection Chart */}
           <Card>
             <CardHeader>
@@ -177,39 +261,58 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
             </CardContent>
           </Card>
 
-          {/* Key Milestones */}
+          {/* Key Milestones with Categories */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5" />
                 Financial Milestones
               </CardTitle>
+              <CardDescription>
+                Your roadmap to financial success and life goals
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {milestones.map((milestone, index) => (
                   <div 
                     key={index}
-                    className={`flex items-center justify-between p-3 rounded-lg border ${
-                      milestone.achieved ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                    className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
+                      milestone.achieved 
+                        ? 'bg-green-50 border-green-200 shadow-sm' 
+                        : 'bg-muted/30 border-muted hover:bg-muted/50'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg">{milestone.icon}</span>
-                      <div>
-                        <div className="font-medium">{milestone.name}</div>
-                        <div className="text-sm text-muted-foreground">
+                    <div className="flex items-center gap-4">
+                      <span className="text-2xl">{milestone.icon}</span>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <div className="font-medium">{milestone.name}</div>
+                          <Badge variant="outline" className="text-xs">
+                            {milestone.category}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground mb-1">
                           {formatCurrency(milestone.amount)}
+                        </div>
+                        <div className="text-xs text-muted-foreground italic">
+                          {milestone.description}
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
                       {milestone.achieved ? (
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          Year {milestone.year}
-                        </Badge>
+                        <div>
+                          <Badge variant="secondary" className="bg-green-100 text-green-800 mb-1">
+                            ✨ Year {milestone.year}
+                          </Badge>
+                          <div className="text-xs text-green-600 font-medium">Achievable!</div>
+                        </div>
                       ) : (
-                        <Badge variant="outline">Not reached</Badge>
+                        <div>
+                          <Badge variant="outline">Beyond timeline</Badge>
+                          <div className="text-xs text-muted-foreground mt-1">Keep growing</div>
+                        </div>
                       )}
                     </div>
                   </div>
