@@ -20,6 +20,11 @@ import { TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Settings, Cl
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingSkeleton } from "@/components/LoadingSkeleton";
+import { EmptyState } from "@/components/EmptyState";
+import { OnboardingTooltip, useOnboarding } from "@/components/OnboardingTooltip";
+import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { ProgressiveLoader } from "@/components/ProgressiveLoader";
 import { 
   exportExpensesAsCSV,
   type Expense,
@@ -42,6 +47,31 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
   const { toast } = useToast();
+  const { shouldShowOnboarding, markAsComplete } = useOnboarding();
+
+  // Onboarding steps
+  const onboardingSteps = [
+    {
+      id: 'welcome',
+      title: 'Welcome to MoneyBee! 🐝',
+      description: 'Your smart expense tracking companion. Let\'s get you started with the basics.',
+    },
+    {
+      id: 'add-expense',
+      title: 'Add Your First Expense',
+      description: 'Tap the golden bee button to add expenses quickly. You can type naturally or scan receipts!',
+    },
+    {
+      id: 'features',
+      title: 'Explore Features',
+      description: 'Use the menu (☰) to access budgets, analytics, and more. The bottom tabs switch between different views.',
+    },
+    {
+      id: 'ready',
+      title: 'You\'re All Set! ✨',
+      description: 'Start tracking your expenses and watch your financial insights grow.',
+    }
+  ];
 
   // Get current user and load data
   useEffect(() => {
@@ -208,10 +238,21 @@ const Index = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto" />
-          <p className="text-muted-foreground">Loading your expenses...</p>
+      <div className="min-h-screen bg-background">
+        {/* Header Skeleton */}
+        <div className="bg-gradient-to-r from-card via-muted/30 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-sm">
+          <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+            <div className="flex items-center justify-between min-h-[44px]">
+              <LoadingSkeleton type="card" count={1} />
+            </div>
+          </div>
+        </div>
+        
+        {/* Content Skeleton */}
+        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-20 space-y-6">
+          <LoadingSkeleton type="overview" />
+          <LoadingSkeleton type="chart" />
+          <LoadingSkeleton type="list" count={5} />
         </div>
       </div>
     );
@@ -262,19 +303,30 @@ const Index = () => {
         {/* Home Tab Content */}
         {activeTab === "home" && (
           <div className="space-y-6">
-            <ExpenseOverview 
-              totalIncome={totalIncome}
-              totalExpenses={totalExpenses}
-            />
+            <ProgressiveLoader isLoading={isLoading} type="overview">
+              <ExpenseOverview 
+                totalIncome={totalIncome}
+                totalExpenses={totalExpenses}
+              />
+            </ProgressiveLoader>
             
-            <CategoryBreakdown 
-              expenses={filteredExpenses}
-            />
+            <ProgressiveLoader isLoading={isLoading} type="chart" delay={100}>
+              <CategoryBreakdown 
+                expenses={filteredExpenses}
+              />
+            </ProgressiveLoader>
             
-            {filteredExpenses.length > 0 && (
-              <ExpenseList
-                expenses={filteredExpenses.slice(0, 10)} // Show only recent 10
-                onExpenseClick={handleExpenseClick}
+            {filteredExpenses.length > 0 ? (
+              <ProgressiveLoader isLoading={isLoading} type="list" delay={200}>
+                <ExpenseList
+                  expenses={filteredExpenses.slice(0, 10)} // Show only recent 10
+                  onExpenseClick={handleExpenseClick}
+                />
+              </ProgressiveLoader>
+            ) : !isLoading && (
+              <EmptyState 
+                type="expenses"
+                onAction={() => setIsAddExpenseOpen(true)}
               />
             )}
           </div>
@@ -283,25 +335,45 @@ const Index = () => {
         {/* Stats Tab Content */}
         {activeTab === "stats" && (
           <div className="space-y-6">
-            <AdvancedAnalytics 
-              expenses={filteredExpenses}
-            />
-            <CategoryBreakdown 
-              expenses={filteredExpenses}
-            />
+            {filteredExpenses.length > 0 ? (
+              <>
+                <AdvancedAnalytics 
+                  expenses={filteredExpenses}
+                />
+                <CategoryBreakdown 
+                  expenses={filteredExpenses}
+                />
+              </>
+            ) : (
+              <EmptyState 
+                type="analytics"
+                onAction={() => setIsAddExpenseOpen(true)}
+              />
+            )}
           </div>
         )}
 
         {/* Budget Tab Content */}
         {activeTab === "budget" && (
           <div className="space-y-6">
-            <BudgetManager 
-              budgets={budgets}
-              expenses={filteredExpenses}
-              onAddBudget={handleAddBudget}
-              onUpdateBudget={handleUpdateBudget}
-              onDeleteBudget={handleDeleteBudget}
-            />
+            {budgets.length > 0 || filteredExpenses.length > 0 ? (
+              <BudgetManager 
+                budgets={budgets}
+                expenses={filteredExpenses}
+                onAddBudget={handleAddBudget}
+                onUpdateBudget={handleUpdateBudget}
+                onDeleteBudget={handleDeleteBudget}
+              />
+            ) : (
+              <EmptyState 
+                type="budget"
+                description="Set spending limits for different categories to stay on track with your financial goals"
+                onAction={() => {
+                  // Show the budget tab which will have the add budget functionality
+                  setActiveTab("budget");
+                }}
+              />
+            )}
           </div>
         )}
 
@@ -421,6 +493,19 @@ const Index = () => {
             )}
           </SheetContent>
         </Sheet>
+
+      {/* Floating Action Button */}
+      <FloatingActionButton 
+        onAddExpense={() => setIsAddExpenseOpen(true)}
+      />
+
+      {/* Onboarding */}
+      <OnboardingTooltip 
+        steps={onboardingSteps}
+        isVisible={shouldShowOnboarding}
+        onComplete={markAsComplete}
+        onSkip={markAsComplete}
+      />
 
       {/* Bottom Navigation */}
       <BottomNavigation 
