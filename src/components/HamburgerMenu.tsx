@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Menu, Search, Calendar, CreditCard, Clock, Download, Settings, LogOut, User } from "lucide-react";
+import { Menu, Search, Calendar, CreditCard, Repeat, Download, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
-import { supabase } from "@/integrations/supabase/client";
+import { mobileService } from "@/utils/mobileService";
 
 interface HamburgerMenuProps {
   onMenuItemClick: (item: string) => void;
@@ -12,24 +11,18 @@ interface HamburgerMenuProps {
 export const HamburgerMenu = ({ onMenuItemClick }: HamburgerMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut({ scope: 'global' });
-      window.location.href = '/auth';
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
   const menuItems = [
-    { id: "search", icon: Search, label: "Search & Filter", description: "Find specific transactions" },
-    { id: "calendar", icon: Calendar, label: "Calendar View", description: "View expenses by date" },
-    { id: "accounts", icon: CreditCard, label: "Account Manager", description: "Manage payment methods" },
-    { id: "recurring", icon: Clock, label: "Recurring Transactions", description: "Set up automatic entries" },
+    { id: "search", label: "Search & Filter", icon: Search },
+    { id: "calendar", label: "Calendar View", icon: Calendar },
+    { id: "accounts", label: "Accounts", icon: CreditCard },
+    { id: "recurring", label: "Recurring", icon: Repeat },
+    { id: "export", label: "Export Data", icon: Download },
+    { id: "settings", label: "Settings", icon: Settings },
   ];
 
-  const handleItemClick = (itemId: string) => {
-    onMenuItemClick(itemId);
+  const handleMenuClick = (id: string) => {
+    mobileService.lightHaptic();
+    onMenuItemClick(id);
     setIsOpen(false);
   };
 
@@ -42,7 +35,7 @@ export const HamburgerMenu = ({ onMenuItemClick }: HamburgerMenuProps) => {
       </SheetTrigger>
       <SheetContent side="left" className="w-80">
         <SheetHeader>
-          <SheetTitle className="text-left">Menu</SheetTitle>
+          <SheetTitle className="text-left">Features</SheetTitle>
         </SheetHeader>
         
         <div className="mt-6 space-y-2">
@@ -50,69 +43,13 @@ export const HamburgerMenu = ({ onMenuItemClick }: HamburgerMenuProps) => {
             <Button
               key={item.id}
               variant="ghost"
-              onClick={() => handleItemClick(item.id)}
-              className="w-full justify-start h-auto p-3 text-left"
+              onClick={() => handleMenuClick(item.id)}
+              className="w-full justify-start hover:bg-accent/50 transition-colors touch-manipulation"
             >
-              <div className="flex items-start gap-3">
-                <item.icon size={18} className="mt-0.5 text-muted-foreground" />
-                <div>
-                  <div className="font-medium">{item.label}</div>
-                  <div className="text-xs text-muted-foreground">{item.description}</div>
-                </div>
-              </div>
+              <item.icon className="w-4 h-4 mr-3" />
+              {item.label}
             </Button>
           ))}
-          
-          <Separator className="my-4" />
-          
-          <Button
-            variant="ghost"
-            onClick={() => handleItemClick("export")}
-            className="w-full justify-start h-auto p-3 text-left"
-          >
-            <div className="flex items-start gap-3">
-              <Download size={18} className="mt-0.5 text-muted-foreground" />
-              <div>
-                <div className="font-medium">Export Data</div>
-                <div className="text-xs text-muted-foreground">Download your transactions</div>
-              </div>
-            </div>
-          </Button>
-
-          <Separator className="my-4" />
-
-          {/* User Section */}
-          <div className="space-y-2">
-            <div className="px-3 py-2 rounded-lg bg-muted/50">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-bee-gold flex items-center justify-center">
-                  <User size={16} className="text-bee-gold-foreground" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="font-medium text-sm truncate">
-                    User Account
-                  </div>
-                  <div className="text-xs text-muted-foreground truncate">
-                    Signed in
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <Button
-              variant="ghost"
-              onClick={handleSignOut}
-              className="w-full justify-start h-auto p-3 text-left text-destructive hover:text-destructive"
-            >
-              <div className="flex items-start gap-3">
-                <LogOut size={18} className="mt-0.5" />
-                <div>
-                  <div className="font-medium">Sign Out</div>
-                  <div className="text-xs text-muted-foreground">Logout from your account</div>
-                </div>
-              </div>
-            </Button>
-          </div>
         </div>
       </SheetContent>
     </Sheet>

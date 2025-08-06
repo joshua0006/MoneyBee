@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Camera, Receipt, Keyboard } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { mobileService } from "@/utils/mobileService";
 
 interface FloatingActionButtonProps {
   onAddExpense: () => void;
@@ -20,20 +21,29 @@ export const FloatingActionButton = ({
     {
       icon: Keyboard,
       label: "Manual Entry",
-      onClick: onAddExpense,
+      onClick: () => {
+        mobileService.lightHaptic();
+        onAddExpense();
+      },
       color: "bg-primary"
     },
     {
       icon: Receipt,
       label: "Scan Receipt",
-      onClick: onScanReceipt,
+      onClick: () => {
+        mobileService.lightHaptic();
+        onScanReceipt?.();
+      },
       color: "bg-accent",
       disabled: !onScanReceipt
     },
     {
       icon: Camera,
       label: "Quick Photo",
-      onClick: onVoiceInput,
+      onClick: () => {
+        mobileService.lightHaptic();
+        onVoiceInput?.();
+      },
       color: "bg-secondary",
       disabled: !onVoiceInput
     }
@@ -56,6 +66,7 @@ export const FloatingActionButton = ({
               <Button
                 size="sm"
                 onClick={() => {
+                  mobileService.mediumHaptic();
                   action.onClick();
                   setIsExpanded(false);
                 }}
@@ -75,6 +86,7 @@ export const FloatingActionButton = ({
       <Button
         size="lg"
         onClick={() => {
+          mobileService.lightHaptic();
           if (isExpanded) {
             setIsExpanded(false);
           } else if (actions.length === 1) {

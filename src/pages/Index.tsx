@@ -25,6 +25,9 @@ import { EmptyState } from "@/components/EmptyState";
 import { OnboardingTooltip, useOnboarding } from "@/components/OnboardingTooltip";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { ProgressiveLoader } from "@/components/ProgressiveLoader";
+import { PullToRefresh } from "@/components/PullToRefresh";
+import { MobileSettings } from "@/components/MobileSettings";
+import { mobileService } from "@/utils/mobileService";
 import { 
   exportExpensesAsCSV,
   type Expense,
@@ -140,6 +143,9 @@ const Index = () => {
     };
     setAllExpenses(prev => [newExpense, ...prev]);
     setFilteredExpenses(prev => [newExpense, ...prev]);
+    
+    // Mobile feedback
+    mobileService.successHaptic();
   };
 
   const handleAddAccount = (account: Omit<Account, 'id'>) => {
@@ -186,6 +192,7 @@ const Index = () => {
   const handleDeleteExpense = (id: string) => {
     setAllExpenses(prev => prev.filter(e => e.id !== id));
     setFilteredExpenses(prev => prev.filter(e => e.id !== id));
+    mobileService.errorHaptic();
   };
 
   const handleEditExpense = (expense: Expense) => {
@@ -224,6 +231,7 @@ const Index = () => {
   };
 
   const handleViewAllTransactions = () => {
+    mobileService.lightHaptic();
     setActiveTab("more");
     setActiveMenuItem("search");
   };
@@ -235,6 +243,20 @@ const Index = () => {
   const totalExpenses = allExpenses
     .filter(e => e.type === 'expense')
     .reduce((sum, e) => sum + e.amount, 0);
+
+  // Refresh handler for pull-to-refresh
+  const handleRefresh = async () => {
+    // Simulate data refresh
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // In a real app, you'd fetch fresh data here
+    // For now, just show a success message
+    toast({
+      title: "Data refreshed",
+      description: "Your expenses are up to date",
+      duration: 2000
+    });
+  };
 
   if (isLoading) {
     return (
@@ -298,8 +320,9 @@ const Index = () => {
       </div>
 
 
-      {/* Main Content */}
-      <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-20">
+      {/* Main Content with Pull to Refresh */}
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-20">
         {/* Home Tab Content */}
         {activeTab === "home" && (
           <div className="space-y-6">
@@ -321,6 +344,9 @@ const Index = () => {
                 <ExpenseList
                   expenses={filteredExpenses.slice(0, 10)} // Show only recent 10
                   onExpenseClick={handleExpenseClick}
+                  onDeleteExpense={handleDeleteExpense}
+                  showViewAll={filteredExpenses.length > 10}
+                  onViewAll={handleViewAllTransactions}
                 />
               </ProgressiveLoader>
             ) : !isLoading && (
@@ -442,7 +468,15 @@ const Index = () => {
             </Button>
           </div>
         )}
-      </div>
+
+        {/* Mobile Settings */}
+        {activeMenuItem === "settings" && (
+          <div className="space-y-6">
+            <MobileSettings />
+          </div>
+        )}
+        </div>
+      </PullToRefresh>
 
         {/* Transaction Detail Modal */}
         <TransactionDetail 
