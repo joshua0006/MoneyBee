@@ -17,7 +17,7 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Settings, Clock, LogOut } from "lucide-react";
+import { TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Clock, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +28,7 @@ import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { ProgressiveLoader } from "@/components/ProgressiveLoader";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { MobileSettings } from "@/components/MobileSettings";
+import { Settings } from "@/components/Settings";
 import { mobileService } from "@/utils/mobileService";
 import { useAppData } from "@/hooks/useAppData";
 import type { Expense, Account, Budget } from "@/types/app";
@@ -345,6 +346,13 @@ const Index = () => {
                 }}
               />
             )}
+          </div>
+        )}
+
+        {/* Settings Tab Content */}
+        {activeTab === "settings" && (
+          <div className="space-y-6">
+            <Settings />
           </div>
         )}
 
