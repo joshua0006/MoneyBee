@@ -43,6 +43,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [aiInput, setAiInput] = useState("");
   const [isParsing, setIsParsing] = useState(false);
   const [autoSubmit, setAutoSubmit] = useState(true);
+  const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const [aiParseSuccess, setAiParseSuccess] = useState(false);
   const [parsedData, setParsedData] = useState<ParsedExpense | null>(null);
   const [useFallback, setUseFallback] = useState(true);
@@ -64,6 +65,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       setSuggestions([]);
     }
   }, [description, existingExpenses]);
+
 
   // Auto-suggest category based on description
   const suggestCategoryFromDescription = (desc: string): string => {
@@ -93,6 +95,72 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     
     return "";
   };
+
+  // Auto-save functionality
+  const triggerAutoSave = useCallback(() => {
+    // Clear existing timeout
+    if (autoSaveTimeout) {
+      clearTimeout(autoSaveTimeout);
+    }
+    
+    // Set new timeout for auto-save
+    const timeoutId = setTimeout(() => {
+      // Check if we have minimum required fields
+      const validAmount = type === 'income' ? parseSmartAmount(amount) : parseFloat(amount);
+      const hasValidData = validAmount > 0 && (description.trim() || type === 'income');
+      
+      if (hasValidData && autoSubmit) {
+        // Auto-submit the form
+        const finalCategory = category || suggestCategoryFromDescription(description) || "Other";
+        
+        const expense: Omit<Expense, 'id'> = {
+          amount: type === 'income' ? parseSmartAmount(amount) : parseFloat(amount),
+          description: type === 'income' ? (description.trim() || 'Income') : description.trim(),
+          category: type === 'income' ? 'Income' : finalCategory,
+          date: new Date(),
+          type,
+          accountId: accountId || accounts[0]?.id
+        };
+        
+        onAddExpense(expense);
+        
+        // Reset form
+        if (!editingExpense) {
+          setAmount("");
+          setDescription("");
+          setCategory("");
+          setIsRecurring(false);
+          setShowSuggestions(false);
+          setAiInput("");
+        }
+        setAiParseSuccess(false);
+        
+        toast({
+          title: type === 'expense' ? "💳 Expense Auto-Saved" : "💰 Income Auto-Saved",
+          description: `$${validAmount.toLocaleString()} for ${description || 'Income'}`,
+          duration: 2000
+        });
+      }
+    }, 2000); // Auto-save after 2 seconds of inactivity
+    
+    setAutoSaveTimeout(timeoutId);
+  }, [amount, description, category, type, accountId, accounts, onAddExpense, editingExpense, autoSubmit, autoSaveTimeout, toast]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+      }
+    };
+  }, [autoSaveTimeout]);
+
+  // Trigger auto-save when form fields change
+  useEffect(() => {
+    if (amount || description) {
+      triggerAutoSave();
+    }
+  }, [amount, description, category, triggerAutoSave]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,10 +241,12 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
   const handleQuickAmount = (quickAmount: number) => {
     setAmount(quickAmount.toString());
+    triggerAutoSave();
   };
 
   const handleSmartAmountChange = (value: string) => {
     setAmount(value);
+    triggerAutoSave();
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -190,6 +260,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     }
     
     descriptionRef.current?.focus();
+    triggerAutoSave();
   };
 
   const getLastUsedCategories = () => {
