@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { ExpenseOverview } from "@/components/ExpenseOverview";
 import { EnhancedQuickAddExpense } from "@/components/EnhancedQuickAddExpense";
 import moneyBeesLogo from "@/assets/moneybees-logo.png";
@@ -36,7 +38,8 @@ import {
 } from "@/utils/expenseUtils";
 
 const Index = () => {
-  const [user, setUser] = useState<any>(null);
+  const { user, isLoading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -78,29 +81,22 @@ const Index = () => {
 
   // Get current user and load data
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      
-      if (user) {
-        try {
-          const loadedExpenses = JSON.parse(localStorage.getItem(`${user.id}_expense_tracker_data`) || '[]');
-          const loadedAccounts = JSON.parse(localStorage.getItem(`${user.id}_expense_tracker_accounts`) || '[]');
-          const loadedBudgets = JSON.parse(localStorage.getItem(`${user.id}_expense_tracker_budgets`) || '[]');
-          
-          setAllExpenses(loadedExpenses.map((e: any) => ({ ...e, date: new Date(e.date) })));
-          setFilteredExpenses(loadedExpenses.map((e: any) => ({ ...e, date: new Date(e.date) })));
-          setAccounts(loadedAccounts);
-          setBudgets(loadedBudgets.map((b: any) => ({ ...b, startDate: new Date(b.startDate) })));
-        } catch (error) {
-          console.error('Failed to load user data:', error);
-        }
+    if (user) {
+      try {
+        const loadedExpenses = JSON.parse(localStorage.getItem(`${user.id}_expense_tracker_data`) || '[]');
+        const loadedAccounts = JSON.parse(localStorage.getItem(`${user.id}_expense_tracker_accounts`) || '[]');
+        const loadedBudgets = JSON.parse(localStorage.getItem(`${user.id}_expense_tracker_budgets`) || '[]');
+        
+        setAllExpenses(loadedExpenses.map((e: any) => ({ ...e, date: new Date(e.date) })));
+        setFilteredExpenses(loadedExpenses.map((e: any) => ({ ...e, date: new Date(e.date) })));
+        setAccounts(loadedAccounts);
+        setBudgets(loadedBudgets.map((b: any) => ({ ...b, startDate: new Date(b.startDate) })));
+      } catch (error) {
+        console.error('Failed to load user data:', error);
       }
       setIsLoading(false);
-    };
-    
-    getUser();
-  }, []);
+    }
+  }, [user]);
 
   // Sync filteredExpenses with allExpenses when no filters are active
   useEffect(() => {
