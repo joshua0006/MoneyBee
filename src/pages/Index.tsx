@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useUser, useClerk } from "@clerk/clerk-react";
 import { ExpenseOverview } from "@/components/ExpenseOverview";
 import { EnhancedQuickAddExpense } from "@/components/EnhancedQuickAddExpense";
 import moneyBeesLogo from "@/assets/moneybees-logo.png";
@@ -38,7 +37,8 @@ import {
 } from "@/utils/expenseUtils";
 
 const Index = () => {
-  const { user, isLoading: authLoading, signOut } = useAuth();
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const navigate = useNavigate();
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
@@ -303,10 +303,7 @@ const Index = () => {
                 variant="ghost"
                 size="sm"
                 className="p-2"
-                onClick={async () => {
-                  await supabase.auth.signOut({ scope: 'global' });
-                  window.location.href = '/auth';
-                }}
+                onClick={() => signOut()}
               >
                 <LogOut size={16} />
               </Button>
