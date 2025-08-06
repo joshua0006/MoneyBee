@@ -19,6 +19,8 @@ type RecurringTransactionUpdate = Database['public']['Tables']['recurring_transa
 
 // Expense operations
 export const saveExpenseToDatabase = async (expense: ExpenseInsert): Promise<Expense | null> => {
+  console.log('Attempting to save expense:', expense);
+  
   const { data, error } = await supabase
     .from('expenses')
     .insert(expense)
@@ -29,6 +31,7 @@ export const saveExpenseToDatabase = async (expense: ExpenseInsert): Promise<Exp
     console.error('Error saving expense:', error);
     throw error;
   }
+
   return data;
 };
 

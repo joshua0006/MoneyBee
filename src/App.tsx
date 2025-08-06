@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from '@clerk/clerk-react';
-import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+
 import Index from "./pages/Index";
 import ClerkAuth from "./pages/ClerkAuth";
 import NotFound from "./pages/NotFound";
@@ -13,9 +13,6 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const { isSignedIn, isLoaded } = useAuth();
-  
-  // Set up Supabase authentication with Clerk token
-  useSupabaseAuth();
 
   // Show loading while Clerk is initializing
   if (!isLoaded) {
