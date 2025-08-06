@@ -1,4 +1,4 @@
-import { Home, BarChart2, Plus, Target, Settings } from "lucide-react";
+import { Home, BarChart2, Plus, Target, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,7 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddExpense }: Botto
     { id: "stats", icon: BarChart2, label: "Stats" },
     { id: "add", icon: Plus, label: "Add", isSpecial: true },
     { id: "budget", icon: Target, label: "Budget" },
-    { id: "settings", icon: Settings, label: "Settings" },
+    { id: "simulation", icon: TrendingUp, label: "Growth" },
   ];
 
   return (

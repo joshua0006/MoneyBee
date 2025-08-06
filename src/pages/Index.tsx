@@ -28,7 +28,7 @@ import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { ProgressiveLoader } from "@/components/ProgressiveLoader";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { MobileSettings } from "@/components/MobileSettings";
-import { Settings } from "@/components/Settings";
+import { FinancialSimulation } from "@/components/FinancialSimulation";
 import { mobileService } from "@/utils/mobileService";
 import { useAppData } from "@/hooks/useAppData";
 import type { Expense, Account, Budget } from "@/types/app";
@@ -349,10 +349,10 @@ const Index = () => {
           </div>
         )}
 
-        {/* Settings Tab Content */}
-        {activeTab === "settings" && (
+        {/* Financial Simulation Tab Content */}
+        {activeTab === "simulation" && (
           <div className="space-y-6">
-            <Settings />
+            <FinancialSimulation expenses={filteredExpenses} />
           </div>
         )}
 
