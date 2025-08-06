@@ -4,9 +4,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar } from "recharts";
-import { TrendingUp, Target, DollarSign, Calendar, Info } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, Area, AreaChart, CartesianGrid } from "recharts";
+import { TrendingUp, Target, DollarSign, Calendar, Info, Edit3, Calculator } from "lucide-react";
 import { Expense } from "@/types/app";
 import {
   calculateFinancialBaseline,
@@ -28,7 +31,25 @@ interface FinancialSimulationProps {
 }
 
 export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
-  const baseline = useMemo(() => calculateFinancialBaseline(expenses), [expenses]);
+  const calculatedBaseline = useMemo(() => calculateFinancialBaseline(expenses), [expenses]);
+  const [useManualInput, setUseManualInput] = useState(false);
+  const [manualIncome, setManualIncome] = useState(calculatedBaseline.monthlyIncome.toString());
+  const [manualExpenses, setManualExpenses] = useState(calculatedBaseline.monthlyExpenses.toString());
+  
+  // Use manual input if enabled, otherwise use calculated baseline
+  const baseline = useMemo(() => {
+    if (useManualInput) {
+      const income = parseFloat(manualIncome) || 0;
+      const expenses = parseFloat(manualExpenses) || 0;
+      return {
+        monthlyIncome: income,
+        monthlyExpenses: expenses,
+        monthlyNet: income - expenses
+      };
+    }
+    return calculatedBaseline;
+  }, [useManualInput, manualIncome, manualExpenses, calculatedBaseline]);
+  
   const defaultScenarios = useMemo(() => getDefaultScenarios(), []);
   
   const [selectedScenario, setSelectedScenario] = useState<SimulationScenario>(defaultScenarios[1]);
@@ -79,11 +100,23 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
       color: "hsl(var(--chart-1))",
     },
     income: {
-      label: "Income",
-      color: "hsl(var(--chart-2))",
+      label: "Annual Income",
+      color: "hsl(var(--income))",
     },
     expenses: {
-      label: "Expenses",
+      label: "Annual Expenses", 
+      color: "hsl(var(--expense))",
+    },
+    conservative: {
+      label: "Conservative",
+      color: "hsl(var(--chart-1))",
+    },
+    moderate: {
+      label: "Moderate", 
+      color: "hsl(var(--chart-2))",
+    },
+    aggressive: {
+      label: "Aggressive",
       color: "hsl(var(--chart-3))",
     },
   };
@@ -96,6 +129,14 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
   const applyScenario = (scenario: SimulationScenario) => {
     setSelectedScenario(scenario);
     setCustomParams(scenario.params);
+  };
+
+  const handleManualIncomeChange = (value: string) => {
+    setManualIncome(value);
+  };
+
+  const handleManualExpensesChange = (value: string) => {
+    setManualExpenses(value);
   };
 
   if (expenses.length === 0) {
@@ -118,38 +159,100 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Current Financial Overview */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            Current Financial Overview
-          </CardTitle>
-          <CardDescription>
-            Based on your last 6 months of data
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {formatCurrency(baseline.monthlyIncome)}
-              </div>
-              <div className="text-sm text-muted-foreground">Monthly Income</div>
+      {/* Current Financial Overview with Manual Input Option */}
+      <Card className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"></div>
+        <CardHeader className="relative">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-primary" />
+              <CardTitle>Financial Overview</CardTitle>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">
-                {formatCurrency(baseline.monthlyExpenses)}
-              </div>
-              <div className="text-sm text-muted-foreground">Monthly Expenses</div>
-            </div>
-            <div className="text-center">
-              <div className={`text-2xl font-bold ${baseline.monthlyNet >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatCurrency(baseline.monthlyNet)}
-              </div>
-              <div className="text-sm text-muted-foreground">Monthly Net</div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={useManualInput}
+                onCheckedChange={setUseManualInput}
+                id="manual-input"
+              />
+              <Label htmlFor="manual-input" className="text-sm font-medium flex items-center gap-1">
+                <Edit3 className="h-4 w-4" />
+                Manual Input
+              </Label>
             </div>
           </div>
+          <CardDescription>
+            {useManualInput ? "Enter your own income and expense values" : "Based on your last 6 months of data"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="relative">
+          {useManualInput ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="manual-income" className="text-sm font-medium text-income">Monthly Income</Label>
+                <Input
+                  id="manual-income"
+                  type="number"
+                  value={manualIncome}
+                  onChange={(e) => handleManualIncomeChange(e.target.value)}
+                  placeholder="Enter monthly income"
+                  className="border-income/20 focus:border-income"
+                />
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-income">
+                    {formatCurrency(parseFloat(manualIncome) || 0)}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="manual-expenses" className="text-sm font-medium text-expense">Monthly Expenses</Label>
+                <Input
+                  id="manual-expenses"
+                  type="number"
+                  value={manualExpenses}
+                  onChange={(e) => handleManualExpensesChange(e.target.value)}
+                  placeholder="Enter monthly expenses"
+                  className="border-expense/20 focus:border-expense"
+                />
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-expense">
+                    {formatCurrency(parseFloat(manualExpenses) || 0)}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Monthly Net</Label>
+                <div className="h-10 flex items-center justify-center">
+                  <Calculator className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="text-center">
+                  <div className={`text-2xl font-bold ${baseline.monthlyNet >= 0 ? 'text-income' : 'text-expense'}`}>
+                    {formatCurrency(baseline.monthlyNet)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center p-4 rounded-lg bg-income/10 border border-income/20">
+                <div className="text-2xl font-bold text-income">
+                  {formatCurrency(baseline.monthlyIncome)}
+                </div>
+                <div className="text-sm text-muted-foreground">Monthly Income</div>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-expense/10 border border-expense/20">
+                <div className="text-2xl font-bold text-expense">
+                  {formatCurrency(baseline.monthlyExpenses)}
+                </div>
+                <div className="text-sm text-muted-foreground">Monthly Expenses</div>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-primary/10 border border-primary/20">
+                <div className={`text-2xl font-bold ${baseline.monthlyNet >= 0 ? 'text-income' : 'text-expense'}`}>
+                  {formatCurrency(baseline.monthlyNet)}
+                </div>
+                <div className="text-sm text-muted-foreground">Monthly Net</div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -224,38 +327,61 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
             </CardContent>
           </Card>
 
-          {/* Net Worth Projection Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Net Worth Projection</CardTitle>
+          {/* Enhanced Net Worth Projection Chart */}
+          <Card className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"></div>
+            <CardHeader className="relative">
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Net Worth Growth Projection
+              </CardTitle>
               <CardDescription>
                 {selectedScenario.name} scenario over {customParams.timeHorizon} years
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-[300px]">
+            <CardContent className="relative">
+              <ChartContainer config={chartConfig} className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={projections}>
+                  <AreaChart data={projections} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.05}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                     <XAxis 
                       dataKey="year" 
                       tickFormatter={(value) => `Year ${value}`}
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
                     />
                     <YAxis 
                       tickFormatter={(value) => formatLargeCurrency(value)}
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
                     />
                     <ChartTooltip 
                       content={<ChartTooltipContent />}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        boxShadow: "var(--shadow-medium)"
+                      }}
                       formatter={(value: any) => [formatCurrency(value), "Net Worth"]}
                       labelFormatter={(value) => `Year ${value}`}
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="netWorth" 
-                      stroke="var(--color-netWorth)" 
+                    <Area
+                      type="monotone"
+                      dataKey="netWorth"
+                      stroke="hsl(var(--primary))"
                       strokeWidth={3}
-                      dot={{ fill: "var(--color-netWorth)", r: 4 }}
+                      fill="url(#netWorthGradient)"
+                      dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, stroke: "hsl(var(--primary))", strokeWidth: 2 }}
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               </ChartContainer>
             </CardContent>
@@ -354,24 +480,47 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
             </CardContent>
           </Card>
 
-          {/* Scenario Comparison Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>10-Year Comparison</CardTitle>
+          {/* Enhanced Scenario Comparison Chart */}
+          <Card className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-primary/5"></div>
+            <CardHeader className="relative">
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-accent" />
+                10-Year Scenario Comparison
+              </CardTitle>
+              <CardDescription>
+                Compare potential outcomes across different growth strategies
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-[200px]">
+            <CardContent className="relative">
+              <ChartContainer config={chartConfig} className="h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={scenarioComparison}>
-                    <XAxis dataKey="name" />
-                    <YAxis tickFormatter={(value) => formatLargeCurrency(value)} />
+                  <BarChart data={scenarioComparison} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                    <XAxis 
+                      dataKey="name" 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => formatLargeCurrency(value)}
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
                     <ChartTooltip 
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        boxShadow: "var(--shadow-medium)"
+                      }}
                       formatter={(value: any) => [formatCurrency(value), "Final Net Worth"]}
                     />
                     <Bar 
                       dataKey="finalNetWorth" 
-                      fill="hsl(var(--chart-1))"
-                      radius={[4, 4, 0, 0]}
+                      fill="hsl(var(--primary))"
+                      radius={[8, 8, 0, 0]}
+                      className="drop-shadow-sm"
                     />
                   </BarChart>
                 </ResponsiveContainer>
