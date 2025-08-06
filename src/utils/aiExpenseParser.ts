@@ -1,3 +1,5 @@
+import { CATEGORY_KEYWORDS } from '@/utils/categories';
+
 export interface ParsedExpense {
   amount: number;
   description: string;
@@ -21,8 +23,6 @@ export class AIExpenseParser {
     'paid', 'bought', 'spent', 'purchase', 'cost', 'fee', 'charge',
     'bill', 'rent', 'subscription', 'expense'
   ];
-
-import { CATEGORY_KEYWORDS } from '@/utils/categories';
 
   private static categoryKeywords: Record<string, string[]> = CATEGORY_KEYWORDS;
 

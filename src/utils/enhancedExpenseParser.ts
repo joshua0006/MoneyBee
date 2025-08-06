@@ -1,3 +1,5 @@
+import { CATEGORY_KEYWORDS } from '@/utils/categories';
+
 export interface ParsedExpense {
   amount: number;
   description: string;
@@ -28,8 +30,6 @@ export class EnhancedExpenseParser {
     'subscription', 'membership', 'rent', 'mortgage', 'loan', 'debt', 'tax',
     'fine', 'penalty', 'donation', 'investment', 'loss', 'repair'
   ];
-
-import { CATEGORY_KEYWORDS } from '@/utils/categories';
 
   private static readonly merchantCategories = {
     // Food & Dining

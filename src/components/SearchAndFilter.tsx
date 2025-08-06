@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, Download, Calendar, X } from "lucide-react";
 import { formatDistanceToNow, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { EXPENSE_CATEGORIES } from '@/utils/categories';
 
 interface Expense {
   id: string;
@@ -22,7 +23,7 @@ interface SearchAndFilterProps {
   onExport: () => void;
 }
 
-import { getCategoriesForFilter } from '@/utils/categories';
+
 
 const dateRanges = [
   { label: "All Time", value: "all" },
@@ -199,7 +200,7 @@ export const SearchAndFilter = ({ expenses, onFilteredResults, onExport }: Searc
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category) => (
+                  {['All Categories', ...EXPENSE_CATEGORIES].map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
                     </SelectItem>

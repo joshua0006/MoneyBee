@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { CalendarIcon, Plus, Edit, Trash2, Play, Pause, Clock, TrendingUp, TrendingDown, Eye, Calendar as CalendarIconSmall } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { EXPENSE_CATEGORIES } from '@/utils/categories';
 import { 
   type RecurringTransaction,
   saveRecurringToStorage,
@@ -54,7 +55,6 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
     notes: ''
   });
 
-import { EXPENSE_CATEGORIES } from '@/utils/categories';
 
   useEffect(() => {
     setRecurringTransactions(loadRecurringFromStorage());
@@ -308,7 +308,7 @@ import { EXPENSE_CATEGORIES } from '@/utils/categories';
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map(cat => (
+                      {EXPENSE_CATEGORIES.map(cat => (
                         <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                       ))}
                     </SelectContent>
