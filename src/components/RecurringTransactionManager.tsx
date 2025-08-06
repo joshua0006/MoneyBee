@@ -54,10 +54,7 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
     notes: ''
   });
 
-  const categories = [
-    'Food', 'Entertainment', 'Transport', 'Groceries', 'Housing', 'Clothing',
-    'Utilities', 'Health', 'Education', 'Insurance', 'Tax', 'Work', 'Donations', 'Other'
-  ];
+import { EXPENSE_CATEGORIES } from '@/utils/categories';
 
   useEffect(() => {
     setRecurringTransactions(loadRecurringFromStorage());

@@ -20,10 +20,7 @@ interface BudgetManagerProps {
   onDeleteBudget: (id: string) => void;
 }
 
-const CATEGORIES = [
-  'Food', 'Entertainment', 'Transport', 'Groceries', 'Housing', 'Clothing',
-  'Utilities', 'Health', 'Education', 'Insurance', 'Tax', 'Work', 'Donations', 'Other'
-];
+import { EXPENSE_CATEGORIES } from '@/utils/categories';
 
 export const BudgetManager = ({ 
   budgets, 
@@ -120,7 +117,7 @@ export const BudgetManager = ({
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {CATEGORIES.filter(cat => !budgets.some(b => b.category === cat)).map(category => (
+                        {EXPENSE_CATEGORIES.filter(cat => !budgets.some(b => b.category === cat)).map(category => (
                           <SelectItem key={category} value={category}>
                             {category}
                           </SelectItem>

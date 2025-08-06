@@ -29,6 +29,8 @@ export class EnhancedExpenseParser {
     'fine', 'penalty', 'donation', 'investment', 'loss', 'repair'
   ];
 
+import { CATEGORY_KEYWORDS } from '@/utils/categories';
+
   private static readonly merchantCategories = {
     // Food & Dining
     'starbucks': 'Food & Dining', 'mcdonalds': 'Food & Dining', 'subway': 'Food & Dining',
@@ -61,46 +63,7 @@ export class EnhancedExpenseParser {
     'internet': 'Utilities', 'phone': 'Utilities', 'cable': 'Utilities'
   };
 
-  private static readonly categoryKeywords = {
-    'Food & Dining': [
-      'food', 'eat', 'meal', 'lunch', 'dinner', 'breakfast', 'snack', 'drink',
-      'coffee', 'tea', 'restaurant', 'cafe', 'bar', 'pub', 'pizza', 'burger',
-      'groceries', 'grocery', 'supermarket', 'takeout', 'delivery'
-    ],
-    'Transportation': [
-      'gas', 'fuel', 'car', 'vehicle', 'drive', 'ride', 'bus', 'train', 'metro',
-      'taxi', 'uber', 'lyft', 'parking', 'toll', 'maintenance', 'repair',
-      'insurance', 'registration', 'flight', 'plane', 'airport'
-    ],
-    'Shopping': [
-      'buy', 'bought', 'purchase', 'store', 'shop', 'mall', 'clothes', 'clothing',
-      'shoes', 'electronics', 'gadget', 'book', 'gift', 'present', 'amazon',
-      'online', 'order', 'delivery', 'shipping'
-    ],
-    'Entertainment': [
-      'movie', 'cinema', 'theater', 'concert', 'music', 'game', 'gaming',
-      'subscription', 'netflix', 'spotify', 'gym', 'fitness', 'sport',
-      'hobby', 'fun', 'entertainment', 'party', 'event'
-    ],
-    'Healthcare': [
-      'doctor', 'hospital', 'medical', 'medicine', 'pharmacy', 'dentist',
-      'health', 'insurance', 'checkup', 'appointment', 'prescription',
-      'surgery', 'treatment', 'therapy'
-    ],
-    'Utilities': [
-      'electric', 'electricity', 'gas', 'water', 'internet', 'phone', 'mobile',
-      'cable', 'tv', 'streaming', 'utility', 'bill', 'service'
-    ],
-    'Travel': [
-      'hotel', 'flight', 'vacation', 'trip', 'travel', 'airbnb', 'booking',
-      'airline', 'airport', 'luggage', 'passport', 'visa'
-    ],
-    'Work': [
-      'office', 'work', 'business', 'meeting', 'conference', 'supplies',
-      'equipment', 'software', 'license', 'professional'
-    ],
-    'Other': []
-  };
+  private static readonly categoryKeywords = CATEGORY_KEYWORDS;
 
   private static readonly writtenNumbers = {
     'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,

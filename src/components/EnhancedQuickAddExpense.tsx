@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Camera, Receipt, Zap, Sparkles, CheckCircle2, Bot, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Expense, Account } from '@/types/app';
+import { EXPENSE_CATEGORIES, suggestCategoryFromDescription as getCategorySuggestion } from '@/utils/categories';
 import { getSmartSuggestions } from '@/utils/smartSuggestions';
 import { EnhancedExpenseParser, type ParsedExpense } from "@/utils/enhancedExpenseParser";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,11 +20,6 @@ interface QuickAddExpenseProps {
   accounts: Account[];
   editingExpense?: Expense;
 }
-
-const categories = [
-  'Food', 'Entertainment', 'Transport', 'Groceries', 'Housing', 'Clothing', 
-  'Utilities', 'Health', 'Education', 'Insurance', 'Tax', 'Work', 'Donations', 'Other'
-];
 
 const quickAmounts = [5, 10, 15, 20, 25, 50];
 
@@ -67,33 +63,9 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   }, [description, existingExpenses]);
 
 
-  // Auto-suggest category based on description
+  // Auto-suggest category based on description (delegated to centralized function)
   const suggestCategoryFromDescription = (desc: string): string => {
-    const lowerDesc = desc.toLowerCase();
-    
-    const categoryMap: Record<string, string[]> = {
-      "Food": ["coffee", "restaurant", "lunch", "dinner", "breakfast", "food", "pizza", "burger", "cafe", "bar"],
-      "Groceries": ["grocery", "groceries", "supermarket", "walmart", "target", "costco", "produce", "market"],
-      "Transport": ["gas", "fuel", "uber", "taxi", "bus", "train", "parking", "lyft", "flight", "metro"],
-      "Entertainment": ["movie", "cinema", "netflix", "spotify", "game", "concert", "theater", "streaming"],
-      "Health": ["doctor", "pharmacy", "medicine", "hospital", "dental", "prescription", "gym", "fitness"],
-      "Utilities": ["electric", "water", "phone", "internet", "cable", "utility", "bill"],
-      "Housing": ["rent", "mortgage", "property", "hoa", "maintenance", "repair", "home"],
-      "Clothing": ["clothes", "clothing", "shirt", "pants", "shoes", "dress", "fashion"],
-      "Insurance": ["insurance", "premium", "coverage", "policy", "auto", "health"],
-      "Education": ["school", "book", "course", "tuition", "university", "college", "training"],
-      "Tax": ["tax", "taxes", "irs", "filing", "deduction", "refund"],
-      "Work": ["office", "supplies", "business", "work", "conference", "equipment"],
-      "Donations": ["charity", "donation", "church", "nonprofit", "give", "foundation"]
-    };
-
-    for (const [cat, keywords] of Object.entries(categoryMap)) {
-      if (keywords.some(keyword => lowerDesc.includes(keyword))) {
-        return cat;
-      }
-    }
-    
-    return "";
+    return getCategorySuggestion(desc);
   };
 
   // Auto-save functionality
@@ -379,7 +351,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     }
     
     setIsParsing(false);
-  }, [categories, autoSubmit, useFallback]);
+  }, [autoSubmit, useFallback]);
 
   // Debounce the AI parsing
   useEffect(() => {
@@ -658,7 +630,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               <div className="space-y-2">
                 <span className="text-xs font-medium text-muted-foreground">Categories</span>
                 <div className="grid grid-cols-3 gap-2">
-                  {categories.slice(0, 9).map((cat) => (
+                  {EXPENSE_CATEGORIES.slice(0, 9).map((cat) => (
                     <Button
                       key={cat}
                       type="button"
@@ -673,16 +645,16 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                 </div>
                 
                 {/* More Categories Dropdown */}
-                {categories.length > 9 && (
+                {EXPENSE_CATEGORIES.length > 9 && (
                   <Select 
-                    value={category && !categories.slice(0, 9).includes(category) ? category : ""} 
+                    value={category && !EXPENSE_CATEGORIES.slice(0, 9).includes(category as any) ? category : ""} 
                     onValueChange={setCategory}
                   >
                     <SelectTrigger className="h-8">
                       <SelectValue placeholder="More categories..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.slice(9).map((cat) => (
+                      {EXPENSE_CATEGORIES.slice(9).map((cat) => (
                         <SelectItem key={cat} value={cat}>
                           {cat}
                         </SelectItem>

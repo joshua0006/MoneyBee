@@ -19,10 +19,7 @@ interface QuickAddExpenseProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => void;
 }
 
-const categories = [
-  'Food', 'Entertainment', 'Transport', 'Groceries', 'Housing', 'Clothing',
-  'Utilities', 'Health', 'Education', 'Insurance', 'Tax', 'Work', 'Donations', 'Other'
-];
+import { EXPENSE_CATEGORIES } from '@/utils/categories';
 
 const quickAmounts = [5, 10, 15, 20, 25, 50];
 
@@ -151,7 +148,7 @@ export const QuickAddExpense = ({ onAddExpense }: QuickAddExpenseProps) => {
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((cat) => (
+                {EXPENSE_CATEGORIES.map((cat) => (
                   <SelectItem key={cat} value={cat}>
                     {cat}
                   </SelectItem>

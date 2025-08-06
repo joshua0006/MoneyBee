@@ -2,23 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
 import type { Expense } from '@/types/app';
+import { CATEGORY_COLORS } from '@/utils/categories';
 
 interface CategoryBreakdownProps {
   expenses: Expense[];
 }
 
-const categoryColors: Record<string, string> = {
-  "Food & Dining": "hsl(20 88% 58%)",
-  "Transportation": "hsl(220 85% 58%)", 
-  "Shopping": "hsl(280 85% 65%)",
-  "Entertainment": "hsl(340 80% 62%)",
-  "Bills & Utilities": "hsl(15 85% 65%)",
-  "Healthcare": "hsl(158 65% 48%)",
-  "Travel": "hsl(200 85% 58%)",
-  "Education": "hsl(240 75% 60%)",
-  "Personal Care": "hsl(43 92% 58%)",
-  "Other": "hsl(210 20% 52%)"
-};
 
 export const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
   const expenseOnly = expenses.filter(e => e.type === 'expense');
@@ -52,7 +41,7 @@ export const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
                 <div className="flex items-center gap-2">
                   <div 
                     className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: categoryColors[category] || categoryColors.Other }}
+                    style={{ backgroundColor: CATEGORY_COLORS[category] || CATEGORY_COLORS.Other }}
                   />
                   <span className="text-sm font-medium">{category}</span>
                 </div>
@@ -65,7 +54,7 @@ export const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
                 value={percentage} 
                 className="h-2"
                 style={{
-                  '--progress-color': categoryColors[category] || categoryColors.Other
+                  '--progress-color': CATEGORY_COLORS[category] || CATEGORY_COLORS.Other
                 } as React.CSSProperties}
               />
             </div>

@@ -22,85 +22,9 @@ export class AIExpenseParser {
     'bill', 'rent', 'subscription', 'expense'
   ];
 
-  private static categoryKeywords: Record<string, string[]> = {
-    'Food': [
-      'coffee', 'starbucks', 'mcdonalds', 'restaurant', 'lunch', 'dinner', 'breakfast',
-      'food', 'pizza', 'burger', 'sandwich', 'cafe', 'bar', 'pub', 'drink', 'beer', 
-      'wine', 'soda', 'snack', 'eat', 'meal', 'dine', 'dining', 'takeout', 'delivery'
-    ],
-    'Groceries': [
-      'grocery', 'groceries', 'supermarket', 'walmart', 'target', 'costco', 'safeway',
-      'kroger', 'produce', 'vegetables', 'fruits', 'meat', 'dairy', 'bread', 'milk',
-      'eggs', 'shopping', 'market', 'store'
-    ],
-    'Transport': [
-      'gas', 'fuel', 'uber', 'taxi', 'bus', 'train', 'parking', 'toll',
-      'subway', 'metro', 'flight', 'airline', 'car', 'garage', 'shell', 'bp',
-      'exxon', 'chevron', 'station', 'lyft', 'rideshare', 'commute', 'travel'
-    ],
-    'Entertainment': [
-      'movie', 'cinema', 'netflix', 'spotify', 'game', 'gaming', 'concert', 'ticket',
-      'theater', 'show', 'entertainment', 'fun', 'hobby', 'streaming', 'subscription',
-      'youtube', 'disney', 'hulu', 'music', 'festival', 'amusement', 'park'
-    ],
-    'Health': [
-      'doctor', 'hospital', 'pharmacy', 'medicine', 'dentist', 'clinic',
-      'health', 'medical', 'prescription', 'cvs', 'walgreens', 'therapy',
-      'checkup', 'surgery', 'treatment', 'wellness', 'fitness', 'gym'
-    ],
-    'Utilities': [
-      'electric', 'electricity', 'water', 'internet', 'phone', 'cable',
-      'utility', 'bill', 'gas', 'heating', 'cooling', 'wifi', 'broadband',
-      'cell', 'mobile', 'power', 'energy', 'sewer', 'trash', 'garbage'
-    ],
-    'Housing': [
-      'rent', 'mortgage', 'property', 'hoa', 'maintenance', 'repair', 'home',
-      'house', 'apartment', 'condo', 'landlord', 'lease', 'deposit', 'taxes',
-      'homeowners', 'renovation', 'improvement', 'furnishing', 'furniture'
-    ],
-    'Clothing': [
-      'clothes', 'clothing', 'shirt', 'pants', 'shoes', 'dress', 'jacket',
-      'jeans', 'fashion', 'apparel', 'outfit', 'wardrobe', 'nike', 'adidas',
-      'h&m', 'zara', 'uniqlo', 'gap', 'shopping', 'wear', 'accessories'
-    ],
-    'Insurance': [
-      'insurance', 'premium', 'coverage', 'policy', 'auto', 'health', 'life',
-      'home', 'renters', 'car', 'medical', 'dental', 'vision', 'disability',
-      'liability', 'deductible', 'claim'
-    ],
-    'Education': [
-      'school', 'tuition', 'education', 'course', 'class', 'training', 'workshop',
-      'seminar', 'certification', 'degree', 'college', 'university', 'books',
-      'supplies', 'learning', 'study', 'academy', 'online'
-    ],
-    'Tax': [
-      'tax', 'taxes', 'irs', 'filing', 'deduction', 'refund', 'accountant',
-      'preparation', 'federal', 'state', 'income', 'property', 'sales'
-    ],
-    'Work': [
-      'office', 'supplies', 'business', 'work', 'lunch', 'commute', 'parking',
-      'conference', 'meeting', 'travel', 'expense', 'professional', 'equipment',
-      'software', 'tools', 'uniform', 'training'
-    ],
-    'Donations': [
-      'charity', 'donation', 'donate', 'church', 'nonprofit', 'give', 'giving',
-      'foundation', 'fundraiser', 'contribution', 'tithe', 'volunteer', 'support',
-      'red cross', 'salvation army', 'goodwill'
-    ],
-    'Salary': [
-      'salary', 'wage', 'wages', 'paycheck', 'pay', 'income', 'bonus'
-    ],
-    'Freelance': [
-      'freelance', 'consulting', 'contract', 'commission', 'gig'
-    ],
-    'Investment': [
-      'dividend', 'interest', 'investment', 'stock', 'crypto', 'profit'
-    ],
-    'Business Income': [
-      'revenue', 'sales', 'sold', 'business', 'client'
-    ],
-    'Other': []
-  };
+import { CATEGORY_KEYWORDS } from '@/utils/categories';
+
+  private static categoryKeywords: Record<string, string[]> = CATEGORY_KEYWORDS;
 
   static parseExpenseText(text: string): ParsedExpense {
     const normalizedText = text.toLowerCase().trim();

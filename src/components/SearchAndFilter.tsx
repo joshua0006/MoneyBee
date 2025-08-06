@@ -22,23 +22,7 @@ interface SearchAndFilterProps {
   onExport: () => void;
 }
 
-const categories = [
-  "All Categories",
-  "Food",
-  "Entertainment", 
-  "Transport",
-  "Groceries",
-  "Housing",
-  "Clothing",
-  "Utilities",
-  "Health",
-  "Education",
-  "Insurance",
-  "Tax",
-  "Work",
-  "Donations",
-  "Other"
-];
+import { getCategoriesForFilter } from '@/utils/categories';
 
 const dateRanges = [
   { label: "All Time", value: "all" },
