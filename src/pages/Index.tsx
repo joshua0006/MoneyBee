@@ -30,7 +30,6 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { MobileSettings } from "@/components/MobileSettings";
 import { mobileService } from "@/utils/mobileService";
 import { useAppData } from "@/hooks/useAppData";
-import { exportExpensesAsCSV } from "@/utils/expenseUtils";
 import type { Expense, Account, Budget } from "@/types/app";
 
 const Index = () => {
@@ -153,7 +152,26 @@ const Index = () => {
 
   const handleExport = () => {
     try {
-      exportExpensesAsCSV(filteredExpenses);
+      // Simple CSV export functionality
+      const csvContent = [
+        ['Date', 'Description', 'Category', 'Amount', 'Type'],
+        ...filteredExpenses.map(expense => [
+          expense.date.toISOString().split('T')[0],
+          expense.description,
+          expense.category,
+          expense.amount.toString(),
+          expense.type
+        ])
+      ].map(row => row.join(',')).join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `expenses_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
       toast({
         title: "📊 Export Successful",
         description: `Exported ${filteredExpenses.length} transactions`,

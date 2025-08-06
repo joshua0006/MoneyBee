@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
-import { Expense } from '@/utils/expenseUtils';
+import type { Expense } from '@/types/app';
 
 interface CalendarViewProps {
   expenses: Expense[];

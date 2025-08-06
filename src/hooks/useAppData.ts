@@ -123,7 +123,7 @@ export const useAppData = (): AppDataHook => {
             category: expense.category,
             date: new Date(expense.date),
             type: expense.type || 'expense',
-            accountId: expense.accountId || ''
+            accountId: expense.accountId
           }, user.id);
           await saveExpenseToDatabase(expenseData);
         }
@@ -135,7 +135,7 @@ export const useAppData = (): AppDataHook => {
             name: account.name,
             type: account.type || 'checking',
             balance: account.balance || 0,
-            color: account.color || '#3B82F6'
+            color: account.color
           }, user.id);
           await saveAccountToDatabase(accountData);
         }

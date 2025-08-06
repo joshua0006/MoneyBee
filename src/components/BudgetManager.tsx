@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Target, AlertTriangle, TrendingUp } from 'lucide-react';
-import { Budget, Expense, calculateBudgetUsage } from '@/utils/expenseUtils';
+import type { Budget, Expense } from '@/types/app';
+import { calculateBudgetUsage } from '@/utils/budgetUtils';
 import { useToast } from '@/hooks/use-toast';
 
 interface BudgetManagerProps {

@@ -7,9 +7,7 @@ import { DatePickerWithRange } from '@/components/ui/date-picker';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import type { Database } from '@/integrations/supabase/types';
-
-type Expense = Database['public']['Tables']['expenses']['Row'];
+import type { Expense } from '@/types/app';
 
 interface ExpenseSearchProps {
   expenses: Expense[];

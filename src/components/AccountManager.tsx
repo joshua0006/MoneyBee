@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Wallet, CreditCard, Banknote, PiggyBank } from 'lucide-react';
-import { Account, Expense } from '@/utils/expenseUtils';
+import type { Account, Expense } from '@/types/app';
 import { useToast } from '@/hooks/use-toast';
 
 interface AccountManagerProps {

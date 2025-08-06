@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Copy, Trash2, Bookmark, Edit, MapPin, Camera, Tag } from 'lucide-react';
-import { Expense, Account } from '@/utils/expenseUtils';
+import type { Expense, Account } from '@/types/app';
 import { useToast } from '@/hooks/use-toast';
 
 interface TransactionDetailProps {

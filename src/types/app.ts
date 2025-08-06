@@ -13,7 +13,12 @@ export interface Expense {
   category: string;
   date: Date;
   type: 'expense' | 'income';
-  accountId: string;
+  accountId?: string;
+  photos?: string[];
+  location?: string;
+  tags?: string[];
+  recurring?: boolean;
+  recurringId?: string;
 }
 
 export interface Account {
@@ -21,7 +26,7 @@ export interface Account {
   name: string;
   type: 'checking' | 'savings' | 'credit' | 'cash';
   balance: number;
-  color: string;
+  color?: string;
 }
 
 export interface Budget {
@@ -40,7 +45,7 @@ export const convertDbExpenseToApp = (dbExpense: DbExpense): Expense => ({
   category: dbExpense.category,
   date: new Date(dbExpense.date),
   type: dbExpense.type as 'expense' | 'income',
-  accountId: dbExpense.account_id || ''
+  accountId: dbExpense.account_id || undefined
 });
 
 export const convertAppExpenseToDb = (expense: Omit<Expense, 'id'>, userId: string): Omit<DbExpense, 'id' | 'created_at' | 'updated_at'> => ({
@@ -58,7 +63,7 @@ export const convertDbAccountToApp = (dbAccount: DbAccount): Account => ({
   name: dbAccount.name,
   type: dbAccount.type as 'checking' | 'savings' | 'credit' | 'cash',
   balance: dbAccount.balance,
-  color: dbAccount.color || '#3B82F6'
+  color: dbAccount.color || undefined
 });
 
 export const convertAppAccountToDb = (account: Omit<Account, 'id'>, userId: string): Omit<DbAccount, 'id' | 'created_at' | 'updated_at'> => ({

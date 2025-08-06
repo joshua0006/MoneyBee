@@ -25,7 +25,7 @@ import {
   getNextOccurrenceText,
   processDueRecurringTransactions
 } from "@/utils/recurringUtils";
-import { type Account } from "@/utils/expenseUtils";
+import type { Account } from '@/types/app';
 
 interface RecurringTransactionManagerProps {
   accounts: Account[];

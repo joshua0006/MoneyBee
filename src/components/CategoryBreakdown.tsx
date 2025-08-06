@@ -1,14 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
-interface Expense {
-  id: string;
-  amount: number;
-  description: string;
-  category: string;
-  date: Date;
-  type: 'expense' | 'income';
-}
+import type { Expense } from '@/types/app';
 
 interface CategoryBreakdownProps {
   expenses: Expense[];
