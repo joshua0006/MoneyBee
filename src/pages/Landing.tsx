@@ -254,10 +254,12 @@ export default function Landing() {
             <Phone3D demoState={demoState} onDemoStateChange={handleDemoStateChange} />
             
             {/* Feature Callouts - Simplified on mobile */}
-            <FeatureCallouts 
-              onFeatureClick={handleFeatureClick}
-              activeFeature={activeFeature}
-            />
+            {!isMobile && (
+              <FeatureCallouts 
+                onFeatureClick={handleFeatureClick}
+                activeFeature={activeFeature}
+              />
+            )}
 
             {/* Stats Display */}
             <StatsDisplay position={[0, 4, 0]} />
