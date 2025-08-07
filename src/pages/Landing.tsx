@@ -323,30 +323,30 @@ export default function Landing() {
         </header>
 
         {/* Hero Content */}
-        <main className={`flex-1 flex items-center justify-center ${isMobile ? 'px-4' : 'px-6'} safe-area-left safe-area-right`}>
-          <div className="max-w-4xl mx-auto text-center space-y-6">
-            <div className="space-y-4">
-              <Badge variant="secondary" className="mb-4">
-                <Sparkles className="w-4 h-4 mr-2" />
+        <main className={`flex-1 flex items-center justify-center ${isMobile ? 'px-4 py-6' : 'px-6'} safe-area-left safe-area-right`}>
+          <div className={`${isMobile ? 'max-w-sm' : 'max-w-4xl'} mx-auto text-center ${isMobile ? 'space-y-4' : 'space-y-6'}`}>
+            <div className={`${isMobile ? 'space-y-3' : 'space-y-4'}`}>
+              <Badge variant="secondary" className={`${isMobile ? 'mb-2 text-xs' : 'mb-4'}`}>
+                <Sparkles className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} mr-2`} />
                 AI-Powered Expense Tracking
               </Badge>
-              <h1 className={`${isMobile ? 'text-3xl' : 'text-4xl md:text-6xl'} font-bold text-foreground leading-tight`}>
+              <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl md:text-6xl'} font-bold text-foreground leading-tight`}>
                 Smart Money
                 <span className="text-primary"> Management</span>
               </h1>
-              <p className={`${isMobile ? 'text-lg' : 'text-xl md:text-2xl'} text-muted-foreground max-w-2xl mx-auto`}>
+              <p className={`${isMobile ? 'text-base' : 'text-xl md:text-2xl'} text-muted-foreground ${isMobile ? 'max-w-xs' : 'max-w-2xl'} mx-auto`}>
                 Track expenses, build budgets, and grow wealth with AI-powered insights. 
                 Your financial future starts here.
               </p>
             </div>
 
-            <div className="flex flex-col gap-4 justify-center">
+            <div className={`flex flex-col ${isMobile ? 'gap-3' : 'gap-4'} justify-center`}>
               <Button 
                 size={isMobile ? "default" : "lg"} 
                 onClick={handleGetStarted} 
-                className="bg-primary hover:bg-primary/90 touch-manipulation w-full sm:w-auto"
+                className="bg-primary hover:bg-primary/90 touch-manipulation w-full"
               >
-                <Smartphone className="w-5 h-5 mr-2" />
+                <Smartphone className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} mr-2`} />
                 Start Free Demo
               </Button>
               {!isMobile && (
@@ -358,23 +358,23 @@ export default function Landing() {
             </div>
 
             {/* Social Proof */}
-            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                10,000+ Users
+            <div className={`flex items-center justify-center ${isMobile ? 'gap-3 text-xs' : 'gap-6 text-sm'} text-muted-foreground ${isMobile ? 'flex-wrap' : ''}`}>
+              <div className="flex items-center gap-1">
+                <Users className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                10k+ Users
               </div>
-              <div className="flex items-center gap-2">
-                <Star className="w-4 h-4" />
+              <div className="flex items-center gap-1">
+                <Star className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                 4.9/5 Rating
               </div>
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4" />
+              <div className="flex items-center gap-1">
+                <Zap className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                 AI-Powered
               </div>
             </div>
 
           {/* Feature Cards */}
-          <div className={`grid grid-cols-1 ${isMobile ? 'gap-4 mt-8' : 'md:grid-cols-3 gap-6 mt-16'}`}>
+          <div className={`grid grid-cols-1 ${isMobile ? 'gap-3 mt-6' : 'md:grid-cols-3 gap-6 mt-16'}`}>
             <Card className="glass-card touch-manipulation">
               <CardContent className={`${isMobile ? 'p-4' : 'p-6'} text-center`}>
                 <Camera className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
