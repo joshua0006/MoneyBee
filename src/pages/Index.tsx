@@ -142,15 +142,19 @@ const Index = () => {
   };
 
   const handleEditExpense = (expense: Expense) => {
+    console.log('Edit expense clicked:', expense);
     setEditingExpense(expense);
     setIsDetailOpen(false);
+    console.log('Editing expense set, should open sheet');
   };
 
   const handleUpdateExpense = async (updatedExpense: Omit<Expense, 'id'>) => {
     if (!editingExpense) return;
     
+    console.log('Updating expense:', editingExpense.id, 'with data:', updatedExpense);
     await updateExpenseData(editingExpense.id, updatedExpense);
     setEditingExpense(null);
+    console.log('Expense updated and editing state cleared');
   };
 
   const handleExport = () => {
@@ -471,15 +475,16 @@ const Index = () => {
         <Sheet open={!!editingExpense} onOpenChange={(open) => !open && setEditingExpense(null)}>
           <SheetContent side="bottom" className="h-[95vh] sm:h-[90vh] rounded-t-xl p-0">
             {editingExpense && (
-              <EnhancedQuickAddExpense 
-                onAddExpense={(expense) => {
-                  handleUpdateExpense(expense);
-                  toast({
-                    title: "✅ Transaction Updated",
-                    description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} updated`,
-                    duration: 3000
-                  });
-                }}
+               <EnhancedQuickAddExpense 
+                 onAddExpense={(expense) => {
+                   console.log('Edit form submitted with expense:', expense);
+                   handleUpdateExpense(expense);
+                   toast({
+                     title: "✅ Transaction Updated",
+                     description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} updated`,
+                     duration: 3000
+                   });
+                 }}
                 existingExpenses={allExpenses}
                 accounts={accounts}
                 editingExpense={editingExpense}

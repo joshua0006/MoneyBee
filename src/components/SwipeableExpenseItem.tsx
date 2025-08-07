@@ -39,8 +39,10 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
+    console.log('Edit button clicked for expense:', expense);
     mobileService.lightHaptic();
     onEdit?.(expense);
+    console.log('onEdit called with expense:', expense);
   };
 
   const categoryColors = {
