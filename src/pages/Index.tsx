@@ -477,15 +477,17 @@ const Index = () => {
           <SheetContent side="bottom" className="h-[95vh] sm:h-[90vh] rounded-t-xl p-0">
             {editingExpense && (
                <EnhancedQuickAddExpense 
-                 onAddExpense={(expense) => {
-                   console.log('Edit form submitted with expense:', expense);
-                   handleUpdateExpense(expense);
-                   toast({
-                     title: "✅ Transaction Updated",
-                     description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} updated`,
-                     duration: 3000
-                   });
-                 }}
+              onAddExpense={(expense) => {
+                console.log('Edit form submitted with expense:', expense);
+                handleUpdateExpense(expense);
+                setEditingExpense(null);
+                setActiveTab("home");
+                toast({
+                  title: "✅ Transaction Updated",
+                  description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} updated`,
+                  duration: 3000
+                });
+              }}
                 existingExpenses={allExpenses}
                 accounts={accounts}
                 editingExpense={editingExpense}
