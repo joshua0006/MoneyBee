@@ -428,7 +428,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 text-xs">
-                  <span className="hidden sm:inline text-muted-foreground">Fallback</span>
+                  <span className="text-muted-foreground">Smart AI</span>
                   <Switch
                     checked={useFallback}
                     onCheckedChange={setUseFallback}
@@ -436,7 +436,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                   />
                 </div>
                 <div className="flex items-center gap-1 text-xs">
-                  <span className="hidden sm:inline text-muted-foreground">Auto</span>
+                  <span className="text-muted-foreground">Quick Save</span>
                   <Switch
                     checked={autoSubmit}
                     onCheckedChange={setAutoSubmit}
@@ -482,35 +482,33 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
         {/* Manual Entry Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Type Toggle - Prominent */}
-          {(!aiMode || type === 'income') && (
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                type="button"
-                variant={type === 'expense' ? 'default' : 'outline'}
-                onClick={() => setType('expense')}
-                className={`h-10 text-sm font-medium ${
-                  type === 'expense' 
-                    ? 'bg-expense text-expense-foreground' 
-                    : 'border-dashed'
-                }`}
-              >
-                💳 Expense
-              </Button>
-              <Button
-                type="button"
-                variant={type === 'income' ? 'default' : 'outline'}
-                onClick={() => setType('income')}
-                className={`h-10 text-sm font-medium ${
-                  type === 'income' 
-                    ? 'bg-income text-income-foreground' 
-                    : 'border-dashed'
-                }`}
-              >
-                💰 Income
-              </Button>
-            </div>
-          )}
+          {/* Type Toggle - Always Visible for Better Income Access */}
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant={type === 'expense' ? 'default' : 'outline'}
+              onClick={() => setType('expense')}
+              className={`h-12 text-sm font-medium flex items-center gap-2 ${
+                type === 'expense' 
+                  ? 'bg-expense text-expense-foreground shadow-md' 
+                  : 'border-dashed hover:bg-muted/50'
+              }`}
+            >
+              💳 <span>Expense</span>
+            </Button>
+            <Button
+              type="button"
+              variant={type === 'income' ? 'default' : 'outline'}
+              onClick={() => setType('income')}
+              className={`h-12 text-sm font-medium flex items-center gap-2 ${
+                type === 'income' 
+                  ? 'bg-income text-income-foreground shadow-md' 
+                  : 'border-dashed hover:bg-muted/50'
+              }`}
+            >
+              💰 <span>Income</span>
+            </Button>
+          </div>
 
           {/* Amount Input - Large and Prominent */}
           <div className="space-y-3">
