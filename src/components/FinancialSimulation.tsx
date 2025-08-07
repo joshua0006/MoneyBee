@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
+import { getRandomMoneyQuote } from "@/utils/moneyQuotes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,7 +56,18 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
   const [selectedScenario, setSelectedScenario] = useState<SimulationScenario>(defaultScenarios[0]);
   const [customParams, setCustomParams] = useState<SimulationParams>(selectedScenario.params);
   const [activeTab, setActiveTab] = useState("overview");
-
+  
+  // Rotating quotes functionality
+  const [currentQuote, setCurrentQuote] = useState(() => getRandomMoneyQuote());
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentQuote(getRandomMoneyQuote());
+    }, 5000); // Change quote every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
+  
   // Calculate projections based on current parameters
   const projections = useMemo(() => {
     return projectFinancialGrowth(baseline, customParams);
@@ -65,10 +77,6 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
     return calculateMilestones(projections);
   }, [projections]);
 
-  const motivationalMessage = useMemo(() => {
-    return getMotivationalMessage(baseline, projections);
-  }, [baseline, projections]);
-
   const timelineGoals = useMemo(() => {
     return getTimelineGoals(projections);
   }, [projections]);
@@ -76,11 +84,6 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
   const achievementCards = useMemo(() => {
     return getAchievementCards(projections, baseline);
   }, [projections, baseline]);
-
-  const inspirationalQuote = useMemo(() => {
-    const quotes = getInspirationalQuotes();
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  }, []);
 
   // Scenario comparison data
   const scenarioComparison = useMemo(() => {
@@ -264,14 +267,21 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          {/* Motivational Message */}
+          {/* Money Wisdom Quote */}
           <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
             <CardContent className="pt-6">
               <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">Your Financial Journey</h3>
-                <p className="text-muted-foreground mb-4">{motivationalMessage}</p>
-                <div className="text-sm italic text-muted-foreground border-l-2 border-primary/30 pl-4">
-                  "{inspirationalQuote}"
+                <h3 className="text-lg font-semibold mb-4">💡 Money Wisdom</h3>
+                <div className="space-y-3">
+                  <blockquote className="text-sm italic text-muted-foreground border-l-2 border-primary/30 pl-4 py-2">
+                    "{currentQuote.text}"
+                  </blockquote>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <cite className="font-medium">— {currentQuote.author}</cite>
+                    <Badge variant="outline" className="text-xs">
+                      {currentQuote.category}
+                    </Badge>
+                  </div>
                 </div>
               </div>
             </CardContent>
