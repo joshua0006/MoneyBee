@@ -36,6 +36,9 @@ import * as THREE from 'three';
 import { InteractiveDemo } from '@/components/3d/InteractiveDemo';
 import { GuidedTour } from '@/components/3d/GuidedTour';
 import { MobileOptimized3D } from '@/components/3d/MobileOptimized3D';
+import { FeatureCallouts } from '@/components/3d/FeatureCallouts';
+import { StatsDisplay } from '@/components/3d/StatsDisplay';
+import { UserJourneyFlow } from '@/components/3d/UserJourneyFlow';
 
 // Floating particles for background
 function FloatingParticles() {
@@ -188,9 +191,33 @@ export default function Landing() {
   const navigate = useNavigate();
   const [demoState, setDemoState] = useState({ screen: 'dashboard' });
   const [showTour, setShowTour] = useState(false);
+  const [activeFeature, setActiveFeature] = useState<string | null>(null);
+  const [showJourney, setShowJourney] = useState(false);
   
   const handleGetStarted = () => {
     navigate('/auth');
+  };
+
+  const handleFeatureClick = (featureId: string) => {
+    setActiveFeature(activeFeature === featureId ? null : featureId);
+    
+    // Update demo state based on feature
+    switch (featureId) {
+      case 'ai-scanning':
+        setDemoState({ screen: 'scanning' });
+        break;
+      case 'ai-categorization':
+        setDemoState({ screen: 'categories' });
+        break;
+      case 'smart-budgets':
+        setDemoState({ screen: 'budgets' });
+        break;
+      case 'wealth-tracking':
+        setDemoState({ screen: 'analytics' });
+        break;
+      default:
+        setDemoState({ screen: 'dashboard' });
+    }
   };
 
   const handleStartTour = () => {
@@ -216,36 +243,19 @@ export default function Landing() {
             
             <Phone3D demoState={demoState} onDemoStateChange={handleDemoStateChange} />
             
-            <FeatureBubble
-              position={[-3, 2, 0]}
-              icon={<Camera className="w-6 h-6" />}
-              title="Smart Scanning"
-              description="Snap receipts with AI-powered OCR"
-              color="#4F46E5"
+            {/* Feature Callouts */}
+            <FeatureCallouts 
+              onFeatureClick={handleFeatureClick}
+              activeFeature={activeFeature}
             />
-            
-            <FeatureBubble
-              position={[3, 1, 0]}
-              icon={<Brain className="w-6 h-6" />}
-              title="AI Categorization"
-              description="Automatically categorize expenses"
-              color="#06B6D4"
-            />
-            
-            <FeatureBubble
-              position={[-2, -1, 0]}
-              icon={<PieChart className="w-6 h-6" />}
-              title="Smart Budgets"
-              description="Set and track spending goals"
-              color="#10B981"
-            />
-            
-            <FeatureBubble
-              position={[3, -2, 0]}
-              icon={<TrendingUp className="w-6 h-6" />}
-              title="Wealth Tracking"
-              description="Monitor your net worth growth"
-              color="#F59E0B"
+
+            {/* Stats Display */}
+            <StatsDisplay position={[0, 4, 0]} />
+
+            {/* User Journey Flow */}
+            <UserJourneyFlow 
+              position={[0, -4, 2]} 
+              isActive={showJourney}
             />
             
             <Chart3D position={[0, -3, 0]} />
@@ -392,6 +402,15 @@ export default function Landing() {
               >
                 <Play className="w-5 h-5 mr-2" />
                 Take Interactive Tour
+              </Button>
+              
+              <Button 
+                size="sm" 
+                variant="secondary" 
+                className="bg-white/60 backdrop-blur-sm"
+                onClick={() => setShowJourney(!showJourney)}
+              >
+                {showJourney ? 'Hide' : 'Show'} User Journey
               </Button>
             </div>
           </div>
