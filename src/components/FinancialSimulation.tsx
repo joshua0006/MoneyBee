@@ -284,7 +284,48 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
             </CardContent>
           </Card>
 
-          {/* Achievement Cards */}
+          {/* Investment Strategy Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle>💰 Investment Strategy</CardTitle>
+              <CardDescription>
+                Choose how your excess money grows - see instant impact on your projections below
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3">
+                {defaultScenarios.map((scenario, index) => (
+                  <Button
+                    key={index}
+                    variant={selectedScenario.name === scenario.name ? "default" : "outline"}
+                    className={`h-auto p-4 justify-start text-left transition-all ${
+                      selectedScenario.name === scenario.name ? 'bg-primary text-primary-foreground shadow-md' : ''
+                    }`}
+                    onClick={() => applyScenario(scenario)}
+                  >
+                    <div className="w-full">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="font-semibold text-base">{scenario.name}</div>
+                        <Badge variant={selectedScenario.name === scenario.name ? "secondary" : "outline"} 
+                               className="text-xs">
+                          {scenario.params.investmentReturn}% annual return
+                        </Badge>
+                      </div>
+                      <div className="text-sm opacity-80 mb-1">{scenario.description}</div>
+                      <div className="text-xs opacity-60">
+                        {scenario.params.investmentReturn === 0.05 ? 
+                          "💳 Money sits in savings account" :
+                          scenario.params.investmentReturn === 3 ?
+                          "🛡️ Low-risk bonds and CDs" :
+                          "📈 Diversified stock portfolio"
+                        }
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
           <div className="grid grid-cols-2 gap-4">
             {achievementCards.map((card, index) => (
               <Card key={index} className="relative overflow-hidden">
@@ -456,48 +497,6 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
         </TabsContent>
 
         <TabsContent value="scenarios" className="space-y-6">
-          {/* Investment Strategy Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Investment Strategy</CardTitle>
-              <CardDescription>
-                Choose how your excess money grows over time
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3">
-                {defaultScenarios.map((scenario, index) => (
-                  <Button
-                    key={index}
-                    variant={selectedScenario.name === scenario.name ? "default" : "outline"}
-                    className={`h-auto p-4 justify-start text-left ${
-                      selectedScenario.name === scenario.name ? 'bg-primary text-primary-foreground' : ''
-                    }`}
-                    onClick={() => applyScenario(scenario)}
-                  >
-                    <div className="w-full">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="font-semibold text-base">{scenario.name}</div>
-                        <Badge variant={selectedScenario.name === scenario.name ? "secondary" : "outline"} 
-                               className="text-xs">
-                          {scenario.params.investmentReturn}% annual return
-                        </Badge>
-                      </div>
-                      <div className="text-sm opacity-80 mb-1">{scenario.description}</div>
-                      <div className="text-xs opacity-60">
-                        {scenario.params.investmentReturn === 0.05 ? 
-                          "💳 Money sits in savings account" :
-                          scenario.params.investmentReturn === 3 ?
-                          "🛡️ Low-risk bonds and CDs" :
-                          "📈 Diversified stock portfolio"
-                        }
-                      </div>
-                    </div>
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Enhanced Scenario Comparison Chart */}
           <Card className="relative overflow-hidden">
