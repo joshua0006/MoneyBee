@@ -276,11 +276,8 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
                   <blockquote className="text-sm italic text-muted-foreground border-l-2 border-primary/30 pl-4 py-2">
                     "{currentQuote.text}"
                   </blockquote>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <cite className="font-medium">— {currentQuote.author}</cite>
-                    <Badge variant="outline" className="text-xs">
-                      {currentQuote.category}
-                    </Badge>
+                  <div className="text-center">
+                    <cite className="text-xs text-muted-foreground font-medium">— {currentQuote.author}</cite>
                   </div>
                 </div>
               </div>
