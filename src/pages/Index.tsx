@@ -459,6 +459,7 @@ const Index = () => {
               onAddExpense={(expense) => {
                 handleAddExpense(expense);
                 setIsAddExpenseOpen(false);
+                setActiveTab("home"); // Auto switch to home tab
                 toast({
                   title: "✅ Transaction Added",
                   description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} recorded`,
