@@ -231,12 +231,20 @@ export default function Landing() {
   };
 
   return (
-    <MobileOptimized3D enableControls={!isMobile}>
-      <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 relative overflow-hidden touch-manipulation">
-        {/* Background Canvas - Reduced complexity on mobile */}
-        <div className={`absolute inset-0 z-0 ${isMobile ? 'opacity-70' : 'opacity-100'}`}>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 relative overflow-hidden touch-manipulation">
+      {/* Background Canvas - Reduced complexity on mobile */}
+      <div className={`absolute inset-0 z-0 ${isMobile ? 'opacity-70' : 'opacity-100'}`}>
+        <Canvas
+          camera={{ position: isMobile ? [0, 0, 10] : [0, 0, 8] }}
+          dpr={isMobile ? [1, 1.5] : [1, 2]}
+          performance={{ min: 0.5 }}
+          gl={{ 
+            antialias: !isMobile,
+            alpha: false,
+            powerPreference: isMobile ? "low-power" : "high-performance"
+          }}
+        >
           <Suspense fallback={null}>
-            <PerspectiveCamera makeDefault position={isMobile ? [0, 0, 10] : [0, 0, 8]} />
             <ambientLight intensity={isMobile ? 0.6 : 0.4} />
             {!isMobile && <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />}
             <pointLight position={[-10, -10, -10]} intensity={isMobile ? 0.3 : 0.5} />
@@ -280,163 +288,163 @@ export default function Landing() {
               autoRotateSpeed={0.5}
             />
           </Suspense>
-        </div>
+        </Canvas>
+      </div>
 
-        {/* Foreground Content */}
-        <div className="relative z-10 min-h-screen flex flex-col safe-area-top safe-area-bottom">
-          {/* Header */}
-          <header className={`${isMobile ? 'p-4' : 'p-6'} safe-area-left safe-area-right`}>
-            <div className="flex items-center justify-between max-w-6xl mx-auto">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  🐝
-                </div>
-                <span className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold text-foreground`}>MoneyBee</span>
+      {/* Foreground Content */}
+      <div className="relative z-10 min-h-screen flex flex-col safe-area-top safe-area-bottom">
+        {/* Header */}
+        <header className={`${isMobile ? 'p-4' : 'p-6'} safe-area-left safe-area-right`}>
+          <div className="flex items-center justify-between max-w-6xl mx-auto">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                🐝
               </div>
-              <div className="flex items-center gap-2">
-                {!isMobile && (
-                  <Button variant="outline" onClick={handleStartTour} className="hidden sm:flex">
-                    <Play className="w-4 h-4 mr-2" />
-                    Take Tour
-                  </Button>
-                )}
-                <Button 
-                  onClick={handleGetStarted} 
-                  className="bg-primary hover:bg-primary/90 touch-manipulation"
-                  size={isMobile ? "sm" : "default"}
-                >
-                  Get Started <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
+              <span className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold text-foreground`}>MoneyBee</span>
             </div>
-          </header>
-
-          {/* Hero Content */}
-          <main className={`flex-1 flex items-center justify-center ${isMobile ? 'px-4' : 'px-6'} safe-area-left safe-area-right`}>
-            <div className="max-w-4xl mx-auto text-center space-y-6">
-              <div className="space-y-4">
-                <Badge variant="secondary" className="mb-4">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  AI-Powered Expense Tracking
-                </Badge>
-                <h1 className={`${isMobile ? 'text-3xl' : 'text-4xl md:text-6xl'} font-bold text-foreground leading-tight`}>
-                  Smart Money
-                  <span className="text-primary"> Management</span>
-                </h1>
-                <p className={`${isMobile ? 'text-lg' : 'text-xl md:text-2xl'} text-muted-foreground max-w-2xl mx-auto`}>
-                  Track expenses, build budgets, and grow wealth with AI-powered insights. 
-                  Your financial future starts here.
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-4 justify-center">
-                <Button 
-                  size={isMobile ? "default" : "lg"} 
-                  onClick={handleGetStarted} 
-                  className="bg-primary hover:bg-primary/90 touch-manipulation w-full sm:w-auto"
-                >
-                  <Smartphone className="w-5 h-5 mr-2" />
-                  Start Free Demo
-                </Button>
-                {!isMobile && (
-                  <Button size="lg" variant="outline" onClick={handleStartTour} className="w-full sm:w-auto">
-                    <Play className="w-5 h-5 mr-2" />
-                    Interactive Tour
-                  </Button>
-                )}
-              </div>
-
-              {/* Social Proof */}
-              <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  10,000+ Users
-                </div>
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4" />
-                  4.9/5 Rating
-                </div>
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4" />
-                  AI-Powered
-                </div>
-              </div>
-
-            {/* Feature Cards */}
-            <div className={`grid grid-cols-1 ${isMobile ? 'gap-4 mt-8' : 'md:grid-cols-3 gap-6 mt-16'}`}>
-              <Card className="glass-card touch-manipulation">
-                <CardContent className={`${isMobile ? 'p-4' : 'p-6'} text-center`}>
-                  <Camera className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
-                  <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold mb-2`}>Smart Receipt Scanning</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Snap photos of receipts and let AI extract all the details automatically
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-card touch-manipulation">
-                <CardContent className={`${isMobile ? 'p-4' : 'p-6'} text-center`}>
-                  <PieChart className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
-                  <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold mb-2`}>Intelligent Budgets</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Set smart spending limits and get insights on your financial habits
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-card touch-manipulation">
-                <CardContent className={`${isMobile ? 'p-4' : 'p-6'} text-center`}>
-                  <TrendingUp className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
-                  <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold mb-2`}>Wealth Growth</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Simulate investment scenarios and track your net worth over time
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </main>
-
-          {/* Call to Action */}
-          <div className={`${isMobile ? 'p-4' : 'p-6'} text-center safe-area-left safe-area-right`}>
-            {!isMobile && (
-              <p className="text-sm text-muted-foreground mb-4">
-                ✨ Click the phone above to see the app in action ✨
-              </p>
-            )}
-            <div className="flex flex-col gap-3 justify-center">
-              <Button 
-                onClick={handleGetStarted} 
-                size={isMobile ? "default" : "lg"} 
-                className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 touch-manipulation w-full"
-              >
-                <DollarSign className="w-5 h-5 mr-2" />
-                Start Your Financial Journey
-              </Button>
+            <div className="flex items-center gap-2">
               {!isMobile && (
-                <Button 
-                  onClick={handleStartTour}
-                  size="lg" 
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Play className="w-5 h-5 mr-2" />
-                  Take Interactive Tour
+                <Button variant="outline" onClick={handleStartTour} className="hidden sm:flex">
+                  <Play className="w-4 h-4 mr-2" />
+                  Take Tour
                 </Button>
               )}
-              
               <Button 
-                size="sm" 
-                variant="secondary" 
-                className="bg-white/60 backdrop-blur-sm touch-manipulation"
-                onClick={() => setShowJourney(!showJourney)}
+                onClick={handleGetStarted} 
+                className="bg-primary hover:bg-primary/90 touch-manipulation"
+                size={isMobile ? "sm" : "default"}
               >
-                {showJourney ? 'Hide' : 'Show'} User Journey
+                Get Started <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
+          </div>
+        </header>
+
+        {/* Hero Content */}
+        <main className={`flex-1 flex items-center justify-center ${isMobile ? 'px-4' : 'px-6'} safe-area-left safe-area-right`}>
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <div className="space-y-4">
+              <Badge variant="secondary" className="mb-4">
+                <Sparkles className="w-4 h-4 mr-2" />
+                AI-Powered Expense Tracking
+              </Badge>
+              <h1 className={`${isMobile ? 'text-3xl' : 'text-4xl md:text-6xl'} font-bold text-foreground leading-tight`}>
+                Smart Money
+                <span className="text-primary"> Management</span>
+              </h1>
+              <p className={`${isMobile ? 'text-lg' : 'text-xl md:text-2xl'} text-muted-foreground max-w-2xl mx-auto`}>
+                Track expenses, build budgets, and grow wealth with AI-powered insights. 
+                Your financial future starts here.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-4 justify-center">
+              <Button 
+                size={isMobile ? "default" : "lg"} 
+                onClick={handleGetStarted} 
+                className="bg-primary hover:bg-primary/90 touch-manipulation w-full sm:w-auto"
+              >
+                <Smartphone className="w-5 h-5 mr-2" />
+                Start Free Demo
+              </Button>
+              {!isMobile && (
+                <Button size="lg" variant="outline" onClick={handleStartTour} className="w-full sm:w-auto">
+                  <Play className="w-5 h-5 mr-2" />
+                  Interactive Tour
+                </Button>
+              )}
+            </div>
+
+            {/* Social Proof */}
+            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                10,000+ Users
+              </div>
+              <div className="flex items-center gap-2">
+                <Star className="w-4 h-4" />
+                4.9/5 Rating
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4" />
+                AI-Powered
+              </div>
+            </div>
+
+          {/* Feature Cards */}
+          <div className={`grid grid-cols-1 ${isMobile ? 'gap-4 mt-8' : 'md:grid-cols-3 gap-6 mt-16'}`}>
+            <Card className="glass-card touch-manipulation">
+              <CardContent className={`${isMobile ? 'p-4' : 'p-6'} text-center`}>
+                <Camera className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
+                <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold mb-2`}>Smart Receipt Scanning</h3>
+                <p className="text-sm text-muted-foreground">
+                  Snap photos of receipts and let AI extract all the details automatically
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card touch-manipulation">
+              <CardContent className={`${isMobile ? 'p-4' : 'p-6'} text-center`}>
+                <PieChart className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
+                <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold mb-2`}>Intelligent Budgets</h3>
+                <p className="text-sm text-muted-foreground">
+                  Set smart spending limits and get insights on your financial habits
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card touch-manipulation">
+              <CardContent className={`${isMobile ? 'p-4' : 'p-6'} text-center`}>
+                <TrendingUp className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
+                <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold mb-2`}>Wealth Growth</h3>
+                <p className="text-sm text-muted-foreground">
+                  Simulate investment scenarios and track your net worth over time
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </main>
+
+        {/* Call to Action */}
+        <div className={`${isMobile ? 'p-4' : 'p-6'} text-center safe-area-left safe-area-right`}>
+          {!isMobile && (
+            <p className="text-sm text-muted-foreground mb-4">
+              ✨ Click the phone above to see the app in action ✨
+            </p>
+          )}
+          <div className="flex flex-col gap-3 justify-center">
+            <Button 
+              onClick={handleGetStarted} 
+              size={isMobile ? "default" : "lg"} 
+              className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 touch-manipulation w-full"
+            >
+              <DollarSign className="w-5 h-5 mr-2" />
+              Start Your Financial Journey
+            </Button>
+            {!isMobile && (
+              <Button 
+                onClick={handleStartTour}
+                size="lg" 
+                variant="outline"
+                className="w-full"
+              >
+                <Play className="w-5 h-5 mr-2" />
+                Take Interactive Tour
+              </Button>
+            )}
+            
+            <Button 
+              size="sm" 
+              variant="secondary" 
+              className="bg-white/60 backdrop-blur-sm touch-manipulation"
+              onClick={() => setShowJourney(!showJourney)}
+            >
+              {showJourney ? 'Hide' : 'Show'} User Journey
+            </Button>
           </div>
         </div>
       </div>
-    </MobileOptimized3D>
+    </div>
   );
 }
