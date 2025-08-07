@@ -45,6 +45,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [useFallback, setUseFallback] = useState(true);
   const [showReceiptScanner, setShowReceiptScanner] = useState(false);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { toast } = useToast();
   const descriptionRef = useRef<HTMLInputElement>(null);
@@ -68,8 +69,11 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     return getCategorySuggestion(desc);
   };
 
-  // Auto-logging functionality with smart triggers
+  // Auto-logging functionality with duplicate prevention
   const triggerAutoSave = useCallback(() => {
+    // Prevent multiple simultaneous auto-saves
+    if (isSubmitting) return;
+    
     // Clear existing timeout
     if (autoSaveTimeout) {
       clearTimeout(autoSaveTimeout);
@@ -77,11 +81,16 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     
     // Set new timeout for auto-save with faster response
     const timeoutId = setTimeout(() => {
+      // Double-check we're not already submitting
+      if (isSubmitting) return;
+      
       // Check if we have minimum required fields
       const validAmount = type === 'income' ? parseSmartAmount(amount) : parseFloat(amount);
       const hasValidData = validAmount > 0 && (description.trim() || type === 'income');
       
       if (hasValidData && autoSubmit) {
+        setIsSubmitting(true);
+        
         // Auto-submit the form
         const finalCategory = category || suggestCategoryFromDescription(description) || "Other";
         
@@ -112,22 +121,31 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
           description: `$${validAmount.toLocaleString()} for ${description || 'Income'}`,
           duration: 2000
         });
+        
+        // Reset submission flag after a delay
+        setTimeout(() => setIsSubmitting(false), 1000);
       }
     }, 1000); // Faster auto-save after 1 second of inactivity
     
     setAutoSaveTimeout(timeoutId);
-  }, [amount, description, category, type, accountId, accounts, onAddExpense, editingExpense, autoSubmit, autoSaveTimeout, toast]);
+  }, [amount, description, category, type, accountId, accounts, onAddExpense, editingExpense, autoSubmit, autoSaveTimeout, toast, isSubmitting]);
 
-  // Immediate auto-log on blur (when user finishes entering data)
+  // Immediate auto-log on blur with duplicate prevention
   const handleFieldBlur = useCallback(() => {
+    // Prevent duplicate submissions
+    if (isSubmitting) return;
+    
     const validAmount = type === 'income' ? parseSmartAmount(amount) : parseFloat(amount);
     const hasValidData = validAmount > 0 && (description.trim() || type === 'income');
     
     if (hasValidData && autoSubmit) {
-      // Clear any pending timeout
+      // Clear any pending timeout to prevent double submission
       if (autoSaveTimeout) {
         clearTimeout(autoSaveTimeout);
+        setAutoSaveTimeout(null);
       }
+      
+      setIsSubmitting(true);
       
       // Trigger immediate save on blur
       setTimeout(() => {
@@ -160,9 +178,12 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
           description: `$${validAmount.toLocaleString()} for ${description || 'Income'}`,
           duration: 2000
         });
+        
+        // Reset submission flag
+        setTimeout(() => setIsSubmitting(false), 1000);
       }, 300); // Short delay to ensure blur event completes
     }
-  }, [amount, description, category, type, accountId, accounts, onAddExpense, editingExpense, autoSubmit, autoSaveTimeout, toast]);
+  }, [amount, description, category, type, accountId, accounts, onAddExpense, editingExpense, autoSubmit, autoSaveTimeout, toast, isSubmitting]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -206,6 +227,12 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     }
 
     setIsLoading(true);
+    
+    // Prevent duplicate submissions
+    if (isSubmitting) {
+      setIsLoading(false);
+      return;
+    }
 
     // Auto-suggest category if not selected
     const finalCategory = category || suggestCategoryFromDescription(description) || "Other";
