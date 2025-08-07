@@ -27,9 +27,15 @@ import {
   Brain,
   Sparkles,
   ArrowRight,
-  Star
+  Star,
+  Play,
+  Users,
+  Zap
 } from 'lucide-react';
 import * as THREE from 'three';
+import { InteractiveDemo } from '@/components/3d/InteractiveDemo';
+import { GuidedTour } from '@/components/3d/GuidedTour';
+import { MobileOptimized3D } from '@/components/3d/MobileOptimized3D';
 
 // Floating particles for background
 function FloatingParticles() {
@@ -67,8 +73,11 @@ function FloatingParticles() {
   );
 }
 
-// 3D Phone component
-function Phone3D({ onClick }: { onClick: () => void }) {
+// 3D Phone component with enhanced interactivity
+function Phone3D({ demoState, onDemoStateChange }: { 
+  demoState: any; 
+  onDemoStateChange: (state: any) => void;
+}) {
   const phoneRef = useRef<THREE.Group>(null);
   
   useFrame((state) => {
@@ -79,7 +88,12 @@ function Phone3D({ onClick }: { onClick: () => void }) {
 
   return (
     <Float speed={2} rotationIntensity={0.1} floatIntensity={0.5}>
-      <group ref={phoneRef} onClick={onClick}>
+      <group 
+        ref={phoneRef} 
+        onClick={() => onDemoStateChange({ 
+          screen: demoState.screen === 'dashboard' ? 'expenses' : 'dashboard' 
+        })}
+      >
         {/* Phone body */}
         <RoundedBox args={[1.2, 2.2, 0.1]} radius={0.1} smoothness={4}>
           <meshStandardMaterial color="#1a1a1a" />
@@ -90,48 +104,8 @@ function Phone3D({ onClick }: { onClick: () => void }) {
           <meshStandardMaterial color="#000" />
         </RoundedBox>
         
-        {/* Screen content overlay */}
-        <Html
-          transform
-          occlude
-          position={[0, 0, 0.07]}
-          style={{
-            width: '300px',
-            height: '550px',
-            borderRadius: '20px',
-            overflow: 'hidden',
-            pointerEvents: 'none'
-          }}
-        >
-          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 p-4 flex flex-col justify-between text-white text-xs">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                  🐝
-                </div>
-                <span className="font-bold">MoneyBee</span>
-              </div>
-              <div className="space-y-2">
-                <div className="bg-white/10 rounded p-2">
-                  <span className="text-green-300">+$1,250</span>
-                  <div className="text-xs opacity-80">Salary</div>
-                </div>
-                <div className="bg-white/10 rounded p-2">
-                  <span className="text-red-300">-$45</span>
-                  <div className="text-xs opacity-80">Coffee Shop</div>
-                </div>
-                <div className="bg-white/10 rounded p-2">
-                  <span className="text-red-300">-$120</span>
-                  <div className="text-xs opacity-80">Groceries</div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white/10 rounded p-2">
-              <div className="text-xs opacity-80">Net Worth</div>
-              <span className="text-lg font-bold text-green-300">$12,450</span>
-            </div>
-          </div>
-        </Html>
+        {/* Interactive Demo Content */}
+        <InteractiveDemo demoState={demoState} onStateChange={onDemoStateChange} />
       </group>
     </Float>
   );
@@ -212,21 +186,26 @@ function Chart3D({ position }: { position: [number, number, number] }) {
 
 export default function Landing() {
   const navigate = useNavigate();
-  const [currentDemo, setCurrentDemo] = useState('overview');
+  const [demoState, setDemoState] = useState({ screen: 'dashboard' });
+  const [showTour, setShowTour] = useState(false);
   
   const handleGetStarted = () => {
     navigate('/auth');
   };
 
-  const handlePhoneClick = () => {
-    setCurrentDemo(currentDemo === 'overview' ? 'expenses' : 'overview');
+  const handleStartTour = () => {
+    setShowTour(true);
+  };
+
+  const handleDemoStateChange = (newState: any) => {
+    setDemoState(newState);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 relative overflow-hidden">
-      {/* Background Canvas */}
-      <div className="absolute inset-0 z-0">
-        <Canvas>
+    <MobileOptimized3D>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 relative overflow-hidden">
+        {/* Background Canvas */}
+        <div className="absolute inset-0 z-0">
           <Suspense fallback={null}>
             <PerspectiveCamera makeDefault position={[0, 0, 8]} />
             <ambientLight intensity={0.4} />
@@ -235,7 +214,7 @@ export default function Landing() {
             
             <FloatingParticles />
             
-            <Phone3D onClick={handlePhoneClick} />
+            <Phone3D demoState={demoState} onDemoStateChange={handleDemoStateChange} />
             
             <FeatureBubble
               position={[-3, 2, 0]}
@@ -271,6 +250,13 @@ export default function Landing() {
             
             <Chart3D position={[0, -3, 0]} />
             
+            {/* Guided Tour */}
+            <GuidedTour
+              isActive={showTour}
+              onClose={() => setShowTour(false)}
+              onGetStarted={handleGetStarted}
+            />
+            
             <Environment preset="city" />
             <OrbitControls
               enablePan={false}
@@ -279,54 +265,75 @@ export default function Landing() {
               minPolarAngle={Math.PI / 3}
             />
           </Suspense>
-        </Canvas>
-      </div>
+        </div>
 
-      {/* Foreground Content */}
-      <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header */}
-        <header className="p-6">
-          <div className="flex items-center justify-between max-w-6xl mx-auto">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                🐝
+        {/* Foreground Content */}
+        <div className="relative z-10 min-h-screen flex flex-col">
+          {/* Header */}
+          <header className="p-6">
+            <div className="flex items-center justify-between max-w-6xl mx-auto">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  🐝
+                </div>
+                <span className="text-xl font-bold text-foreground">MoneyBee</span>
               </div>
-              <span className="text-xl font-bold text-foreground">MoneyBee</span>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={handleStartTour} className="hidden sm:flex">
+                  <Play className="w-4 h-4 mr-2" />
+                  Take Tour
+                </Button>
+                <Button onClick={handleGetStarted} className="bg-primary hover:bg-primary/90">
+                  Get Started <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
             </div>
-            <Button onClick={handleGetStarted} className="bg-primary hover:bg-primary/90">
-              Get Started <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        </header>
+          </header>
 
-        {/* Hero Content */}
-        <main className="flex-1 flex items-center justify-center px-6">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <div className="space-y-4">
-              <Badge variant="secondary" className="mb-4">
-                <Sparkles className="w-4 h-4 mr-2" />
-                AI-Powered Expense Tracking
-              </Badge>
-              <h1 className="text-4xl md:text-6xl font-bold text-foreground">
-                Smart Money
-                <span className="text-primary"> Management</span>
-              </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-                Track expenses, build budgets, and grow wealth with AI-powered insights. 
-                Your financial future starts here.
-              </p>
-            </div>
+          {/* Hero Content */}
+          <main className="flex-1 flex items-center justify-center px-6">
+            <div className="max-w-4xl mx-auto text-center space-y-8">
+              <div className="space-y-4">
+                <Badge variant="secondary" className="mb-4">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  AI-Powered Expense Tracking
+                </Badge>
+                <h1 className="text-4xl md:text-6xl font-bold text-foreground">
+                  Smart Money
+                  <span className="text-primary"> Management</span>
+                </h1>
+                <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
+                  Track expenses, build budgets, and grow wealth with AI-powered insights. 
+                  Your financial future starts here.
+                </p>
+              </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" onClick={handleGetStarted} className="bg-primary hover:bg-primary/90">
-                <Smartphone className="w-5 h-5 mr-2" />
-                Start Free Demo
-              </Button>
-              <Button size="lg" variant="outline">
-                <Star className="w-5 h-5 mr-2" />
-                Watch Demo
-              </Button>
-            </div>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button size="lg" onClick={handleGetStarted} className="bg-primary hover:bg-primary/90">
+                  <Smartphone className="w-5 h-5 mr-2" />
+                  Start Free Demo
+                </Button>
+                <Button size="lg" variant="outline" onClick={handleStartTour}>
+                  <Play className="w-5 h-5 mr-2" />
+                  Interactive Tour
+                </Button>
+              </div>
+
+              {/* Social Proof */}
+              <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  10,000+ Users
+                </div>
+                <div className="flex items-center gap-2">
+                  <Star className="w-4 h-4" />
+                  4.9/5 Rating
+                </div>
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4" />
+                  AI-Powered
+                </div>
+              </div>
 
             {/* Feature Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
@@ -363,21 +370,33 @@ export default function Landing() {
           </div>
         </main>
 
-        {/* Call to Action */}
-        <div className="p-6 text-center">
-          <p className="text-sm text-muted-foreground mb-4">
-            ✨ Click the phone above to see the app in action ✨
-          </p>
-          <Button 
-            onClick={handleGetStarted} 
-            size="lg" 
-            className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
-          >
-            <DollarSign className="w-5 h-5 mr-2" />
-            Start Your Financial Journey
-          </Button>
+          {/* Call to Action */}
+          <div className="p-6 text-center">
+            <p className="text-sm text-muted-foreground mb-4">
+              ✨ Click the phone above to see the app in action ✨
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button 
+                onClick={handleGetStarted} 
+                size="lg" 
+                className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
+              >
+                <DollarSign className="w-5 h-5 mr-2" />
+                Start Your Financial Journey
+              </Button>
+              <Button 
+                onClick={handleStartTour}
+                size="lg" 
+                variant="outline"
+                className="sm:block hidden"
+              >
+                <Play className="w-5 h-5 mr-2" />
+                Take Interactive Tour
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </MobileOptimized3D>
   );
 }
