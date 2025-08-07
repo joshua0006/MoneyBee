@@ -273,7 +273,7 @@ const Index = () => {
 
       {/* Main Content with Pull to Refresh */}
       <PullToRefresh onRefresh={handleRefresh}>
-        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-20">
+        <div className="w-full max-w-2xl mx-auto px-3 sm:px-6 py-3 sm:py-6 pb-24 sm:pb-20 safe-area-inset-bottom">
         {/* Home Tab Content */}
         {activeTab === "home" && (
           <div className="space-y-6">
