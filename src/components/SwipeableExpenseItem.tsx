@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Edit } from 'lucide-react';
 import { useSwipeToDelete } from '@/hooks/useTouchGestures';
 import { mobileService } from '@/utils/mobileService';
 import { cn } from '@/lib/utils';
@@ -17,12 +17,14 @@ interface SwipeableExpenseItemProps {
     date: Date;
   };
   onDelete: (id: string) => void;
+  onEdit?: (expense: SwipeableExpenseItemProps['expense']) => void;
   onClick: () => void;
 }
 
 export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
   expense,
   onDelete,
+  onEdit,
   onClick
 }) => {
   const { ref, isSwipingToDelete, resetSwipe } = useSwipeToDelete(() => {
@@ -33,6 +35,12 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
   const handleClick = () => {
     mobileService.lightHaptic();
     onClick();
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    mobileService.lightHaptic();
+    onEdit?.(expense);
   };
 
   const categoryColors = {
@@ -99,7 +107,17 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
               </p>
             </div>
             
-            <div className="text-right shrink-0 ml-4">
+            <div className="flex items-center gap-2 shrink-0 ml-4">
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleEdit}
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                >
+                  <Edit size={16} />
+                </Button>
+              )}
               <div className={cn(
                 "font-semibold text-lg sm:text-xl",
                 expense.type === 'income' 

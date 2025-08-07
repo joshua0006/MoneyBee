@@ -295,6 +295,7 @@ const Index = () => {
                 <ExpenseList
                   expenses={filteredExpenses.slice(0, 10)} // Show only recent 10
                   onExpenseClick={handleExpenseClick}
+                  onEditExpense={handleEditExpense}
                   onDeleteExpense={handleDeleteExpense}
                   showViewAll={filteredExpenses.length > 10}
                   onViewAll={handleViewAllTransactions}

@@ -89,11 +89,14 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       const hasValidData = validAmount > 0 && (description.trim() || type === 'income');
       
       if (hasValidData && autoSubmit) {
+        console.log('Auto-save triggered via timeout:', { amount: validAmount, description, autoSubmit, isSubmitting });
+        
         setIsSubmitting(true);
         
         // Auto-submit the form
         const finalCategory = category || suggestCategoryFromDescription(description) || "Other";
         
+        console.log('Expense auto-logged successfully via timeout');
         const expense: Omit<Expense, 'id'> = {
           amount: type === 'income' ? parseSmartAmount(amount) : parseFloat(amount),
           description: type === 'income' ? (description.trim() || 'Income') : description.trim(),
@@ -139,6 +142,8 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     const hasValidData = validAmount > 0 && (description.trim() || type === 'income');
     
     if (hasValidData && autoSubmit) {
+      console.log('Auto-save triggered via blur:', { amount: validAmount, description, autoSubmit, isSubmitting });
+      
       // Clear any pending timeout to prevent double submission
       if (autoSaveTimeout) {
         clearTimeout(autoSaveTimeout);
@@ -179,6 +184,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
           duration: 2000
         });
         
+        console.log('Expense auto-logged successfully via blur');
         // Reset submission flag
         setTimeout(() => setIsSubmitting(false), 1000);
       }, 300); // Short delay to ensure blur event completes

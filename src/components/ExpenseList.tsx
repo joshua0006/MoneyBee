@@ -20,6 +20,7 @@ interface Expense {
 interface ExpenseListProps {
   expenses: Expense[];
   onExpenseClick: (expense: Expense) => void;
+  onEditExpense?: (expense: Expense) => void;
   onDeleteExpense?: (id: string) => void;
   showViewAll?: boolean;
   onViewAll?: () => void;
@@ -28,6 +29,7 @@ interface ExpenseListProps {
 export const ExpenseList = ({ 
   expenses, 
   onExpenseClick, 
+  onEditExpense,
   onDeleteExpense,
   showViewAll = false, 
   onViewAll 
@@ -66,6 +68,7 @@ export const ExpenseList = ({
             key={expense.id}
             expense={expense}
             onDelete={onDeleteExpense || (() => {})}
+            onEdit={onEditExpense}
             onClick={() => onExpenseClick(expense)}
           />
         ))}
