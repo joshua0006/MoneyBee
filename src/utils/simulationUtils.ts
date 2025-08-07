@@ -103,37 +103,37 @@ export const projectFinancialGrowth = (
 
 export const getDefaultScenarios = (): SimulationScenario[] => [
   {
-    name: "Conservative",
-    description: "Steady growth with minimal risk",
+    name: "Cash Savings",
+    description: "Money saved in bank account (0.05% interest)",
     params: {
       incomeGrowthRate: 3,
       expenseInflationRate: 2.5,
       additionalSavings: 0,
-      investmentReturn: 5,
+      investmentReturn: 0.05,
       timeHorizon: 10
     },
     color: "hsl(var(--chart-1))"
   },
   {
-    name: "Moderate",
-    description: "Balanced growth approach",
+    name: "Conservative Investing",
+    description: "Low-risk investments (3% annual return)",
     params: {
-      incomeGrowthRate: 5,
-      expenseInflationRate: 3,
-      additionalSavings: 200,
-      investmentReturn: 7,
+      incomeGrowthRate: 3,
+      expenseInflationRate: 2.5,
+      additionalSavings: 0,
+      investmentReturn: 3,
       timeHorizon: 10
     },
     color: "hsl(var(--chart-2))"
   },
   {
-    name: "Aggressive",
-    description: "High growth with higher risk",
+    name: "Moderate Investing",
+    description: "Balanced portfolio (7% annual return)",
     params: {
-      incomeGrowthRate: 7,
-      expenseInflationRate: 3.5,
-      additionalSavings: 500,
-      investmentReturn: 9,
+      incomeGrowthRate: 3,
+      expenseInflationRate: 2.5,
+      additionalSavings: 0,
+      investmentReturn: 7,
       timeHorizon: 10
     },
     color: "hsl(var(--chart-3))"

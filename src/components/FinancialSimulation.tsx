@@ -52,7 +52,7 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
   
   const defaultScenarios = useMemo(() => getDefaultScenarios(), []);
   
-  const [selectedScenario, setSelectedScenario] = useState<SimulationScenario>(defaultScenarios[1]);
+  const [selectedScenario, setSelectedScenario] = useState<SimulationScenario>(defaultScenarios[0]);
   const [customParams, setCustomParams] = useState<SimulationParams>(selectedScenario.params);
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -449,29 +449,41 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
         </TabsContent>
 
         <TabsContent value="scenarios" className="space-y-6">
-          {/* Scenario Selection */}
+          {/* Investment Strategy Selection */}
           <Card>
             <CardHeader>
-              <CardTitle>Growth Scenarios</CardTitle>
+              <CardTitle>Investment Strategy</CardTitle>
               <CardDescription>
-                Compare different financial growth strategies
+                Choose how your excess money grows over time
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4">
+              <div className="grid gap-3">
                 {defaultScenarios.map((scenario, index) => (
                   <Button
                     key={index}
                     variant={selectedScenario.name === scenario.name ? "default" : "outline"}
-                    className="h-auto p-4 justify-start"
+                    className={`h-auto p-4 justify-start text-left ${
+                      selectedScenario.name === scenario.name ? 'bg-primary text-primary-foreground' : ''
+                    }`}
                     onClick={() => applyScenario(scenario)}
                   >
-                    <div className="text-left">
-                      <div className="font-semibold">{scenario.name}</div>
-                      <div className="text-sm opacity-80">{scenario.description}</div>
-                      <div className="text-xs mt-1 opacity-60">
-                        Income: +{scenario.params.incomeGrowthRate}%/yr | 
-                        Investment: {scenario.params.investmentReturn}%/yr
+                    <div className="w-full">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="font-semibold text-base">{scenario.name}</div>
+                        <Badge variant={selectedScenario.name === scenario.name ? "secondary" : "outline"} 
+                               className="text-xs">
+                          {scenario.params.investmentReturn}% annual return
+                        </Badge>
+                      </div>
+                      <div className="text-sm opacity-80 mb-1">{scenario.description}</div>
+                      <div className="text-xs opacity-60">
+                        {scenario.params.investmentReturn === 0.05 ? 
+                          "💳 Money sits in savings account" :
+                          scenario.params.investmentReturn === 3 ?
+                          "🛡️ Low-risk bonds and CDs" :
+                          "📈 Diversified stock portfolio"
+                        }
                       </div>
                     </div>
                   </Button>
