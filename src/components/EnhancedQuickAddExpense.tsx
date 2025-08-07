@@ -68,14 +68,14 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     return getCategorySuggestion(desc);
   };
 
-  // Auto-save functionality
+  // Auto-logging functionality with smart triggers
   const triggerAutoSave = useCallback(() => {
     // Clear existing timeout
     if (autoSaveTimeout) {
       clearTimeout(autoSaveTimeout);
     }
     
-    // Set new timeout for auto-save
+    // Set new timeout for auto-save with faster response
     const timeoutId = setTimeout(() => {
       // Check if we have minimum required fields
       const validAmount = type === 'income' ? parseSmartAmount(amount) : parseFloat(amount);
@@ -108,14 +108,60 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
         setAiParseSuccess(false);
         
         toast({
-          title: type === 'expense' ? "💳 Expense Auto-Saved" : "💰 Income Auto-Saved",
+          title: type === 'expense' ? "💳 Expense Auto-Logged" : "💰 Income Auto-Logged",
           description: `$${validAmount.toLocaleString()} for ${description || 'Income'}`,
           duration: 2000
         });
       }
-    }, 2000); // Auto-save after 2 seconds of inactivity
+    }, 1000); // Faster auto-save after 1 second of inactivity
     
     setAutoSaveTimeout(timeoutId);
+  }, [amount, description, category, type, accountId, accounts, onAddExpense, editingExpense, autoSubmit, autoSaveTimeout, toast]);
+
+  // Immediate auto-log on blur (when user finishes entering data)
+  const handleFieldBlur = useCallback(() => {
+    const validAmount = type === 'income' ? parseSmartAmount(amount) : parseFloat(amount);
+    const hasValidData = validAmount > 0 && (description.trim() || type === 'income');
+    
+    if (hasValidData && autoSubmit) {
+      // Clear any pending timeout
+      if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+      }
+      
+      // Trigger immediate save on blur
+      setTimeout(() => {
+        const finalCategory = category || suggestCategoryFromDescription(description) || "Other";
+        
+        const expense: Omit<Expense, 'id'> = {
+          amount: type === 'income' ? parseSmartAmount(amount) : parseFloat(amount),
+          description: type === 'income' ? (description.trim() || 'Income') : description.trim(),
+          category: type === 'income' ? 'Income' : finalCategory,
+          date: new Date(),
+          type,
+          accountId: accountId || accounts[0]?.id
+        };
+        
+        onAddExpense(expense);
+        
+        // Reset form
+        if (!editingExpense) {
+          setAmount("");
+          setDescription("");
+          setCategory("");
+          setIsRecurring(false);
+          setShowSuggestions(false);
+          setAiInput("");
+        }
+        setAiParseSuccess(false);
+        
+        toast({
+          title: type === 'expense' ? "💳 Expense Auto-Logged" : "💰 Income Auto-Logged",
+          description: `$${validAmount.toLocaleString()} for ${description || 'Income'}`,
+          duration: 2000
+        });
+      }, 300); // Short delay to ensure blur event completes
+    }
   }, [amount, description, category, type, accountId, accounts, onAddExpense, editingExpense, autoSubmit, autoSaveTimeout, toast]);
 
   // Cleanup timeout on unmount
@@ -519,6 +565,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                 placeholder={type === 'income' ? '3.2k, $2,000...' : '0.00'}
                 value={amount}
                 onChange={(e) => handleSmartAmountChange(e.target.value)}
+                onBlur={handleFieldBlur}
                 className="text-2xl font-bold h-16 pl-8 text-center"
                 disabled={isLoading}
               />
@@ -577,6 +624,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               placeholder={type === 'income' ? "Income source (optional)" : "What did you buy?"}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              onBlur={handleFieldBlur}
               className="transition-colors"
             />
             
