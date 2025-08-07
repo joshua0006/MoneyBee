@@ -694,7 +694,7 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
                       Save ${rec.reduction}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      10% reduction
+                      {((rec.reduction / rec.amount) * 100).toFixed(0)}% reduction
                     </div>
                   </div>
                 </div>
