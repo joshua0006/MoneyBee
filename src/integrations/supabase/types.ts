@@ -152,6 +152,58 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          item_id: number | null
+          new_state: string | null
+          prev_state: string | null
+          uid: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          item_id?: number | null
+          new_state?: string | null
+          prev_state?: string | null
+          uid: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          item_id?: number | null
+          new_state?: string | null
+          prev_state?: string | null
+          uid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["uid"]
+          },
+          {
+            foreignKeyName: "audit_log_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_log_uid_fkey"
+            columns: ["uid"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["uid"]
+          },
+        ]
+      }
       budgets: {
         Row: {
           amount: number
@@ -203,6 +255,75 @@ export type Database = {
         }
         Relationships: []
       }
+      checklist_items: {
+        Row: {
+          category: string
+          description_md: string | null
+          id: number
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          category: string
+          description_md?: string | null
+          id?: number
+          label: string
+          sort_order: number
+        }
+        Update: {
+          category?: string
+          description_md?: string | null
+          id?: number
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      coverage_gap: {
+        Row: {
+          gap_amount: number | null
+          id: string
+          ideal_amount: number
+          in_force_amount: number
+          item_id: number
+          uid: string
+          updated_at: string
+        }
+        Insert: {
+          gap_amount?: number | null
+          id?: string
+          ideal_amount?: number
+          in_force_amount?: number
+          item_id: number
+          uid: string
+          updated_at?: string
+        }
+        Update: {
+          gap_amount?: number | null
+          id?: string
+          ideal_amount?: number
+          in_force_amount?: number
+          item_id?: number
+          uid?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coverage_gap_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coverage_gap_uid_fkey"
+            columns: ["uid"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["uid"]
+          },
+        ]
+      }
       custom_roles: {
         Row: {
           created_at: string
@@ -232,6 +353,48 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      documents: {
+        Row: {
+          id: string
+          item_id: number | null
+          label: string
+          uid: string
+          uploaded_at: string
+          url: string
+        }
+        Insert: {
+          id?: string
+          item_id?: number | null
+          label: string
+          uid: string
+          uploaded_at?: string
+          url: string
+        }
+        Update: {
+          id?: string
+          item_id?: number | null
+          label?: string
+          uid?: string
+          uploaded_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_uid_fkey"
+            columns: ["uid"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["uid"]
+          },
+        ]
       }
       expenses: {
         Row: {
@@ -277,6 +440,79 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "accounts"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      meetings: {
+        Row: {
+          created_at: string
+          id: string
+          meeting_date: string
+          summary_md: string | null
+          title: string
+          transcript_url: string | null
+          uid: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meeting_date: string
+          summary_md?: string | null
+          title: string
+          transcript_url?: string | null
+          uid: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meeting_date?: string
+          summary_md?: string | null
+          title?: string
+          transcript_url?: string | null
+          uid?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetings_uid_fkey"
+            columns: ["uid"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["uid"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body_md: string
+          created_at: string
+          from_role: string
+          id: string
+          uid: string
+        }
+        Insert: {
+          body_md: string
+          created_at?: string
+          from_role: string
+          id?: string
+          uid: string
+        }
+        Update: {
+          body_md?: string
+          created_at?: string
+          from_role?: string
+          id?: string
+          uid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_uid_fkey"
+            columns: ["uid"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["uid"]
           },
         ]
       }
@@ -542,6 +778,91 @@ export type Database = {
           },
         ]
       }
+      tasks: {
+        Row: {
+          created_at: string
+          due_date: string | null
+          id: string
+          status: string
+          title: string
+          uid: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          status?: string
+          title: string
+          uid: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          status?: string
+          title?: string
+          uid?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_uid_fkey"
+            columns: ["uid"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["uid"]
+          },
+        ]
+      }
+      timeline: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_date: string
+          event_type: string
+          id: string
+          priority: string
+          status: string
+          title: string
+          uid: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_date: string
+          event_type: string
+          id?: string
+          priority?: string
+          status?: string
+          title: string
+          uid: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_date?: string
+          event_type?: string
+          id?: string
+          priority?: string
+          status?: string
+          title?: string
+          uid?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timeline_uid_fkey"
+            columns: ["uid"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["uid"]
+          },
+        ]
+      }
       user_assets: {
         Row: {
           asset_type: string
@@ -574,6 +895,42 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_checklist: {
+        Row: {
+          item_id: number
+          status: string
+          status_date: string
+          uid: string
+        }
+        Insert: {
+          item_id: number
+          status?: string
+          status_date?: string
+          uid: string
+        }
+        Update: {
+          item_id?: number
+          status?: string
+          status_date?: string
+          uid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_checklist_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_checklist_uid_fkey"
+            columns: ["uid"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["uid"]
+          },
+        ]
       }
       user_expenses: {
         Row: {
@@ -850,6 +1207,36 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          created_at: string
+          email: string
+          invited_at: string
+          name: string
+          role: string
+          uid: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          invited_at?: string
+          name: string
+          role?: string
+          uid?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          invited_at?: string
+          name?: string
+          role?: string
+          uid?: string
+          updated_at?: string
         }
         Relationships: []
       }
