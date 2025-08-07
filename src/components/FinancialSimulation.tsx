@@ -1,158 +1,285 @@
-import { useState, useMemo, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { getRandomMoneyQuote } from "@/utils/moneyQuotes";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, Area, AreaChart, CartesianGrid } from "recharts";
-import { TrendingUp, Target, DollarSign, Calendar, Info, Edit3, Calculator } from "lucide-react";
-import { Expense } from "@/types/app";
-import {
-  calculateFinancialBaseline,
-  projectFinancialGrowth,
-  getDefaultScenarios,
-  calculateMilestones,
-  formatCurrency,
-  formatLargeCurrency,
-  getMotivationalMessage,
-  getTimelineGoals,
-  getInspirationalQuotes,
-  getAchievementCards,
-  SimulationParams,
-  SimulationScenario
-} from "@/utils/simulationUtils";
+import React, { useState, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  DollarSign, 
+  Target, 
+  Calendar,
+  PiggyBank,
+  Home,
+  Car,
+  GraduationCap,
+  Plane,
+  Clock,
+  AlertTriangle,
+  CheckCircle,
+  BarChart3,
+  Calculator,
+  Lightbulb,
+  Zap,
+  Shield
+} from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import type { Expense } from '@/types/app';
 
 interface FinancialSimulationProps {
   expenses: Expense[];
 }
 
-export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
-  const calculatedBaseline = useMemo(() => calculateFinancialBaseline(expenses), [expenses]);
-  const [useManualInput, setUseManualInput] = useState(false);
-  const [manualIncome, setManualIncome] = useState(calculatedBaseline.monthlyIncome.toString());
-  const [manualExpenses, setManualExpenses] = useState(calculatedBaseline.monthlyExpenses.toString());
-  
-  // Use manual input if enabled, otherwise use calculated baseline
-  const baseline = useMemo(() => {
-    if (useManualInput) {
-      const income = parseFloat(manualIncome) || 0;
-      const expenses = parseFloat(manualExpenses) || 0;
-      return {
-        monthlyIncome: income,
-        monthlyExpenses: expenses,
-        monthlyNet: income - expenses
-      };
+interface ScenarioConfig {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  description: string;
+  color: string;
+  fields: {
+    targetAmount: number;
+    timeframe: number;
+    initialAmount?: number;
+    monthlyContribution?: number;
+    interestRate?: number;
+  };
+}
+
+const predefinedScenarios: ScenarioConfig[] = [
+  {
+    id: 'emergency',
+    name: 'Emergency Fund',
+    icon: <Shield className="w-5 h-5" />,
+    description: 'Build 3-6 months of expenses as emergency savings',
+    color: '#ef4444',
+    fields: {
+      targetAmount: 10000,
+      timeframe: 12,
+      initialAmount: 0,
+      monthlyContribution: 800,
+      interestRate: 2.5
     }
-    return calculatedBaseline;
-  }, [useManualInput, manualIncome, manualExpenses, calculatedBaseline]);
-  
-  const defaultScenarios = useMemo(() => getDefaultScenarios(), []);
-  
-  const [selectedScenario, setSelectedScenario] = useState<SimulationScenario>(defaultScenarios[0]);
-  const [customParams, setCustomParams] = useState<SimulationParams>(selectedScenario.params);
-  const [activeTab, setActiveTab] = useState("overview");
-  
-  // Rotating quotes functionality
-  const [currentQuote, setCurrentQuote] = useState(() => getRandomMoneyQuote());
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentQuote(getRandomMoneyQuote());
-    }, 5000); // Change quote every 5 seconds
+  },
+  {
+    id: 'house',
+    name: 'House Down Payment',
+    icon: <Home className="w-5 h-5" />,
+    description: 'Save for your dream home down payment',
+    color: '#3b82f6',
+    fields: {
+      targetAmount: 60000,
+      timeframe: 36,
+      initialAmount: 5000,
+      monthlyContribution: 1500,
+      interestRate: 3.0
+    }
+  },
+  {
+    id: 'car',
+    name: 'Car Purchase',
+    icon: <Car className="w-5 h-5" />,
+    description: 'Save up for a reliable vehicle',
+    color: '#10b981',
+    fields: {
+      targetAmount: 25000,
+      timeframe: 24,
+      initialAmount: 2000,
+      monthlyContribution: 950,
+      interestRate: 2.0
+    }
+  },
+  {
+    id: 'education',
+    name: 'Education Fund',
+    icon: <GraduationCap className="w-5 h-5" />,
+    description: 'Invest in education or professional development',
+    color: '#8b5cf6',
+    fields: {
+      targetAmount: 40000,
+      timeframe: 48,
+      initialAmount: 3000,
+      monthlyContribution: 750,
+      interestRate: 4.0
+    }
+  },
+  {
+    id: 'vacation',
+    name: 'Dream Vacation',
+    icon: <Plane className="w-5 h-5" />,
+    description: 'Plan and save for your perfect getaway',
+    color: '#f59e0b',
+    fields: {
+      targetAmount: 8000,
+      timeframe: 18,
+      initialAmount: 500,
+      monthlyContribution: 400,
+      interestRate: 1.5
+    }
+  },
+  {
+    id: 'retirement',
+    name: 'Retirement Boost',
+    icon: <PiggyBank className="w-5 h-5" />,
+    description: 'Accelerate your retirement savings',
+    color: '#06b6d4',
+    fields: {
+      targetAmount: 500000,
+      timeframe: 240,
+      initialAmount: 25000,
+      monthlyContribution: 1200,
+      interestRate: 7.0
+    }
+  }
+];
+
+export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
+  const [selectedScenario, setSelectedScenario] = useState<string>('emergency');
+  const [customMode, setCustomMode] = useState(false);
+  const [targetAmount, setTargetAmount] = useState(10000);
+  const [timeframe, setTimeframe] = useState(12);
+  const [initialAmount, setInitialAmount] = useState(0);
+  const [monthlyContribution, setMonthlyContribution] = useState(800);
+  const [interestRate, setInterestRate] = useState(2.5);
+
+  // Calculate current spending patterns
+  const monthlySpending = useMemo(() => {
+    const totalExpenses = expenses
+      .filter(e => e.type === 'expense')
+      .reduce((sum, e) => sum + e.amount, 0);
     
-    return () => clearInterval(interval);
-  }, []);
-  
-  // Calculate projections based on current parameters
-  const projections = useMemo(() => {
-    return projectFinancialGrowth(baseline, customParams);
-  }, [baseline, customParams]);
+    const months = Math.max(1, Math.ceil(expenses.length / 30));
+    return totalExpenses / months;
+  }, [expenses]);
 
-  const milestones = useMemo(() => {
-    return calculateMilestones(projections);
-  }, [projections]);
+  const currentScenario = customMode 
+    ? {
+        id: 'custom',
+        name: 'Custom Goal',
+        icon: <Calculator className="w-5 h-5" />,
+        description: 'Create your own savings scenario',
+        color: '#6366f1',
+        fields: { targetAmount, timeframe, initialAmount, monthlyContribution, interestRate }
+      }
+    : predefinedScenarios.find(s => s.id === selectedScenario) || predefinedScenarios[0];
 
-  const timelineGoals = useMemo(() => {
-    return getTimelineGoals(projections);
-  }, [projections]);
+  // Load scenario values
+  React.useEffect(() => {
+    if (!customMode && currentScenario) {
+      setTargetAmount(currentScenario.fields.targetAmount);
+      setTimeframe(currentScenario.fields.timeframe);
+      setInitialAmount(currentScenario.fields.initialAmount || 0);
+      setMonthlyContribution(currentScenario.fields.monthlyContribution || 0);
+      setInterestRate(currentScenario.fields.interestRate || 2.5);
+    }
+  }, [selectedScenario, customMode, currentScenario]);
 
-  const achievementCards = useMemo(() => {
-    return getAchievementCards(projections, baseline);
-  }, [projections, baseline]);
+  // Calculate projection data
+  const projectionData = useMemo(() => {
+    const data = [];
+    let currentBalance = initialAmount;
+    const monthlyRate = interestRate / 100 / 12;
+    
+    for (let month = 0; month <= timeframe; month++) {
+      if (month > 0) {
+        currentBalance += monthlyContribution;
+        currentBalance = currentBalance * (1 + monthlyRate);
+      }
+      
+      data.push({
+        month,
+        balance: Math.round(currentBalance),
+        target: targetAmount,
+        contributions: month * monthlyContribution + initialAmount,
+        interest: Math.round(currentBalance - (month * monthlyContribution + initialAmount))
+      });
+    }
+    
+    return data;
+  }, [targetAmount, timeframe, initialAmount, monthlyContribution, interestRate]);
+
+  const finalBalance = projectionData[projectionData.length - 1]?.balance || 0;
+  const totalContributions = timeframe * monthlyContribution + initialAmount;
+  const totalInterest = finalBalance - totalContributions;
+  const willReachGoal = finalBalance >= targetAmount;
+  const progressPercentage = Math.min(100, (finalBalance / targetAmount) * 100);
+
+  // Calculate required monthly contribution
+  const requiredMonthlyContribution = useMemo(() => {
+    if (timeframe === 0) return 0;
+    
+    const monthlyRate = interestRate / 100 / 12;
+    const futureValueFactor = ((Math.pow(1 + monthlyRate, timeframe) - 1) / monthlyRate);
+    const futureValueOfInitial = initialAmount * Math.pow(1 + monthlyRate, timeframe);
+    
+    return Math.max(0, (targetAmount - futureValueOfInitial) / futureValueFactor);
+  }, [targetAmount, timeframe, initialAmount, interestRate]);
+
+  // Spending recommendations
+  const spendingRecommendations = useMemo(() => {
+    const categories = expenses.reduce((acc, expense) => {
+      if (expense.type === 'expense') {
+        acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(categories)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([category, amount]) => ({
+        category,
+        amount,
+        reduction: Math.round(amount * 0.1),
+      }));
+  }, [expenses]);
 
   // Scenario comparison data
   const scenarioComparison = useMemo(() => {
-    return defaultScenarios.map(scenario => {
-      const scenarioProjections = projectFinancialGrowth(baseline, scenario.params);
+    return predefinedScenarios.map(scenario => {
+      const projections = [];
+      let balance = scenario.fields.initialAmount || 0;
+      const monthlyRate = (scenario.fields.interestRate || 2.5) / 100 / 12;
+      
+      for (let month = 0; month <= scenario.fields.timeframe; month++) {
+        if (month > 0) {
+          balance += (scenario.fields.monthlyContribution || 0);
+          balance = balance * (1 + monthlyRate);
+        }
+      }
+      
       return {
         name: scenario.name,
-        finalNetWorth: scenarioProjections[scenarioProjections.length - 1]?.netWorth || 0,
-        color: scenario.color
+        finalBalance: Math.round(balance),
+        color: scenario.color,
+        timeframe: scenario.fields.timeframe,
+        target: scenario.fields.targetAmount
       };
     });
-  }, [baseline, defaultScenarios]);
-
-  const chartConfig = {
-    netWorth: {
-      label: "Net Worth",
-      color: "hsl(var(--chart-1))",
-    },
-    income: {
-      label: "Annual Income",
-      color: "hsl(var(--income))",
-    },
-    expenses: {
-      label: "Annual Expenses", 
-      color: "hsl(var(--expense))",
-    },
-    conservative: {
-      label: "Conservative",
-      color: "hsl(var(--chart-1))",
-    },
-    moderate: {
-      label: "Moderate", 
-      color: "hsl(var(--chart-2))",
-    },
-    aggressive: {
-      label: "Aggressive",
-      color: "hsl(var(--chart-3))",
-    },
-  };
-
-  const updateCustomParam = (key: keyof SimulationParams, value: number | number[]) => {
-    const newValue = Array.isArray(value) ? value[0] : value;
-    setCustomParams(prev => ({ ...prev, [key]: newValue }));
-  };
-
-  const applyScenario = (scenario: SimulationScenario) => {
-    setSelectedScenario(scenario);
-    setCustomParams(scenario.params);
-  };
-
-  const handleManualIncomeChange = (value: string) => {
-    setManualIncome(value);
-  };
-
-  const handleManualExpensesChange = (value: string) => {
-    setManualExpenses(value);
-  };
+  }, []);
 
   if (expenses.length === 0) {
     return (
       <div className="space-y-6">
-        <Card>
+        <Card className="bg-gradient-to-br from-primary/5 via-background to-accent/5">
           <CardContent className="pt-6">
-            <div className="text-center py-8">
-              <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Start Your Financial Journey</h3>
-              <p className="text-muted-foreground">
-                Add some expenses and income to see personalized financial projections
+            <div className="text-center py-12">
+              <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                <BarChart3 className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Start Your Financial Journey</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Add some expenses and income to unlock personalized financial scenarios and projections
               </p>
+              <div className="mt-6 flex justify-center">
+                <Badge variant="secondary" className="text-xs">
+                  💡 Your data powers smart insights
+                </Badge>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -162,515 +289,454 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Current Financial Overview with Manual Input Option */}
-      <Card className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"></div>
-        <CardHeader className="relative">
+      {/* Header */}
+      <Card className="bg-gradient-to-r from-primary/5 via-background to-primary/5 border-primary/20">
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-primary" />
-              <CardTitle>Financial Overview</CardTitle>
+            <div>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <BarChart3 className="w-6 h-6 text-primary" />
+                Financial Scenarios
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Visualize your financial goals and create actionable savings plans
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={useManualInput}
-                onCheckedChange={setUseManualInput}
-                id="manual-input"
-              />
-              <Label htmlFor="manual-input" className="text-sm font-medium flex items-center gap-1">
-                <Edit3 className="h-4 w-4" />
-                Manual Input
-              </Label>
-            </div>
+            <Badge variant={willReachGoal ? "default" : "secondary"} className="text-xs">
+              {willReachGoal ? "✅ Goal Achievable" : "⚠️ Needs Adjustment"}
+            </Badge>
           </div>
-          <CardDescription>
-            {useManualInput ? "Enter your own income and expense values" : "Based on your last 6 months of data"}
-          </CardDescription>
         </CardHeader>
-        <CardContent className="relative">
-          {useManualInput ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="manual-income" className="text-sm font-medium text-income">Monthly Income</Label>
-                <Input
-                  id="manual-income"
-                  type="number"
-                  value={manualIncome}
-                  onChange={(e) => handleManualIncomeChange(e.target.value)}
-                  placeholder="Enter monthly income"
-                  className="border-income/20 focus:border-income"
-                />
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-income">
-                    {formatCurrency(parseFloat(manualIncome) || 0)}
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="manual-expenses" className="text-sm font-medium text-expense">Monthly Expenses</Label>
-                <Input
-                  id="manual-expenses"
-                  type="number"
-                  value={manualExpenses}
-                  onChange={(e) => handleManualExpensesChange(e.target.value)}
-                  placeholder="Enter monthly expenses"
-                  className="border-expense/20 focus:border-expense"
-                />
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-expense">
-                    {formatCurrency(parseFloat(manualExpenses) || 0)}
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Monthly Net</Label>
-                <div className="h-10 flex items-center justify-center">
-                  <Calculator className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="text-center">
-                  <div className={`text-2xl font-bold ${baseline.monthlyNet >= 0 ? 'text-income' : 'text-expense'}`}>
-                    {formatCurrency(baseline.monthlyNet)}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-4 rounded-lg bg-income/10 border border-income/20">
-                <div className="text-2xl font-bold text-income">
-                  {formatCurrency(baseline.monthlyIncome)}
-                </div>
-                <div className="text-sm text-muted-foreground">Monthly Income</div>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-expense/10 border border-expense/20">
-                <div className="text-2xl font-bold text-expense">
-                  {formatCurrency(baseline.monthlyExpenses)}
-                </div>
-                <div className="text-sm text-muted-foreground">Monthly Expenses</div>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-primary/10 border border-primary/20">
-                <div className={`text-2xl font-bold ${baseline.monthlyNet >= 0 ? 'text-income' : 'text-expense'}`}>
-                  {formatCurrency(baseline.monthlyNet)}
-                </div>
-                <div className="text-sm text-muted-foreground">Monthly Net</div>
-              </div>
-            </div>
-          )}
-        </CardContent>
       </Card>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
-          <TabsTrigger value="customize">Customize</TabsTrigger>
+      {/* Scenario Selection */}
+      <Tabs value={customMode ? "custom" : "presets"} onValueChange={(v) => setCustomMode(v === "custom")}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="presets">Preset Scenarios</TabsTrigger>
+          <TabsTrigger value="custom">Custom Goal</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          {/* Money Wisdom Quote */}
-          <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-4">💡 Money Wisdom</h3>
-                <div className="space-y-3">
-                  <blockquote className="text-sm italic text-muted-foreground border-l-2 border-primary/30 pl-4 py-2">
-                    "{currentQuote.text}"
-                  </blockquote>
-                  <div className="text-center">
-                    <cite className="text-xs text-muted-foreground font-medium">— {currentQuote.author}</cite>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Investment Strategy Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle>💰 Investment Strategy</CardTitle>
-              <CardDescription>
-                Choose how your excess money grows - see instant impact on your projections below
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3">
-                {defaultScenarios.map((scenario, index) => (
-                  <Button
-                    key={index}
-                    variant={selectedScenario.name === scenario.name ? "default" : "outline"}
-                    className={`h-auto p-4 justify-start text-left transition-all ${
-                      selectedScenario.name === scenario.name ? 'bg-primary text-primary-foreground shadow-md' : ''
-                    }`}
-                    onClick={() => applyScenario(scenario)}
-                  >
-                    <div className="w-full">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="font-semibold text-base">{scenario.name}</div>
-                        <Badge variant={selectedScenario.name === scenario.name ? "secondary" : "outline"} 
-                               className="text-xs">
-                          {scenario.params.investmentReturn}% annual return
-                        </Badge>
-                      </div>
-                      <div className="text-sm opacity-80 mb-1">{scenario.description}</div>
-                      <div className="text-xs opacity-60">
-                        {scenario.params.investmentReturn === 0.05 ? 
-                          "💳 Money sits in savings account" :
-                          scenario.params.investmentReturn === 3 ?
-                          "🛡️ Low-risk bonds and CDs" :
-                          "📈 Diversified stock portfolio"
-                        }
+        
+        <TabsContent value="presets" className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {predefinedScenarios.map((scenario) => (
+              <Card
+                key={scenario.id}
+                className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                  selectedScenario === scenario.id
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/50'
+                }`}
+                onClick={() => setSelectedScenario(scenario.id)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div 
+                      className={`p-2 rounded-lg ${
+                        selectedScenario === scenario.id 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-muted'
+                      }`}
+                      style={{ 
+                        backgroundColor: selectedScenario === scenario.id ? scenario.color : undefined 
+                      }}
+                    >
+                      {scenario.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm">{scenario.name}</h3>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        {scenario.description}
+                      </p>
+                      <div className="mt-2 text-xs font-medium" style={{ color: scenario.color }}>
+                        ${scenario.fields.targetAmount.toLocaleString()} goal
                       </div>
                     </div>
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          <div className="grid grid-cols-2 gap-4">
-            {achievementCards.map((card, index) => (
-              <Card key={index} className="relative overflow-hidden">
-                <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-10`}></div>
-                <CardContent className="pt-6 relative">
-                  <div className="text-center">
-                    <div className="text-2xl mb-2">{card.icon}</div>
-                    <div className="text-lg font-bold">{card.value}</div>
-                    <div className="text-sm font-medium">{card.title}</div>
-                    <div className="text-xs text-muted-foreground">{card.subtitle}</div>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
-
-          {/* Timeline Goals */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Your Financial Timeline
-              </CardTitle>
-              <CardDescription>
-                Key milestones on your wealth-building journey
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {timelineGoals.map((goal, index) => (
-                  <div key={index} className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 border">
-                    <div className="flex-shrink-0">
-                      <Badge variant="secondary" className="bg-primary/10 text-primary">
-                        {goal.timeframe}
-                      </Badge>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium">{goal.goal}</div>
-                      <div className="text-sm text-muted-foreground">{goal.description}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-primary">{formatLargeCurrency(goal.amount)}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Enhanced Net Worth Projection Chart */}
-          <Card className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"></div>
-            <CardHeader className="relative">
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Net Worth Growth Projection
-              </CardTitle>
-              <CardDescription>
-                {selectedScenario.name} scenario over {customParams.timeHorizon} years
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="relative">
-              <ChartContainer config={chartConfig} className="h-[300px] sm:h-[350px] w-full">
-                <ResponsiveContainer>
-                  <AreaChart data={projections} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.05}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis 
-                      dataKey="year" 
-                      tickFormatter={(value) => `Year ${value}`}
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <YAxis 
-                      tickFormatter={(value) => formatLargeCurrency(value)}
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <ChartTooltip 
-                      content={<ChartTooltipContent />}
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        boxShadow: "var(--shadow-medium)"
-                      }}
-                      formatter={(value: any) => [formatCurrency(value), "Net Worth"]}
-                      labelFormatter={(value) => `Year ${value}`}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="netWorth"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={3}
-                      fill="url(#netWorthGradient)"
-                      dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 4 }}
-                      activeDot={{ r: 6, stroke: "hsl(var(--primary))", strokeWidth: 2 }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
-          {/* Key Milestones with Categories */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Financial Milestones
-              </CardTitle>
-              <CardDescription>
-                Your roadmap to financial success and life goals
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {milestones.map((milestone, index) => (
-                  <div 
-                    key={index}
-                    className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
-                      milestone.achieved 
-                        ? 'bg-green-50 border-green-200 shadow-sm' 
-                        : 'bg-muted/30 border-muted hover:bg-muted/50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <span className="text-2xl">{milestone.icon}</span>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <div className="font-medium">{milestone.name}</div>
-                          <Badge variant="outline" className="text-xs">
-                            {milestone.category}
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground mb-1">
-                          {formatCurrency(milestone.amount)}
-                        </div>
-                        <div className="text-xs text-muted-foreground italic">
-                          {milestone.description}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      {milestone.achieved ? (
-                        <div>
-                          <Badge variant="secondary" className="bg-green-100 text-green-800 mb-1">
-                            ✨ Year {milestone.year}
-                          </Badge>
-                          <div className="text-xs text-green-600 font-medium">Achievable!</div>
-                        </div>
-                      ) : (
-                        <div>
-                          <Badge variant="outline">Beyond timeline</Badge>
-                          <div className="text-xs text-muted-foreground mt-1">Keep growing</div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
-
-        <TabsContent value="scenarios" className="space-y-6">
-
-          {/* Enhanced Scenario Comparison Chart */}
-          <Card className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-primary/5"></div>
-            <CardHeader className="relative">
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-accent" />
-                10-Year Scenario Comparison
+        
+        <TabsContent value="custom" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Calculator className="w-5 h-5" />
+                Custom Financial Goal
               </CardTitle>
-              <CardDescription>
-                Compare potential outcomes across different growth strategies
-              </CardDescription>
             </CardHeader>
-            <CardContent className="relative">
-              <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px] w-full">
-                <ResponsiveContainer>
-                  <BarChart data={scenarioComparison} margin={{ top: 20, right: 10, left: 5, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis 
-                      dataKey="name" 
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <YAxis 
-                      tickFormatter={(value) => formatLargeCurrency(value)}
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <ChartTooltip 
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        boxShadow: "var(--shadow-medium)"
-                      }}
-                      formatter={(value: any) => [formatCurrency(value), "Final Net Worth"]}
-                    />
-                    <Bar 
-                      dataKey="finalNetWorth" 
-                      fill="hsl(var(--primary))"
-                      radius={[8, 8, 0, 0]}
-                      className="drop-shadow-sm"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="customize" className="space-y-6">
-          {/* Custom Parameters */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Customize Your Projection</CardTitle>
-              <CardDescription>
-                Adjust parameters to see how different factors affect your financial growth
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium">Annual Income Growth</label>
-                    <span className="text-sm text-muted-foreground">{customParams.incomeGrowthRate}%</span>
-                  </div>
-                  <Slider
-                    value={[customParams.incomeGrowthRate]}
-                    onValueChange={(value) => updateCustomParam('incomeGrowthRate', value)}
-                    max={15}
-                    min={0}
-                    step={0.5}
-                    className="w-full"
+                  <Label htmlFor="custom-target">Target Amount ($)</Label>
+                  <Input
+                    id="custom-target"
+                    type="number"
+                    value={targetAmount}
+                    onChange={(e) => setTargetAmount(Number(e.target.value))}
+                    className="mt-1"
                   />
                 </div>
-
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium">Expense Inflation</label>
-                    <span className="text-sm text-muted-foreground">{customParams.expenseInflationRate}%</span>
-                  </div>
-                  <Slider
-                    value={[customParams.expenseInflationRate]}
-                    onValueChange={(value) => updateCustomParam('expenseInflationRate', value)}
-                    max={10}
-                    min={0}
-                    step={0.5}
-                    className="w-full"
+                  <Label htmlFor="custom-timeframe">Timeframe (months)</Label>
+                  <Input
+                    id="custom-timeframe"
+                    type="number"
+                    value={timeframe}
+                    onChange={(e) => setTimeframe(Number(e.target.value))}
+                    className="mt-1"
                   />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium">Additional Monthly Savings</label>
-                    <span className="text-sm text-muted-foreground">${customParams.additionalSavings}</span>
-                  </div>
-                  <Slider
-                    value={[customParams.additionalSavings]}
-                    onValueChange={(value) => updateCustomParam('additionalSavings', value)}
-                    max={2000}
-                    min={0}
-                    step={50}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium">Investment Return</label>
-                    <span className="text-sm text-muted-foreground">{customParams.investmentReturn}%</span>
-                  </div>
-                  <Slider
-                    value={[customParams.investmentReturn]}
-                    onValueChange={(value) => updateCustomParam('investmentReturn', value)}
-                    max={15}
-                    min={0}
-                    step={0.5}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium">Time Horizon</label>
-                    <span className="text-sm text-muted-foreground">{customParams.timeHorizon} years</span>
-                  </div>
-                  <Slider
-                    value={[customParams.timeHorizon]}
-                    onValueChange={(value) => updateCustomParam('timeHorizon', value)}
-                    max={30}
-                    min={1}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 border-t">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Info className="h-4 w-4" />
-                  <span>Projections are estimates based on your historical data and assumptions</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Projected Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Projection Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <div className="text-lg font-bold">
-                    {formatCurrency(projections[projections.length - 1]?.netWorth || 0)}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Net Worth in {customParams.timeHorizon} years
-                  </div>
-                </div>
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <div className="text-lg font-bold">
-                    {formatCurrency((projections[projections.length - 1]?.netWorth || 0) / customParams.timeHorizon / 12)}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Average Monthly Growth
-                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Current Scenario Display */}
+      <Card className="border-primary/20">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div 
+                className="p-2 rounded-lg text-white"
+                style={{ backgroundColor: currentScenario.color }}
+              >
+                {currentScenario.icon}
+              </div>
+              <div>
+                <CardTitle className="text-lg">{currentScenario.name}</CardTitle>
+                <p className="text-sm text-muted-foreground">{currentScenario.description}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-primary">
+                ${targetAmount.toLocaleString()}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {timeframe} months
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Progress Overview */}
+          <div className="space-y-3">
+            <div className="flex justify-between text-sm">
+              <span>Progress to Goal</span>
+              <span className="font-medium">{progressPercentage.toFixed(1)}%</span>
+            </div>
+            <Progress value={progressPercentage} className="h-3" />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>${finalBalance.toLocaleString()} projected</span>
+              <span>${targetAmount.toLocaleString()} target</span>
+            </div>
+          </div>
+
+          {/* Key Metrics */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-lg font-bold text-primary">
+                ${monthlyContribution.toLocaleString()}
+              </div>
+              <div className="text-xs text-muted-foreground">Monthly Savings</div>
+            </div>
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-lg font-bold text-green-600">
+                ${totalInterest.toLocaleString()}
+              </div>
+              <div className="text-xs text-muted-foreground">Interest Earned</div>
+            </div>
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-lg font-bold">
+                {timeframe}
+              </div>
+              <div className="text-xs text-muted-foreground">Months to Goal</div>
+            </div>
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-lg font-bold">
+                {interestRate}%
+              </div>
+              <div className="text-xs text-muted-foreground">Annual Return</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Interactive Controls */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Zap className="w-5 h-5" />
+            Adjust Parameters
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Fine-tune your scenario and see real-time impact
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <Label>Initial Amount: ${initialAmount.toLocaleString()}</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setInitialAmount(0)}
+                >
+                  Reset
+                </Button>
+              </div>
+              <Slider
+                value={[initialAmount]}
+                onValueChange={([value]) => setInitialAmount(value)}
+                max={targetAmount * 0.5}
+                step={100}
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <Label>Monthly Contribution: ${monthlyContribution.toLocaleString()}</Label>
+                <Badge variant="outline" className="text-xs">
+                  ${requiredMonthlyContribution.toFixed(0)} required
+                </Badge>
+              </div>
+              <Slider
+                value={[monthlyContribution]}
+                onValueChange={([value]) => setMonthlyContribution(value)}
+                max={Math.max(2000, requiredMonthlyContribution * 1.5)}
+                step={25}
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <Label>Expected Annual Return: {interestRate}%</Label>
+                <Badge variant="outline" className="text-xs">
+                  Conservative: 2-4%
+                </Badge>
+              </div>
+              <Slider
+                value={[interestRate]}
+                onValueChange={([value]) => setInterestRate(value)}
+                min={0.5}
+                max={12}
+                step={0.5}
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <Label>Timeframe: {timeframe} months</Label>
+                <Badge variant="outline" className="text-xs">
+                  {Math.floor(timeframe / 12)}y {timeframe % 12}m
+                </Badge>
+              </div>
+              <Slider
+                value={[timeframe]}
+                onValueChange={([value]) => setTimeframe(value)}
+                min={6}
+                max={360}
+                step={6}
+                className="w-full"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Projection Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <TrendingUp className="w-5 h-5" />
+            Growth Projection
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={projectionData}>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis 
+                  dataKey="month" 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => `${value}m`}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                />
+                <Tooltip
+                  formatter={(value: number, name: string) => [
+                    `$${value.toLocaleString()}`,
+                    name === 'balance' ? 'Total Balance' : 
+                    name === 'contributions' ? 'Total Contributions' : 
+                    name === 'target' ? 'Target Goal' : name
+                  ]}
+                  labelFormatter={(month) => `Month ${month}`}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="contributions"
+                  stackId="1"
+                  stroke="hsl(var(--muted-foreground))"
+                  fill="hsl(var(--muted))"
+                  fillOpacity={0.6}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="interest"
+                  stackId="1"
+                  stroke="hsl(var(--primary))"
+                  fill="hsl(var(--primary))"
+                  fillOpacity={0.6}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="target"
+                  stroke="hsl(var(--destructive))"
+                  strokeDasharray="5 5"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          
+          <div className="mt-4 flex flex-wrap gap-4 text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-muted rounded"></div>
+              <span>Contributions</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-primary rounded"></div>
+              <span>Interest Growth</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 border-2 border-destructive border-dashed rounded"></div>
+              <span>Target Goal</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Scenario Comparison */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <BarChart3 className="w-5 h-5" />
+            Scenario Comparison
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Compare different financial goals side by side
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {scenarioComparison.map((scenario, index) => (
+              <div key={index} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: scenario.color }}
+                  ></div>
+                  <div>
+                    <div className="font-medium text-sm">{scenario.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {Math.floor(scenario.timeframe / 12)}y {scenario.timeframe % 12}m
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-bold">
+                    ${scenario.finalBalance.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Target: ${scenario.target.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Spending Optimization */}
+      {spendingRecommendations.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Lightbulb className="w-5 h-5" />
+              Spending Optimization
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Based on your current spending patterns, here are areas to optimize:
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {spendingRecommendations.map((rec, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                  <div>
+                    <div className="font-medium text-sm">{rec.category}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Current: ${rec.amount.toFixed(0)}/month
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-green-600">
+                      Save ${rec.reduction}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      10% reduction
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              <div className="mt-4 p-3 bg-primary/5 rounded-lg border border-primary/20">
+                <div className="text-sm font-medium text-primary">
+                  💡 Potential Monthly Savings: ${spendingRecommendations.reduce((sum, rec) => sum + rec.reduction, 0)}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  These optimizations could boost your monthly contribution significantly
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Action Items */}
+      <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 border-green-200 dark:border-green-800">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-3">
+            <CheckCircle className="w-6 h-6 text-green-600 mt-0.5" />
+            <div className="space-y-2">
+              <h3 className="font-semibold text-green-800 dark:text-green-200">
+                Next Steps to Reach Your Goal
+              </h3>
+              <div className="space-y-1 text-sm text-green-700 dark:text-green-300">
+                {!willReachGoal && (
+                  <div>• Increase monthly contribution to ${requiredMonthlyContribution.toFixed(0)} or extend timeline</div>
+                )}
+                <div>• Consider high-yield savings account (2-4% APY)</div>
+                <div>• Set up automatic transfers on payday</div>
+                <div>• Review and reduce spending in top categories</div>
+                {timeframe > 36 && (
+                  <div>• For long-term goals, consider investment accounts</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
-};
+}
