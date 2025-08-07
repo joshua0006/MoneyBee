@@ -237,7 +237,10 @@ const Index = () => {
       <div className="bg-gradient-to-r from-card via-muted/30 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-sm">
         <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between min-h-[44px]">
-            <HamburgerMenu onMenuItemClick={setActiveMenuItem} />
+            <HamburgerMenu onMenuItemClick={(item) => {
+              console.log('Index received menu click:', item);
+              setActiveMenuItem(item);
+            }} />
             <div className="flex items-center gap-2">
               <div className="bg-gradient-to-br from-bee-gold to-accent p-1.5 rounded-lg shadow-md">
                 <img 
@@ -427,6 +430,7 @@ const Index = () => {
         {/* Settings from Hamburger Menu */}
         {activeMenuItem === "settings" && (
           <div className="space-y-6">
+            <div className="text-sm text-muted-foreground mb-2">DEBUG: activeMenuItem = {activeMenuItem}</div>
             <AppPreferences />
           </div>
         )}
