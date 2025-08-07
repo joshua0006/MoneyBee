@@ -298,12 +298,12 @@ export default function Landing() {
       </div>
 
       {/* Foreground Content */}
-      <div className="relative z-10 min-h-screen flex flex-col safe-area-top safe-area-bottom">
+      <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
-        <header className={`${isMobile ? 'p-4' : 'p-6'} safe-area-left safe-area-right`}>
+        <header className={`${isMobile ? 'p-3 pt-safe-top' : 'p-6'} px-safe-left pr-safe-right`}>
           <div className="flex items-center justify-between max-w-6xl mx-auto">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+              <div className={`${isMobile ? 'w-7 h-7' : 'w-8 h-8'} bg-primary rounded-full flex items-center justify-center`}>
                 🐝
               </div>
               <span className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold text-foreground`}>MoneyBee</span>
@@ -317,7 +317,7 @@ export default function Landing() {
               )}
               <Button 
                 onClick={handleGetStarted} 
-                className="bg-primary hover:bg-primary/90 touch-manipulation"
+                className="bg-primary hover:bg-primary/90 touch-manipulation min-h-[44px]"
                 size={isMobile ? "sm" : "default"}
               >
                 Get Started <ArrowRight className="w-4 h-4 ml-2" />
@@ -327,34 +327,39 @@ export default function Landing() {
         </header>
 
         {/* Hero Content */}
-        <main className={`flex-1 flex items-center justify-center ${isMobile ? 'px-4 py-6' : 'px-6'} safe-area-left safe-area-right`}>
-          <div className={`${isMobile ? 'max-w-sm' : 'max-w-4xl'} mx-auto text-center ${isMobile ? 'space-y-4' : 'space-y-6'}`}>
-            <div className={`${isMobile ? 'space-y-3' : 'space-y-4'}`}>
-              <Badge variant="secondary" className={`${isMobile ? 'mb-2 text-xs' : 'mb-4'}`}>
+        <main className={`flex-1 flex items-center justify-center ${isMobile ? 'px-4 py-4' : 'px-6'} px-safe-left pr-safe-right`}>
+          <div className={`${isMobile ? 'max-w-full w-full' : 'max-w-4xl'} mx-auto text-center ${isMobile ? 'space-y-6' : 'space-y-8'}`}>
+            <div className={`${isMobile ? 'space-y-4' : 'space-y-6'}`}>
+              <Badge variant="secondary" className={`${isMobile ? 'mb-3 text-xs px-3 py-1' : 'mb-4'} mx-auto`}>
                 <Sparkles className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} mr-2`} />
                 AI-Powered Expense Tracking
               </Badge>
-              <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl md:text-6xl'} font-bold text-foreground leading-tight`}>
+              <h1 className={`${isMobile ? 'text-3xl' : 'text-4xl md:text-6xl'} font-bold text-foreground leading-tight ${isMobile ? 'px-2' : ''}`}>
                 Smart Money
                 <span className="text-primary"> Management</span>
               </h1>
-              <p className={`${isMobile ? 'text-base' : 'text-xl md:text-2xl'} text-muted-foreground ${isMobile ? 'max-w-xs' : 'max-w-2xl'} mx-auto`}>
+              <p className={`${isMobile ? 'text-lg leading-relaxed' : 'text-xl md:text-2xl'} text-muted-foreground ${isMobile ? 'max-w-sm' : 'max-w-2xl'} mx-auto ${isMobile ? 'px-2' : ''}`}>
                 Track expenses, build budgets, and grow wealth with AI-powered insights. 
                 Your financial future starts here.
               </p>
             </div>
 
-            <div className={`flex flex-col ${isMobile ? 'gap-3' : 'gap-4'} justify-center`}>
+            <div className={`flex flex-col ${isMobile ? 'gap-4 px-2' : 'gap-4'} justify-center`}>
               <Button 
-                size={isMobile ? "default" : "lg"} 
+                size={isMobile ? "lg" : "lg"} 
                 onClick={handleGetStarted} 
-                className="bg-primary hover:bg-primary/90 touch-manipulation w-full"
+                className="bg-primary hover:bg-primary/90 touch-manipulation w-full min-h-[48px] font-semibold"
               >
-                <Smartphone className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} mr-2`} />
+                <Smartphone className={`${isMobile ? 'w-5 h-5' : 'w-5 h-5'} mr-2`} />
                 Start Free Demo
               </Button>
-              {!isMobile && (
-                <Button size="lg" variant="outline" onClick={handleStartTour} className="w-full sm:w-auto">
+              {isMobile && (
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  onClick={handleStartTour} 
+                  className="w-full min-h-[48px] font-medium"
+                >
                   <Play className="w-5 h-5 mr-2" />
                   Interactive Tour
                 </Button>
@@ -362,68 +367,73 @@ export default function Landing() {
             </div>
 
             {/* Social Proof */}
-            <div className={`flex items-center justify-center ${isMobile ? 'gap-3 text-xs' : 'gap-6 text-sm'} text-muted-foreground ${isMobile ? 'flex-wrap' : ''}`}>
+            <div className={`flex items-center justify-center ${isMobile ? 'gap-4 text-sm flex-wrap' : 'gap-6 text-sm'} text-muted-foreground ${isMobile ? 'px-4' : ''}`}>
               <div className="flex items-center gap-1">
-                <Users className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                <Users className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`} />
                 10k+ Users
               </div>
               <div className="flex items-center gap-1">
-                <Star className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                <Star className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`} />
                 4.9/5 Rating
               </div>
               <div className="flex items-center gap-1">
-                <Zap className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                <Zap className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`} />
                 AI-Powered
               </div>
             </div>
 
-          {/* Feature Cards */}
-          <div className={`grid grid-cols-1 ${isMobile ? 'gap-3 mt-6' : 'md:grid-cols-3 gap-6 mt-16'}`}>
-            <Card className="glass-card touch-manipulation">
-              <CardContent className={`${isMobile ? 'p-4' : 'p-6'} text-center`}>
-                <Camera className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
-                <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold mb-2`}>Smart Receipt Scanning</h3>
-                <p className="text-sm text-muted-foreground">
-                  Snap photos of receipts and let AI extract all the details automatically
-                </p>
-              </CardContent>
-            </Card>
+            {/* Feature Cards */}
+            <div className={`grid grid-cols-1 ${isMobile ? 'gap-4 mt-8 px-2' : 'md:grid-cols-3 gap-6 mt-16'}`}>
+              <Card className="glass-card touch-manipulation hover:shadow-lg transition-shadow">
+                <CardContent className={`${isMobile ? 'p-5' : 'p-6'} text-center`}>
+                  <Camera className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
+                  <h3 className={`${isMobile ? 'text-lg' : 'text-lg'} font-semibold mb-3`}>Smart Receipt Scanning</h3>
+                  <p className={`${isMobile ? 'text-sm leading-relaxed' : 'text-sm'} text-muted-foreground`}>
+                    Snap photos of receipts and let AI extract all the details automatically
+                  </p>
+                </CardContent>
+              </Card>
 
-            <Card className="glass-card touch-manipulation">
-              <CardContent className={`${isMobile ? 'p-4' : 'p-6'} text-center`}>
-                <PieChart className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
-                <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold mb-2`}>Intelligent Budgets</h3>
-                <p className="text-sm text-muted-foreground">
-                  Set smart spending limits and get insights on your financial habits
-                </p>
-              </CardContent>
-            </Card>
+              <Card className="glass-card touch-manipulation hover:shadow-lg transition-shadow">
+                <CardContent className={`${isMobile ? 'p-5' : 'p-6'} text-center`}>
+                  <PieChart className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
+                  <h3 className={`${isMobile ? 'text-lg' : 'text-lg'} font-semibold mb-3`}>Intelligent Budgets</h3>
+                  <p className={`${isMobile ? 'text-sm leading-relaxed' : 'text-sm'} text-muted-foreground`}>
+                    Set smart spending limits and get insights on your financial habits
+                  </p>
+                </CardContent>
+              </Card>
 
-            <Card className="glass-card touch-manipulation">
-              <CardContent className={`${isMobile ? 'p-4' : 'p-6'} text-center`}>
-                <TrendingUp className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
-                <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold mb-2`}>Wealth Growth</h3>
-                <p className="text-sm text-muted-foreground">
-                  Simulate investment scenarios and track your net worth over time
-                </p>
-              </CardContent>
-            </Card>
+              <Card className="glass-card touch-manipulation hover:shadow-lg transition-shadow">
+                <CardContent className={`${isMobile ? 'p-5' : 'p-6'} text-center`}>
+                  <TrendingUp className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
+                  <h3 className={`${isMobile ? 'text-lg' : 'text-lg'} font-semibold mb-3`}>Wealth Growth</h3>
+                  <p className={`${isMobile ? 'text-sm leading-relaxed' : 'text-sm'} text-muted-foreground`}>
+                    Simulate investment scenarios and track your net worth over time
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
 
         {/* Call to Action */}
-        <div className={`${isMobile ? 'p-4' : 'p-6'} text-center safe-area-left safe-area-right`}>
+        <div className={`${isMobile ? 'p-4 pb-safe-bottom' : 'p-6'} text-center px-safe-left pr-safe-right`}>
           {!isMobile && (
             <p className="text-sm text-muted-foreground mb-4">
               ✨ Click the phone above to see the app in action ✨
             </p>
           )}
-          <div className="flex flex-col gap-3 justify-center">
+          {isMobile && (
+            <p className="text-sm text-muted-foreground mb-4">
+              ✨ Ready to transform your finances? ✨
+            </p>
+          )}
+          <div className={`flex flex-col ${isMobile ? 'gap-3 px-2' : 'gap-3'} justify-center max-w-md mx-auto`}>
             <Button 
               onClick={handleGetStarted} 
-              size={isMobile ? "default" : "lg"} 
-              className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 touch-manipulation w-full"
+              size="lg" 
+              className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 touch-manipulation w-full min-h-[48px] font-semibold"
             >
               <DollarSign className="w-5 h-5 mr-2" />
               Start Your Financial Journey
@@ -433,21 +443,23 @@ export default function Landing() {
                 onClick={handleStartTour}
                 size="lg" 
                 variant="outline"
-                className="w-full"
+                className="w-full min-h-[48px]"
               >
                 <Play className="w-5 h-5 mr-2" />
                 Take Interactive Tour
               </Button>
             )}
             
-            <Button 
-              size="sm" 
-              variant="secondary" 
-              className="bg-white/60 backdrop-blur-sm touch-manipulation"
-              onClick={() => setShowJourney(!showJourney)}
-            >
-              {showJourney ? 'Hide' : 'Show'} User Journey
-            </Button>
+            {!isMobile && (
+              <Button 
+                size="sm" 
+                variant="secondary" 
+                className="bg-white/60 backdrop-blur-sm touch-manipulation"
+                onClick={() => setShowJourney(!showJourney)}
+              >
+                {showJourney ? 'Hide' : 'Show'} User Journey
+              </Button>
+            )}
           </div>
         </div>
       </div>
