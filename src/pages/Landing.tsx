@@ -327,28 +327,33 @@ export default function Landing() {
         </header>
 
         {/* Hero Content */}
-        <main className={`flex-1 flex items-center justify-center ${isMobile ? 'px-4 py-4' : 'px-6'} px-safe-left pr-safe-right`}>
-          <div className={`${isMobile ? 'max-w-full w-full' : 'max-w-4xl'} mx-auto text-center ${isMobile ? 'space-y-6' : 'space-y-8'}`}>
-            <div className={`${isMobile ? 'space-y-4' : 'space-y-6'}`}>
-              <Badge variant="secondary" className={`${isMobile ? 'mb-3 text-xs px-3 py-1' : 'mb-4'} mx-auto`}>
+        <main className={`flex-1 flex items-center justify-center ${isMobile ? 'px-4 py-8' : 'px-6 py-12'} px-safe-left pr-safe-right`}>
+          <div className={`${isMobile ? 'max-w-full w-full' : 'max-w-5xl'} mx-auto text-center ${isMobile ? 'space-y-8' : 'space-y-12'}`}>
+            <div className={`${isMobile ? 'space-y-6' : 'space-y-8'}`}>
+              <Badge variant="secondary" className={`${isMobile ? 'mb-4 text-xs px-4 py-2' : 'mb-6 px-6 py-3'} mx-auto bg-bee-primary/10 text-bee-primary border-bee-primary/20 hover:bg-bee-primary/20 transition-colors`}>
                 <Sparkles className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} mr-2`} />
                 AI-Powered Expense Tracking
               </Badge>
-              <h1 className={`${isMobile ? 'text-3xl' : 'text-4xl md:text-6xl'} font-bold text-foreground leading-tight ${isMobile ? 'px-2' : ''}`}>
-                Smart Money
-                <span className="text-primary"> Management</span>
+              <h1 className={`${isMobile ? 'text-4xl' : 'text-5xl md:text-7xl'} font-bold leading-tight ${isMobile ? 'px-2' : ''}`}>
+                <span className="bg-gradient-to-r from-foreground via-bee-primary to-bee-secondary bg-clip-text text-transparent">
+                  Smart Money
+                </span>
+                <br />
+                <span className="bg-gradient-to-r from-bee-primary to-bee-accent bg-clip-text text-transparent">
+                  Management
+                </span>
               </h1>
-              <p className={`${isMobile ? 'text-lg leading-relaxed' : 'text-xl md:text-2xl'} text-muted-foreground ${isMobile ? 'max-w-sm' : 'max-w-2xl'} mx-auto ${isMobile ? 'px-2' : ''}`}>
+              <p className={`${isMobile ? 'text-lg leading-relaxed' : 'text-xl md:text-2xl'} text-muted-foreground/80 ${isMobile ? 'max-w-sm' : 'max-w-3xl'} mx-auto ${isMobile ? 'px-2' : ''} font-medium`}>
                 Track expenses, build budgets, and grow wealth with AI-powered insights. 
-                Your financial future starts here.
+                <span className="text-bee-primary font-semibold">Your financial future starts here.</span>
               </p>
             </div>
 
-            <div className={`flex flex-col ${isMobile ? 'gap-4 px-2' : 'gap-4'} justify-center`}>
+            <div className={`flex flex-col ${isMobile ? 'gap-4 px-2' : 'gap-6'} justify-center ${isMobile ? 'mt-8' : 'mt-12'}`}>
               <Button 
                 size={isMobile ? "lg" : "lg"} 
                 onClick={handleGetStarted} 
-                className="bg-primary hover:bg-primary/90 touch-manipulation w-full min-h-[48px] font-semibold"
+                className="bg-gradient-to-r from-bee-primary to-bee-secondary hover:from-bee-primary/90 hover:to-bee-secondary/90 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 touch-manipulation w-full min-h-[52px] font-semibold text-lg"
               >
                 <Smartphone className={`${isMobile ? 'w-5 h-5' : 'w-5 h-5'} mr-2`} />
                 Start Free Demo
@@ -358,7 +363,7 @@ export default function Landing() {
                   size="lg" 
                   variant="outline" 
                   onClick={handleStartTour} 
-                  className="w-full min-h-[48px] font-medium"
+                  className="w-full min-h-[48px] font-medium border-bee-primary/30 text-bee-primary hover:bg-bee-primary/10 hover:border-bee-primary/50"
                 >
                   <Play className="w-5 h-5 mr-2" />
                   Interactive Tour
@@ -367,48 +372,54 @@ export default function Landing() {
             </div>
 
             {/* Social Proof */}
-            <div className={`flex items-center justify-center ${isMobile ? 'gap-4 text-sm flex-wrap' : 'gap-6 text-sm'} text-muted-foreground ${isMobile ? 'px-4' : ''}`}>
-              <div className="flex items-center gap-1">
-                <Users className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`} />
-                10k+ Users
+            <div className={`flex items-center justify-center ${isMobile ? 'gap-6 text-sm flex-wrap' : 'gap-8 text-sm'} ${isMobile ? 'px-4 py-6' : 'py-8'}`}>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
+                <Users className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} text-bee-primary`} />
+                <span className="text-foreground font-medium">10k+ Users</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Star className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`} />
-                4.9/5 Rating
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
+                <Star className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} text-bee-accent fill-bee-accent`} />
+                <span className="text-foreground font-medium">4.9/5 Rating</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Zap className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`} />
-                AI-Powered
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
+                <Zap className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'} text-bee-secondary`} />
+                <span className="text-foreground font-medium">AI-Powered</span>
               </div>
             </div>
 
             {/* Feature Cards */}
-            <div className={`grid grid-cols-1 ${isMobile ? 'gap-4 mt-8 px-2' : 'md:grid-cols-3 gap-6 mt-16'}`}>
-              <Card className="glass-card touch-manipulation hover:shadow-lg transition-shadow">
-                <CardContent className={`${isMobile ? 'p-5' : 'p-6'} text-center`}>
-                  <Camera className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
-                  <h3 className={`${isMobile ? 'text-lg' : 'text-lg'} font-semibold mb-3`}>Smart Receipt Scanning</h3>
-                  <p className={`${isMobile ? 'text-sm leading-relaxed' : 'text-sm'} text-muted-foreground`}>
+            <div className={`grid grid-cols-1 ${isMobile ? 'gap-6 mt-12 px-2' : 'md:grid-cols-3 gap-8 mt-20'}`}>
+              <Card className="group bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 hover:border-bee-primary/30 touch-manipulation hover:shadow-2xl hover:shadow-bee-primary/10 transition-all duration-300 hover:scale-105">
+                <CardContent className={`${isMobile ? 'p-6' : 'p-8'} text-center`}>
+                  <div className="bg-gradient-to-br from-bee-primary/20 to-bee-secondary/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                    <Camera className={`${isMobile ? 'w-8 h-8' : 'w-8 h-8'} text-bee-primary`} />
+                  </div>
+                  <h3 className={`${isMobile ? 'text-xl' : 'text-xl'} font-bold mb-4 text-foreground`}>Smart Receipt Scanning</h3>
+                  <p className={`${isMobile ? 'text-sm leading-relaxed' : 'text-sm leading-relaxed'} text-muted-foreground/80`}>
                     Snap photos of receipts and let AI extract all the details automatically
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="glass-card touch-manipulation hover:shadow-lg transition-shadow">
-                <CardContent className={`${isMobile ? 'p-5' : 'p-6'} text-center`}>
-                  <PieChart className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
-                  <h3 className={`${isMobile ? 'text-lg' : 'text-lg'} font-semibold mb-3`}>Intelligent Budgets</h3>
-                  <p className={`${isMobile ? 'text-sm leading-relaxed' : 'text-sm'} text-muted-foreground`}>
+              <Card className="group bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 hover:border-bee-accent/30 touch-manipulation hover:shadow-2xl hover:shadow-bee-accent/10 transition-all duration-300 hover:scale-105">
+                <CardContent className={`${isMobile ? 'p-6' : 'p-8'} text-center`}>
+                  <div className="bg-gradient-to-br from-bee-accent/20 to-bee-primary/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                    <PieChart className={`${isMobile ? 'w-8 h-8' : 'w-8 h-8'} text-bee-accent`} />
+                  </div>
+                  <h3 className={`${isMobile ? 'text-xl' : 'text-xl'} font-bold mb-4 text-foreground`}>Intelligent Budgets</h3>
+                  <p className={`${isMobile ? 'text-sm leading-relaxed' : 'text-sm leading-relaxed'} text-muted-foreground/80`}>
                     Set smart spending limits and get insights on your financial habits
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="glass-card touch-manipulation hover:shadow-lg transition-shadow">
-                <CardContent className={`${isMobile ? 'p-5' : 'p-6'} text-center`}>
-                  <TrendingUp className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} mx-auto mb-4 text-primary`} />
-                  <h3 className={`${isMobile ? 'text-lg' : 'text-lg'} font-semibold mb-3`}>Wealth Growth</h3>
-                  <p className={`${isMobile ? 'text-sm leading-relaxed' : 'text-sm'} text-muted-foreground`}>
+              <Card className="group bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 hover:border-bee-secondary/30 touch-manipulation hover:shadow-2xl hover:shadow-bee-secondary/10 transition-all duration-300 hover:scale-105">
+                <CardContent className={`${isMobile ? 'p-6' : 'p-8'} text-center`}>
+                  <div className="bg-gradient-to-br from-bee-secondary/20 to-bee-accent/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                    <TrendingUp className={`${isMobile ? 'w-8 h-8' : 'w-8 h-8'} text-bee-secondary`} />
+                  </div>
+                  <h3 className={`${isMobile ? 'text-xl' : 'text-xl'} font-bold mb-4 text-foreground`}>Wealth Growth</h3>
+                  <p className={`${isMobile ? 'text-sm leading-relaxed' : 'text-sm leading-relaxed'} text-muted-foreground/80`}>
                     Simulate investment scenarios and track your net worth over time
                   </p>
                 </CardContent>
