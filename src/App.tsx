@@ -9,6 +9,7 @@ import { useAuth } from '@clerk/clerk-react';
 import Index from "./pages/Index";
 import ClerkAuth from "./pages/ClerkAuth";
 import NotFound from "./pages/NotFound";
+import Landing from "./pages/Landing";
 
 const queryClient = new QueryClient();
 
@@ -37,9 +38,10 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
+              <Route path="/landing" element={<Landing />} />
               <Route 
                 path="/" 
-                element={isSignedIn ? <Index /> : <Navigate to="/auth" replace />} 
+                element={isSignedIn ? <Index /> : <Navigate to="/landing" replace />} 
               />
               <Route 
                 path="/auth" 
