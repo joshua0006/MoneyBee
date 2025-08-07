@@ -29,6 +29,7 @@ import { ProgressiveLoader } from "@/components/ProgressiveLoader";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { MobileSettings } from "@/components/MobileSettings";
 import { Settings } from "@/components/Settings";
+import { AppPreferences } from "@/components/AppPreferences";
 import { FinancialSimulation } from "@/components/FinancialSimulation";
 import { mobileService } from "@/utils/mobileService";
 import { useAppData } from "@/hooks/useAppData";
@@ -426,7 +427,7 @@ const Index = () => {
         {/* Settings from Hamburger Menu */}
         {activeMenuItem === "settings" && (
           <div className="space-y-6">
-            <Settings />
+            <AppPreferences />
           </div>
         )}
         </div>
