@@ -262,22 +262,26 @@ export default function Landing() {
             )}
 
             {/* Stats Display */}
-            <StatsDisplay position={[0, 4, 0]} />
+            {!isMobile && <StatsDisplay position={[0, 4, 0]} />}
 
             {/* User Journey Flow */}
-            <UserJourneyFlow 
-              position={[0, -4, 2]} 
-              isActive={showJourney}
-            />
+            {!isMobile && showJourney && (
+              <UserJourneyFlow 
+                position={[0, -4, 2]} 
+                isActive={showJourney}
+              />
+            )}
             
             {!isMobile && <Chart3D position={[0, -3, 0]} />}
             
             {/* Guided Tour */}
-            <GuidedTour
-              isActive={showTour}
-              onClose={() => setShowTour(false)}
-              onGetStarted={handleGetStarted}
-            />
+            {!isMobile && (
+              <GuidedTour
+                isActive={showTour}
+                onClose={() => setShowTour(false)}
+                onGetStarted={handleGetStarted}
+              />
+            )}
             
             <Environment preset={isMobile ? "sunset" : "city"} />
             <OrbitControls
