@@ -340,9 +340,9 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
               </CardDescription>
             </CardHeader>
             <CardContent className="relative">
-              <ChartContainer config={chartConfig} className="h-[350px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={projections} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <ChartContainer config={chartConfig} className="h-[300px] sm:h-[350px] w-full">
+                <ResponsiveContainer>
+                  <AreaChart data={projections} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
@@ -493,9 +493,9 @@ export const FinancialSimulation = ({ expenses }: FinancialSimulationProps) => {
               </CardDescription>
             </CardHeader>
             <CardContent className="relative">
-              <ChartContainer config={chartConfig} className="h-[250px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={scenarioComparison} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px] w-full">
+                <ResponsiveContainer>
+                  <BarChart data={scenarioComparison} margin={{ top: 20, right: 10, left: 5, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                     <XAxis 
                       dataKey="name" 
