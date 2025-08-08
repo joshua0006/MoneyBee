@@ -438,43 +438,63 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
         
         <TabsContent value="presets" className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {predefinedScenarios.map((scenario) => (
-              <Card
-                key={scenario.id}
-                className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
-                  selectedScenario === scenario.id
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50'
-                }`}
-                onClick={() => setSelectedScenario(scenario.id)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div 
-                      className={`p-2 rounded-lg ${
-                        selectedScenario === scenario.id 
-                          ? 'bg-primary text-primary-foreground' 
-                          : 'bg-muted'
-                      }`}
-                      style={{ 
-                        backgroundColor: selectedScenario === scenario.id ? scenario.color : undefined 
-                      }}
-                    >
-                      {scenario.icon}
+            {scenarios.map((scenario) => {
+              const monthsTo = computeMonthsToTarget(scenario.fields);
+              return (
+                <Card
+                  key={scenario.id}
+                  className={`relative cursor-pointer transition-all duration-200 hover:shadow-md ${
+                    selectedScenario === scenario.id
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                  onClick={() => setSelectedScenario(scenario.id)}
+                >
+                  <CardContent className="p-4">
+                    <div className="absolute top-2 right-2 flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingScenarioId(scenario.id);
+                        }}
+                        aria-label={`Edit ${scenario.name}`}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
+                        {monthsTo !== null ? `${monthsTo}m` : '—'}
+                      </Badge>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm">{scenario.name}</h3>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                        {scenario.description}
-                      </p>
-                      <div className="mt-2 text-xs font-medium" style={{ color: scenario.color }}>
-                        ${scenario.fields.targetAmount.toLocaleString()} goal
+                    <div className="flex items-start gap-3">
+                      <div 
+                        className={`p-2 rounded-lg ${
+                          selectedScenario === scenario.id 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-muted'
+                        }`}
+                        style={{ 
+                          backgroundColor: selectedScenario === scenario.id ? scenario.color : undefined 
+                        }}
+                      >
+                        {scenario.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm">{scenario.name}</h3>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          {scenario.description}
+                        </p>
+                        <div className="mt-2 text-xs font-medium" style={{ color: scenario.color }}>
+                          ${scenario.fields.targetAmount.toLocaleString()} goal
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </TabsContent>
         
@@ -949,6 +969,83 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
           </div>
         </CardContent>
       </Card>
+      <Dialog open={!!editingScenarioId} onOpenChange={(open) => { if (!open) setEditingScenarioId(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Goal</DialogTitle>
+            <DialogDescription>Rename this preset and adjust all amounts. Changes persist automatically.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-name">Goal name</Label>
+              <Input id="edit-name" value={editName} onChange={(e) => setEditName(e.target.value)} className="mt-1" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-target">Target Amount ($)</Label>
+                <Input id="edit-target" type="number" value={editTargetAmount} onChange={(e) => setEditTargetAmount(Number(e.target.value))} className="mt-1" />
+              </div>
+              <div>
+                <Label htmlFor="edit-timeframe">Timeframe (months)</Label>
+                <Input id="edit-timeframe" type="number" value={editTimeframe} onChange={(e) => setEditTimeframe(Number(e.target.value))} className="mt-1" />
+              </div>
+              <div>
+                <Label htmlFor="edit-initial">Initial Amount ($)</Label>
+                <Input id="edit-initial" type="number" value={editInitialAmount} onChange={(e) => setEditInitialAmount(Number(e.target.value))} className="mt-1" />
+              </div>
+              <div>
+                <Label htmlFor="edit-monthly">Monthly Contribution ($)</Label>
+                <Input id="edit-monthly" type="number" value={editMonthlyContribution} onChange={(e) => setEditMonthlyContribution(Number(e.target.value))} className="mt-1" />
+              </div>
+              <div>
+                <Label htmlFor="edit-interest">Annual Return (%)</Label>
+                <Input id="edit-interest" type="number" step="0.1" value={editInterestRate} onChange={(e) => setEditInterestRate(Number(e.target.value))} className="mt-1" />
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="flex items-center justify-between gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (!editingScenarioId) return;
+                setCustomScenarios((prev) => {
+                  const { [editingScenarioId]: _omit, ...rest } = prev;
+                  return rest;
+                });
+                setEditingScenarioId(null);
+              }}
+            >
+              Reset to default
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={() => setEditingScenarioId(null)}>Cancel</Button>
+              <Button
+                onClick={() => {
+                  if (!editingScenarioId) return;
+                  const base = predefinedScenarios.find((s) => s.id === editingScenarioId);
+                  if (!base) return;
+                  const updated = {
+                    ...base,
+                    name: editName,
+                    fields: {
+                      ...base.fields,
+                      targetAmount: editTargetAmount,
+                      timeframe: editTimeframe,
+                      initialAmount: editInitialAmount,
+                      monthlyContribution: editMonthlyContribution,
+                      interestRate: editInterestRate,
+                    },
+                  } as ScenarioConfig;
+                  setCustomScenarios((prev) => ({ ...prev, [editingScenarioId]: updated }));
+                  setEditingScenarioId(null);
+                }}
+              >
+                Save changes
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
