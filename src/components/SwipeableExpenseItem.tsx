@@ -61,9 +61,11 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
     <div className="relative overflow-hidden">
       {/* Delete Action Background */}
       <div 
+        aria-hidden={!isSwipingToDelete}
+        role="presentation"
         className={cn(
           "absolute inset-0 bg-destructive flex items-center justify-end px-6 transition-opacity duration-200",
-          isSwipingToDelete ? "opacity-100" : "opacity-0"
+          isSwipingToDelete ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
       >
         <div className="flex items-center gap-2 text-destructive-foreground">
