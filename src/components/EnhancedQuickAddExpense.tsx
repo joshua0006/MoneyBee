@@ -39,17 +39,21 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [aiInput, setAiInput] = useState("");
   const [isParsing, setIsParsing] = useState(false);
   const [autoSubmit, setAutoSubmit] = useState(true);
-  const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const [aiParseSuccess, setAiParseSuccess] = useState(false);
   const [parsedData, setParsedData] = useState<ParsedExpense | null>(null);
   const [useFallback, setUseFallback] = useState(true);
   const [showReceiptScanner, setShowReceiptScanner] = useState(false);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
   const { toast } = useToast();
   const descriptionRef = useRef<HTMLInputElement>(null);
   const aiInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-save internals (robust consecutive saves)
+  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSavingRef = useRef(false);
+  const pendingSaveRef = useRef<Omit<Expense, 'id'> | null>(null);
+  const latestDraftRef = useRef<{ amount: string; description: string; category: string; type: 'expense' | 'income'; accountId: string; } | null>(null);
+  const lastSavedHashRef = useRef<string | null>(null);
 
   // Smart suggestions based on input
   useEffect(() => {
@@ -69,136 +73,114 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     return getCategorySuggestion(desc);
   };
 
-  // Auto-logging functionality with duplicate prevention
-  const triggerAutoSave = useCallback(() => {
-    // Prevent multiple simultaneous auto-saves
-    if (isSubmitting) return;
-    
-    // Clear existing timeout
-    if (autoSaveTimeout) {
-      clearTimeout(autoSaveTimeout);
-    }
-    
-    // Set new timeout for auto-save with faster response
-    const timeoutId = setTimeout(() => {
-      // Double-check we're not already submitting
-      if (isSubmitting) return;
-      
-      // Check if we have minimum required fields
-      const validAmount = type === 'income' ? parseSmartAmount(amount) : parseFloat(amount);
-      const hasValidData = validAmount > 0 && (description.trim() || type === 'income');
-      
-      if (hasValidData && autoSubmit) {
-        console.log('Auto-save triggered via timeout:', { amount: validAmount, description, autoSubmit, isSubmitting });
-        
-        setIsSubmitting(true);
-        
-        // Auto-submit the form
-        const finalCategory = category || suggestCategoryFromDescription(description) || "Other";
-        
-        console.log('Expense auto-logged successfully via timeout');
-        const expense: Omit<Expense, 'id'> = {
-          amount: type === 'income' ? parseSmartAmount(amount) : parseFloat(amount),
-          description: type === 'income' ? (description.trim() || 'Income') : description.trim(),
-          category: type === 'income' ? 'Income' : finalCategory,
-          date: new Date(),
-          type,
-          accountId: accountId || accounts[0]?.id
-        };
-        
-        onAddExpense(expense);
-        
-        // Reset form
-        if (!editingExpense) {
-          setAmount("");
-          setDescription("");
-          setCategory("");
-          setIsRecurring(false);
-          setShowSuggestions(false);
-          setAiInput("");
-        }
-        setAiParseSuccess(false);
-        
-        toast({
-          title: type === 'expense' ? "💳 Expense Auto-Logged" : "💰 Income Auto-Logged",
-          description: `$${validAmount.toLocaleString()} for ${description || 'Income'}`,
-          duration: 2000
-        });
-        
-        // Reset submission flag after a delay
-        setTimeout(() => setIsSubmitting(false), 1000);
-      }
-    }, 1000); // Faster auto-save after 1 second of inactivity
-    
-    setAutoSaveTimeout(timeoutId);
-  }, [amount, description, category, type, accountId, accounts, onAddExpense, editingExpense, autoSubmit, autoSaveTimeout, toast, isSubmitting]);
-
-  // Immediate auto-log on blur with duplicate prevention
-  const handleFieldBlur = useCallback(() => {
-    // Prevent duplicate submissions
-    if (isSubmitting) return;
-    
+  // Auto-logging with debounced queue and duplicate prevention
+  const buildDraft = useCallback((): Omit<Expense, 'id'> | null => {
     const validAmount = type === 'income' ? parseSmartAmount(amount) : parseFloat(amount);
     const hasValidData = validAmount > 0 && (description.trim() || type === 'income');
-    
-    if (hasValidData && autoSubmit) {
-      console.log('Auto-save triggered via blur:', { amount: validAmount, description, autoSubmit, isSubmitting });
-      
-      // Clear any pending timeout to prevent double submission
-      if (autoSaveTimeout) {
-        clearTimeout(autoSaveTimeout);
-        setAutoSaveTimeout(null);
-      }
-      
-      setIsSubmitting(true);
-      
-      // Trigger immediate save on blur
-      setTimeout(() => {
-        const finalCategory = category || suggestCategoryFromDescription(description) || "Other";
-        
-        const expense: Omit<Expense, 'id'> = {
-          amount: type === 'income' ? parseSmartAmount(amount) : parseFloat(amount),
-          description: type === 'income' ? (description.trim() || 'Income') : description.trim(),
-          category: type === 'income' ? 'Income' : finalCategory,
-          date: new Date(),
-          type,
-          accountId: accountId || accounts[0]?.id
-        };
-        
-        onAddExpense(expense);
-        
-        // Reset form
-        if (!editingExpense) {
-          setAmount("");
-          setDescription("");
-          setCategory("");
-          setIsRecurring(false);
-          setShowSuggestions(false);
-          setAiInput("");
-        }
-        setAiParseSuccess(false);
-        
-        toast({
-          title: type === 'expense' ? "💳 Expense Auto-Logged" : "💰 Income Auto-Logged",
-          description: `$${validAmount.toLocaleString()} for ${description || 'Income'}`,
-          duration: 2000
-        });
-        
-        console.log('Expense auto-logged successfully via blur');
-        // Reset submission flag
-        setTimeout(() => setIsSubmitting(false), 1000);
-      }, 300); // Short delay to ensure blur event completes
+    if (!hasValidData) return null;
+
+    const finalCategory = type === 'income'
+      ? 'Income'
+      : (category || suggestCategoryFromDescription(description) || 'Other');
+
+    return {
+      amount: validAmount,
+      description: type === 'income' ? (description.trim() || 'Income') : description.trim(),
+      category: finalCategory,
+      date: new Date(),
+      type,
+      accountId: accountId || accounts[0]?.id
+    };
+  }, [amount, description, category, type, accountId, accounts]);
+
+  const hashDraft = (exp: Omit<Expense, 'id'>) =>
+    JSON.stringify({ a: exp.amount, d: exp.description, c: exp.category, t: exp.type, acc: exp.accountId });
+
+  const flushQueue = useCallback(() => {
+    // Process pending save if exists and differs from last saved
+    const next = pendingSaveRef.current;
+    if (!next) return;
+    pendingSaveRef.current = null;
+    enqueueSave(next);
+  }, []);
+
+  const enqueueSave = useCallback((draft?: Omit<Expense, 'id'> | null) => {
+    const exp = draft ?? buildDraft();
+    if (!exp || !autoSubmit) return;
+
+    const currentHash = hashDraft(exp);
+    if (lastSavedHashRef.current === currentHash) {
+      return; // duplicate
     }
-  }, [amount, description, category, type, accountId, accounts, onAddExpense, editingExpense, autoSubmit, autoSaveTimeout, toast, isSubmitting]);
+
+    if (isSavingRef.current) {
+      // queue latest
+      pendingSaveRef.current = exp;
+      return;
+    }
+
+    isSavingRef.current = true;
+
+    try {
+      onAddExpense(exp);
+      lastSavedHashRef.current = currentHash;
+
+      // Reset form if not editing
+      if (!editingExpense) {
+        setAmount("");
+        setDescription("");
+        setCategory("");
+        setIsRecurring(false);
+        setShowSuggestions(false);
+        setAiInput("");
+      }
+      setAiParseSuccess(false);
+
+      toast({
+        title: exp.type === 'expense' ? "💳 Expense Auto-Logged" : "💰 Income Auto-Logged",
+        description: `$${exp.amount.toLocaleString()} for ${exp.description || 'Income'}`,
+        duration: 2000
+      });
+    } finally {
+      // small cooldown to mimic previous UX
+      setTimeout(() => {
+        isSavingRef.current = false;
+        flushQueue();
+      }, 300);
+    }
+  }, [autoSubmit, buildDraft, editingExpense, onAddExpense, toast]);
+
+  // Debounced trigger
+  const triggerAutoSave = useCallback(() => {
+    latestDraftRef.current = { amount, description, category, type, accountId } as any;
+
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      enqueueSave(buildDraft());
+    }, 600);
+  }, [amount, description, category, type, accountId, buildDraft, enqueueSave]);
+
+  // Immediate save on blur
+  const handleFieldBlur = useCallback(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+      autoSaveTimeoutRef.current = null;
+    }
+    enqueueSave(buildDraft());
+  }, [buildDraft, enqueueSave]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
-      if (autoSaveTimeout) {
-        clearTimeout(autoSaveTimeout);
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+        autoSaveTimeoutRef.current = null;
       }
     };
-  }, [autoSaveTimeout]);
+  }, []);
 
   // Trigger auto-save when form fields change
   useEffect(() => {
@@ -234,8 +216,14 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
     setIsLoading(true);
     
-    // Prevent duplicate submissions
-    if (isSubmitting) {
+    // Prevent duplicate submissions and queue if needed
+    const manualHash = JSON.stringify({ a: expense.amount, d: expense.description, c: expense.category, t: expense.type, acc: expense.accountId });
+    if (lastSavedHashRef.current === manualHash) {
+      setIsLoading(false);
+      return;
+    }
+    if (isSavingRef.current) {
+      pendingSaveRef.current = expense;
       setIsLoading(false);
       return;
     }
@@ -255,6 +243,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     // Simulate processing time for better UX
     setTimeout(() => {
       onAddExpense(expense);
+      lastSavedHashRef.current = manualHash;
       
       // Reset form only if not editing
       if (!editingExpense) {
@@ -807,9 +796,13 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
         </form>
       </div>
       
-      {/* Receipt Scanner Modal */}
-      {showReceiptScanner && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+      {/* Receipt Scanner Dialog */}
+      <Dialog open={showReceiptScanner} onOpenChange={setShowReceiptScanner}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Receipt Scanner</DialogTitle>
+            <DialogDescription>Capture or upload a receipt to extract expense details.</DialogDescription>
+          </DialogHeader>
           <ReceiptScanner
             onExpenseExtracted={(expenseData) => {
               // Fill the form with extracted data
@@ -837,8 +830,8 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             }}
             onClose={() => setShowReceiptScanner(false)}
           />
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
