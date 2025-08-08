@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -145,6 +146,9 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
   const [initialAmount, setInitialAmount] = useState(0);
   const [monthlyContribution, setMonthlyContribution] = useState(800);
   const [interestRate, setInterestRate] = useState(2.5);
+  const [baselineSource, setBaselineSource] = useState<'tracker' | 'manual'>('tracker');
+  const [manualMonthlyIncome, setManualMonthlyIncome] = useState<number | ''>('');
+  const [manualMonthlyExpenses, setManualMonthlyExpenses] = useState<number | ''>('');
 
   // Calculate current spending patterns
   const monthlySpending = useMemo(() => {
@@ -156,6 +160,55 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
     return totalExpenses / months;
   }, [expenses]);
 
+  // Baseline from tracker (last 3 months average)
+  const trackerBaseline3mo = useMemo(() => {
+    const now = new Date();
+    const threeMonthsAgo = new Date(now);
+    threeMonthsAgo.setMonth(now.getMonth() - 3);
+
+    let incomeSum = 0;
+    let expenseSum = 0;
+
+    for (const e of expenses) {
+      const d = e.date instanceof Date ? e.date : new Date(e.date as any);
+      if (d >= threeMonthsAgo) {
+        if (e.type === 'income') incomeSum += e.amount;
+        if (e.type === 'expense') expenseSum += e.amount;
+      }
+    }
+
+    const months = 3;
+    const monthlyIncome = incomeSum / months;
+    const monthlyExpenses = expenseSum / months;
+    return {
+      monthlyIncome: Math.max(0, Math.round(monthlyIncome)),
+      monthlyExpenses: Math.max(0, Math.round(monthlyExpenses)),
+      monthlyNet: Math.round(monthlyIncome - monthlyExpenses)
+    };
+  }, [expenses]);
+
+  // Prefill manual values on first switch to manual
+  const manualInitializedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (baselineSource === 'manual' && !manualInitializedRef.current) {
+      setManualMonthlyIncome(trackerBaseline3mo.monthlyIncome);
+      setManualMonthlyExpenses(trackerBaseline3mo.monthlyExpenses);
+      manualInitializedRef.current = true;
+    }
+  }, [baselineSource, trackerBaseline3mo]);
+
+  const activeBaseline = useMemo(() => {
+    if (baselineSource === 'manual') {
+      const inc = typeof manualMonthlyIncome === 'number' ? manualMonthlyIncome : Number(manualMonthlyIncome) || 0;
+      const exp = typeof manualMonthlyExpenses === 'number' ? manualMonthlyExpenses : Number(manualMonthlyExpenses) || 0;
+      return { monthlyIncome: inc, monthlyExpenses: exp, monthlyNet: inc - exp };
+    }
+    return trackerBaseline3mo;
+  }, [baselineSource, manualMonthlyIncome, manualMonthlyExpenses, trackerBaseline3mo]);
+
+  const suggestedContribution = Math.max(0, Math.floor(activeBaseline.monthlyNet));
+  const overBy = Math.max(0, monthlyContribution - activeBaseline.monthlyNet);
+
   const currentScenario = customMode 
     ? {
         id: 'custom',
@@ -166,7 +219,6 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
         fields: { targetAmount, timeframe, initialAmount, monthlyContribution, interestRate }
       }
     : predefinedScenarios.find(s => s.id === selectedScenario) || predefinedScenarios[0];
-
   // Load scenario values
   React.useEffect(() => {
     if (!customMode && currentScenario) {
@@ -464,6 +516,92 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
         </CardContent>
       </Card>
 
+      {/* Cash Flow Baseline */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <DollarSign className="w-5 h-5" />
+            Cash Flow Baseline
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Choose how to determine your monthly income and expenses
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <RadioGroup
+            value={baselineSource}
+            onValueChange={(v) => setBaselineSource(v as 'tracker' | 'manual')}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+          >
+            <div className="flex items-center space-x-2 p-3 rounded-lg border">
+              <RadioGroupItem value="tracker" id="baseline-tracker" />
+              <Label htmlFor="baseline-tracker" className="flex-1 cursor-pointer">
+                Use tracker data (last 3 months)
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2 p-3 rounded-lg border">
+              <RadioGroupItem value="manual" id="baseline-manual" />
+              <Label htmlFor="baseline-manual" className="flex-1 cursor-pointer">
+                Manual override
+              </Label>
+            </div>
+          </RadioGroup>
+
+          {baselineSource === 'manual' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="manual-income">Monthly Income ($)</Label>
+                <Input
+                  id="manual-income"
+                  type="number"
+                  value={manualMonthlyIncome}
+                  onChange={(e) => setManualMonthlyIncome(e.target.value === '' ? '' : Number(e.target.value))}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="manual-expenses">Monthly Expenses ($)</Label>
+                <Input
+                  id="manual-expenses"
+                  type="number"
+                  value={manualMonthlyExpenses}
+                  onChange={(e) => setManualMonthlyExpenses(e.target.value === '' ? '' : Number(e.target.value))}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-lg font-bold">${activeBaseline.monthlyIncome.toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground">Monthly Income</div>
+            </div>
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-lg font-bold">${activeBaseline.monthlyExpenses.toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground">Monthly Expenses</div>
+            </div>
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-lg font-bold text-primary">${Math.max(0, activeBaseline.monthlyNet).toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground">Monthly Net</div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge variant="outline" className="text-xs">
+              Suggested contribution: ${suggestedContribution.toLocaleString()}
+            </Badge>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setMonthlyContribution(suggestedContribution)}
+            >
+              Use ${suggestedContribution.toLocaleString()}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Interactive Controls */}
       <Card>
         <CardHeader>
@@ -511,6 +649,12 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
                 step={25}
                 className="w-full"
               />
+              {monthlyContribution > activeBaseline.monthlyNet && (
+                <div className="mt-2 text-xs text-destructive flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  Contribution exceeds your available monthly net by ${Math.ceil(overBy).toLocaleString()}
+                </div>
+              )}
             </div>
 
             <div>
