@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -65,6 +65,7 @@ export const TransactionDetail = ({
               {expense.type}
             </Badge>
           </DialogTitle>
+          <DialogDescription className="sr-only">View and manage transaction details</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
