@@ -7,21 +7,17 @@ import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Tooltip as UiTooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   TrendingUp, 
-  TrendingDown, 
   DollarSign, 
-  Target, 
-  Calendar,
   PiggyBank,
   Home,
   Car,
   GraduationCap,
   Plane,
-  Clock,
   AlertTriangle,
   CheckCircle,
   BarChart3,
@@ -29,9 +25,10 @@ import {
   Lightbulb,
   Zap,
   Shield,
-  Pencil
+  Pencil,
+  Info
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts';
 import type { Expense } from '@/types/app';
 
 interface FinancialSimulationProps {
@@ -361,26 +358,6 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
     return null; // not achievable within cap
   }, []);
 
-  // Scenario comparison data
-  const scenarioComparison = useMemo(() => {
-    return scenarios.map(scenario => {
-      let balance = scenario.fields.initialAmount || 0;
-      const monthlyRate = (scenario.fields.interestRate || 2.5) / 100 / 12;
-      for (let month = 0; month <= scenario.fields.timeframe; month++) {
-        if (month > 0) {
-          balance += (scenario.fields.monthlyContribution || 0);
-          balance = balance * (1 + monthlyRate);
-        }
-      }
-      return {
-        name: scenario.name,
-        finalBalance: Math.round(balance),
-        color: scenario.color,
-        timeframe: scenario.fields.timeframe,
-        target: scenario.fields.targetAmount
-      };
-    });
-  }, [scenarios]);
 
   if (expenses.length === 0) {
     return (
@@ -411,7 +388,7 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
     <div className="space-y-6">
       {/* Header */}
       <Card className="bg-gradient-to-r from-primary/5 via-background to-primary/5 border-primary/20">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 text-xl">
@@ -427,6 +404,19 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
             </Badge>
           </div>
         </CardHeader>
+        <CardContent className="pt-0">
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Progress to Goal</span>
+              <span className="font-medium">{progressPercentage.toFixed(1)}%</span>
+            </div>
+            <Progress value={progressPercentage} className="h-2" />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>${finalBalance.toLocaleString()} projected</span>
+              <span>${targetAmount.toLocaleString()} target</span>
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
       {/* Scenario Selection */}
@@ -439,7 +429,6 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
         <TabsContent value="presets" className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {scenarios.map((scenario) => {
-              const monthsTo = computeMonthsToTarget(scenario.fields);
               return (
                 <Card
                   key={scenario.id}
@@ -451,7 +440,7 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
                   onClick={() => setSelectedScenario(scenario.id)}
                 >
                   <CardContent className="p-4">
-                    <div className="absolute top-2 right-2 flex items-center gap-2">
+                    <div className="absolute top-2 right-2">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -464,9 +453,6 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
-                        {monthsTo !== null ? `${monthsTo}m` : '—'}
-                      </Badge>
                     </div>
                     <div className="flex items-start gap-3">
                       <div 
@@ -482,7 +468,23 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
                         {scenario.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm">{scenario.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-sm">{scenario.name}</h3>
+                          <UiTooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <div className="text-xs space-y-1">
+                                <div>Target: ${scenario.fields.targetAmount.toLocaleString()}</div>
+                                <div>Timeframe: {scenario.fields.timeframe} months</div>
+                                {typeof scenario.fields.interestRate === 'number' && (
+                                  <div>Return: {scenario.fields.interestRate}%</div>
+                                )}
+                              </div>
+                            </TooltipContent>
+                          </UiTooltip>
+                        </div>
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                           {scenario.description}
                         </p>
@@ -491,6 +493,80 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
                         </div>
                       </div>
                     </div>
+
+                    {editingScenarioId === scenario.id && (
+                      <div className="mt-3 border-t pt-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <Label htmlFor={`name-${scenario.id}`}>Goal name</Label>
+                            <Input id={`name-${scenario.id}`} value={editName} onChange={(e) => setEditName(e.target.value)} className="mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor={`target-${scenario.id}`}>Target ($)</Label>
+                            <Input id={`target-${scenario.id}`} type="number" value={editTargetAmount} onChange={(e) => setEditTargetAmount(Number(e.target.value))} className="mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor={`timeframe-${scenario.id}`}>Timeframe (months)</Label>
+                            <Input id={`timeframe-${scenario.id}`} type="number" value={editTimeframe} onChange={(e) => setEditTimeframe(Number(e.target.value))} className="mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor={`initial-${scenario.id}`}>Initial ($)</Label>
+                            <Input id={`initial-${scenario.id}`} type="number" value={editInitialAmount} onChange={(e) => setEditInitialAmount(Number(e.target.value))} className="mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor={`monthly-${scenario.id}`}>Monthly ($)</Label>
+                            <Input id={`monthly-${scenario.id}`} type="number" value={editMonthlyContribution} onChange={(e) => setEditMonthlyContribution(Number(e.target.value))} className="mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor={`rate-${scenario.id}`}>Annual Return (%)</Label>
+                            <Input id={`rate-${scenario.id}`} type="number" step={0.1} value={editInterestRate} onChange={(e) => setEditInterestRate(Number(e.target.value))} className="mt-1" />
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              if (!editingScenarioId) return;
+                              setCustomScenarios((prev) => {
+                                const { [editingScenarioId]: _omit, ...rest } = prev;
+                                return rest;
+                              });
+                              setEditingScenarioId(null);
+                            }}
+                          >
+                            Reset to default
+                          </Button>
+                          <div className="flex gap-2">
+                            <Button variant="secondary" size="sm" onClick={() => setEditingScenarioId(null)}>Cancel</Button>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                if (!editingScenarioId) return;
+                                const base = predefinedScenarios.find((s) => s.id === editingScenarioId);
+                                if (!base) return;
+                                const updated = {
+                                  ...base,
+                                  name: editName,
+                                  fields: {
+                                    ...base.fields,
+                                    targetAmount: editTargetAmount,
+                                    timeframe: editTimeframe,
+                                    initialAmount: editInitialAmount,
+                                    monthlyContribution: editMonthlyContribution,
+                                    interestRate: editInterestRate,
+                                  },
+                                } as ScenarioConfig;
+                                setCustomScenarios((prev) => ({ ...prev, [editingScenarioId]: updated }));
+                                setEditingScenarioId(null);
+                              }}
+                            >
+                              Save
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );
