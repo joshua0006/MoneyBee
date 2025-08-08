@@ -145,6 +145,7 @@ const Index = () => {
     console.log('Edit expense clicked:', expense);
     setEditingExpense(expense);
     setIsDetailOpen(false);
+    setIsAddExpenseOpen(false);
     console.log('Editing expense set, should open sheet');
   };
 
@@ -477,6 +478,7 @@ const Index = () => {
           <SheetContent side="bottom" className="h-[95vh] sm:h-[90vh] rounded-t-xl p-0">
             {editingExpense && (
                <EnhancedQuickAddExpense 
+              key={editingExpense.id}
               onAddExpense={(expense) => {
                 console.log('Edit form submitted with expense:', expense);
                 handleUpdateExpense(expense);

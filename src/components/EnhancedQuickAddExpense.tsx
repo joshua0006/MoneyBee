@@ -105,6 +105,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   }, []);
 
   const enqueueSave = useCallback((draft?: Omit<Expense, 'id'> | null) => {
+    if (editingExpense) return; // disable auto-save in edit mode
     const exp = draft ?? buildDraft();
     if (!exp || !autoSubmit) return;
 
@@ -163,14 +164,15 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     }, 600);
   }, [amount, description, category, type, accountId, buildDraft, enqueueSave]);
 
-  // Immediate save on blur
+  // Immediate save on blur (disabled in edit mode)
   const handleFieldBlur = useCallback(() => {
+    if (editingExpense) return;
     if (autoSaveTimeoutRef.current) {
       clearTimeout(autoSaveTimeoutRef.current);
       autoSaveTimeoutRef.current = null;
     }
     enqueueSave(buildDraft());
-  }, [buildDraft, enqueueSave]);
+  }, [buildDraft, enqueueSave, editingExpense]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -184,10 +186,10 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
   // Trigger auto-save when form fields change
   useEffect(() => {
-    if (amount || description) {
+    if (!editingExpense && (amount || description)) {
       triggerAutoSave();
     }
-  }, [amount, description, category, triggerAutoSave]);
+  }, [amount, description, category, triggerAutoSave, editingExpense]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -228,11 +230,11 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
     // Prevent duplicate submissions and queue if needed
     const manualHash = JSON.stringify({ a: expense.amount, d: expense.description, c: expense.category, t: expense.type, acc: expense.accountId });
-    if (lastSavedHashRef.current === manualHash) {
+    if (!editingExpense && lastSavedHashRef.current === manualHash) {
       setIsLoading(false);
       return;
     }
-    if (isSavingRef.current) {
+    if (!editingExpense && isSavingRef.current) {
       pendingSaveRef.current = expense;
       setIsLoading(false);
       return;
@@ -320,8 +322,10 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       setCategory(editingExpense.category);
       setType(editingExpense.type);
       setAccountId(editingExpense.accountId || accounts[0]?.id || "");
-      // Disable AI mode when editing
+      // Disable AI and auto-save when editing
       setAiMode(false);
+      setAutoSubmit(false);
+      lastSavedHashRef.current = null;
     }
   }, [editingExpense, accounts]);
 
@@ -454,7 +458,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       {/* Mobile Header */}
       <div className="flex items-center justify-between p-4 border-b border-border/30">
         <div className="flex items-center gap-2">
-          <div className="text-lg font-semibold">Quick Add</div>
+          <div className="text-lg font-semibold">{editingExpense ? 'Edit Transaction' : 'Quick Add'}</div>
           {isLoading && (
             <div className="animate-spin opacity-60">
               <Zap size={16} className="text-primary" />
@@ -464,16 +468,18 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             <CheckCircle2 size={16} className="text-green-500" />
           )}
         </div>
-        <Button
-          type="button"
-          variant={aiMode ? "default" : "ghost"}
-          size="sm"
-          onClick={() => setAiMode(!aiMode)}
-          className="flex items-center gap-1"
-        >
-          <Sparkles size={14} />
-          AI
-        </Button>
+        {!editingExpense && (
+          <Button
+            type="button"
+            variant={aiMode ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setAiMode(!aiMode)}
+            className="flex items-center gap-1"
+          >
+            <Sparkles size={14} />
+            AI
+          </Button>
+        )}
       </div>
 
       {/* Main Content */}
@@ -500,14 +506,16 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                     className="scale-75"
                   />
                 </div>
-                <div className="flex items-center gap-1 text-xs">
-                  <span className="text-muted-foreground">Quick Save</span>
-                  <Switch
-                    checked={autoSubmit}
-                    onCheckedChange={setAutoSubmit}
-                    className="scale-75"
-                  />
-                </div>
+                {!editingExpense && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <span className="text-muted-foreground">Quick Save</span>
+                    <Switch
+                      checked={autoSubmit}
+                      onCheckedChange={setAutoSubmit}
+                      className="scale-75"
+                    />
+                  </div>
+                )}
               </div>
             </div>
             <Textarea
