@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -27,7 +28,8 @@ import {
   Calculator,
   Lightbulb,
   Zap,
-  Shield
+  Shield,
+  Pencil
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import type { Expense } from '@/types/app';
@@ -209,6 +211,30 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
   const suggestedContribution = Math.max(0, Math.floor(activeBaseline.monthlyNet));
   const overBy = Math.max(0, monthlyContribution - activeBaseline.monthlyNet);
 
+  const [customScenarios, setCustomScenarios] = useState<Record<string, ScenarioConfig>>({});
+  const [editingScenarioId, setEditingScenarioId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editTargetAmount, setEditTargetAmount] = useState<number>(0);
+  const [editTimeframe, setEditTimeframe] = useState<number>(0);
+  const [editInitialAmount, setEditInitialAmount] = useState<number>(0);
+  const [editMonthlyContribution, setEditMonthlyContribution] = useState<number>(0);
+  const [editInterestRate, setEditInterestRate] = useState<number>(2.5);
+
+  const scenarios = useMemo(() => {
+    return predefinedScenarios.map((s) => {
+      const override = customScenarios[s.id];
+      if (!override) return s;
+      return {
+        ...s,
+        name: override.name || s.name,
+        fields: {
+          ...s.fields,
+          ...override.fields,
+        },
+      };
+    });
+  }, [customScenarios]);
+
   const currentScenario = customMode 
     ? {
         id: 'custom',
@@ -218,7 +244,7 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
         color: '#6366f1',
         fields: { targetAmount, timeframe, initialAmount, monthlyContribution, interestRate }
       }
-    : predefinedScenarios.find(s => s.id === selectedScenario) || predefinedScenarios[0];
+    : scenarios.find(s => s.id === selectedScenario) || scenarios[0];
   // Load scenario values
   React.useEffect(() => {
     if (!customMode && currentScenario) {
@@ -290,20 +316,62 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
       }));
   }, [expenses]);
 
+  // Persistence for custom scenarios
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem('financialSimulation.customScenarios.v1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') setCustomScenarios(parsed);
+      }
+    } catch {}
+  }, []);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('financialSimulation.customScenarios.v1', JSON.stringify(customScenarios));
+    } catch {}
+  }, [customScenarios]);
+
+  // Prefill edit dialog when opening
+  React.useEffect(() => {
+    if (!editingScenarioId) return;
+    const base = scenarios.find((s) => s.id === editingScenarioId) || predefinedScenarios.find((s) => s.id === editingScenarioId);
+    if (base) {
+      setEditName(base.name);
+      setEditTargetAmount(base.fields.targetAmount);
+      setEditTimeframe(base.fields.timeframe);
+      setEditInitialAmount(base.fields.initialAmount || 0);
+      setEditMonthlyContribution(base.fields.monthlyContribution || 0);
+      setEditInterestRate(base.fields.interestRate || 0);
+    }
+  }, [editingScenarioId, scenarios]);
+
+  // Helper: compute months needed to reach target
+  const computeMonthsToTarget = React.useCallback((fields: ScenarioConfig['fields']) => {
+    const r = (fields.interestRate || 0) / 100 / 12;
+    let bal = fields.initialAmount || 0;
+    const pmt = fields.monthlyContribution || 0;
+    const target = fields.targetAmount;
+    for (let m = 0; m <= 1000; m++) {
+      if (bal >= target) return m;
+      bal += pmt;
+      if (r > 0) bal = bal * (1 + r);
+    }
+    return null; // not achievable within cap
+  }, []);
+
   // Scenario comparison data
   const scenarioComparison = useMemo(() => {
-    return predefinedScenarios.map(scenario => {
-      const projections = [];
+    return scenarios.map(scenario => {
       let balance = scenario.fields.initialAmount || 0;
       const monthlyRate = (scenario.fields.interestRate || 2.5) / 100 / 12;
-      
       for (let month = 0; month <= scenario.fields.timeframe; month++) {
         if (month > 0) {
           balance += (scenario.fields.monthlyContribution || 0);
           balance = balance * (1 + monthlyRate);
         }
       }
-      
       return {
         name: scenario.name,
         finalBalance: Math.round(balance),
@@ -312,7 +380,7 @@ export function FinancialSimulation({ expenses }: FinancialSimulationProps) {
         target: scenario.fields.targetAmount
       };
     });
-  }, []);
+  }, [scenarios]);
 
   if (expenses.length === 0) {
     return (
