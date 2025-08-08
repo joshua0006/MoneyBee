@@ -13,7 +13,7 @@ import { EnhancedExpenseParser, type ParsedExpense } from "@/utils/enhancedExpen
 import { supabase } from "@/integrations/supabase/client";
 import { ReceiptScanner } from "@/components/ReceiptScanner";
 import { useIsMobile } from "@/hooks/use-mobile";
-
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 interface QuickAddExpenseProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => void;
   existingExpenses: Expense[];
@@ -216,6 +216,16 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
 
     setIsLoading(true);
     
+    // Build expense payload first
+    const expense: Omit<Expense, 'id'> = {
+      amount: type === 'income' ? parseSmartAmount(amount) : parseFloat(amount),
+      description: type === 'income' ? (description.trim() || 'Income') : description.trim(),
+      category: type === 'income' ? 'Income' : (category || suggestCategoryFromDescription(description) || "Other"),
+      date: new Date(),
+      type,
+      accountId: accountId || accounts[0]?.id
+    };
+
     // Prevent duplicate submissions and queue if needed
     const manualHash = JSON.stringify({ a: expense.amount, d: expense.description, c: expense.category, t: expense.type, acc: expense.accountId });
     if (lastSavedHashRef.current === manualHash) {
@@ -227,19 +237,6 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       setIsLoading(false);
       return;
     }
-
-    // Auto-suggest category if not selected
-    const finalCategory = category || suggestCategoryFromDescription(description) || "Other";
-
-    const expense: Omit<Expense, 'id'> = {
-      amount: type === 'income' ? parseSmartAmount(amount) : parseFloat(amount),
-      description: type === 'income' ? (description.trim() || 'Income') : description.trim(),
-      category: type === 'income' ? 'Income' : (category || suggestCategoryFromDescription(description) || "Other"),
-      date: new Date(),
-      type,
-      accountId: accountId || accounts[0]?.id
-    };
-
     // Simulate processing time for better UX
     setTimeout(() => {
       onAddExpense(expense);
