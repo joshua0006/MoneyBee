@@ -803,10 +803,10 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       
       {/* Receipt Scanner Dialog */}
       <Dialog open={showReceiptScanner} onOpenChange={setShowReceiptScanner}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl" aria-labelledby="receipt-scanner-title" aria-describedby="receipt-scanner-desc">
           <DialogHeader>
-            <DialogTitle>Receipt Scanner</DialogTitle>
-            <DialogDescription>Capture or upload a receipt to extract expense details.</DialogDescription>
+            <DialogTitle id="receipt-scanner-title">Receipt Scanner</DialogTitle>
+            <DialogDescription id="receipt-scanner-desc">Capture or upload a receipt to extract expense details.</DialogDescription>
           </DialogHeader>
           <ReceiptScanner
             onExpenseExtracted={(expenseData) => {

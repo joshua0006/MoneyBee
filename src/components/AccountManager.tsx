@@ -115,10 +115,10 @@ export const AccountManager = ({
                   Add Account
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New Account</DialogTitle>
-                  <DialogDescription>Fill out details to add an account.</DialogDescription>
+                <DialogContent aria-labelledby="add-account-title" aria-describedby="add-account-desc">
+                  <DialogHeader>
+                    <DialogTitle id="add-account-title">Add New Account</DialogTitle>
+                    <DialogDescription id="add-account-desc">Fill out details to add an account.</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>

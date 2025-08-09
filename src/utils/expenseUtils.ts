@@ -200,20 +200,7 @@ export const loadBudgetsFromStorage = (): Budget[] => {
   }
 };
 
-// Budget calculations
-export const calculateBudgetUsage = (expenses: Expense[], budget: Budget): number => {
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-  
-  return expenses
-    .filter(e => 
-      e.type === 'expense' && 
-      e.category === budget.category &&
-      e.date.getMonth() === currentMonth &&
-      e.date.getFullYear() === currentYear
-    )
-    .reduce((sum, e) => sum + e.amount, 0);
-};
+// Budget calculations (re-exported to avoid duplication)
+export { calculateBudgetUsage } from './budgetUtils';
 
 export { type Expense, type Account, type Budget };

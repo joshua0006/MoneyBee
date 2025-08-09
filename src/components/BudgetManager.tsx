@@ -103,10 +103,10 @@ export const BudgetManager = ({
                   Add Budget
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent aria-labelledby="create-budget-title" aria-describedby="create-budget-desc">
                 <DialogHeader>
-                  <DialogTitle>Create New Budget</DialogTitle>
-                  <DialogDescription>Set category, amount, and period for this budget.</DialogDescription>
+                  <DialogTitle id="create-budget-title">Create New Budget</DialogTitle>
+                  <DialogDescription id="create-budget-desc">Set category, amount, and period for this budget.</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>

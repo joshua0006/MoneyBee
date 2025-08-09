@@ -57,15 +57,15 @@ export const TransactionDetail = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md mx-auto">
+      <DialogContent className="max-w-md mx-auto" aria-labelledby="transaction-detail-title" aria-describedby="transaction-detail-desc">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle id="transaction-detail-title" className="flex items-center justify-between">
             Transaction Details
             <Badge variant={expense.type === 'expense' ? 'destructive' : 'default'}>
               {expense.type}
             </Badge>
           </DialogTitle>
-          <DialogDescription className="sr-only">View and manage transaction details</DialogDescription>
+          <DialogDescription id="transaction-detail-desc" className="sr-only">View and manage transaction details</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">

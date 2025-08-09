@@ -239,12 +239,12 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
               Add Recurring
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" aria-labelledby="recurring-dialog-title" aria-describedby="recurring-dialog-desc">
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle id="recurring-dialog-title">
                 {editingTransaction ? 'Edit Recurring Transaction' : 'Add Recurring Transaction'}
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription id="recurring-dialog-desc">
                 {editingTransaction 
                   ? 'Update your recurring transaction details' 
                   : 'Set up a transaction that repeats automatically'}
