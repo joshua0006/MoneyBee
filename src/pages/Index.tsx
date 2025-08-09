@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser, useClerk } from "@clerk/clerk-react";
 import { ExpenseOverview } from "@/components/ExpenseOverview";
 import { EnhancedQuickAddExpense } from "@/components/EnhancedQuickAddExpense";
 import moneyBeesLogo from "@/assets/moneybees-logo.png";
 import { ExpenseList } from "@/components/ExpenseList";
-import { CategoryBreakdown } from "@/components/CategoryBreakdown";
+const CategoryBreakdown = lazy(() => import("@/components/CategoryBreakdown").then(m => ({ default: m.CategoryBreakdown })));
 import { SearchAndFilter } from "@/components/SearchAndFilter";
-import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
+const AdvancedAnalytics = lazy(() => import("@/components/AdvancedAnalytics").then(m => ({ default: m.AdvancedAnalytics })));
 import { TransactionDetail } from "@/components/TransactionDetail";
 import { CalendarView } from "@/components/CalendarView";
 import { BudgetManager } from "@/components/BudgetManager";
@@ -21,6 +21,7 @@ import { TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Clock, LogOu
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Helmet } from "react-helmet-async";
 import { LoadingSkeleton } from "@/components/LoadingSkeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { OnboardingTooltip, useOnboarding } from "@/components/OnboardingTooltip";
@@ -30,7 +31,7 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { MobileSettings } from "@/components/MobileSettings";
 import { Settings } from "@/components/Settings";
 import { AppPreferences } from "@/components/AppPreferences";
-import { FinancialSimulation } from "@/components/FinancialSimulation";
+const FinancialSimulation = lazy(() => import("@/components/FinancialSimulation").then(m => ({ default: m.FinancialSimulation })));
 import { mobileService } from "@/utils/mobileService";
 import { useAppData } from "@/hooks/useAppData";
 import type { Expense, Account, Budget } from "@/types/app";
@@ -105,26 +106,32 @@ const Index = () => {
 
   const handleAddAccount = async (account: Omit<Account, 'id'>) => {
     await saveAccount(account);
+    mobileService.successHaptic();
   };
 
   const handleUpdateAccount = async (updatedAccount: Account) => {
     await updateAccountData(updatedAccount.id, updatedAccount);
+    mobileService.lightHaptic();
   };
 
   const handleDeleteAccount = async (id: string) => {
     await removeAccount(id);
+    mobileService.errorHaptic();
   };
 
   const handleAddBudget = async (budget: Omit<Budget, 'id'>) => {
     await saveBudget(budget);
+    mobileService.successHaptic();
   };
 
   const handleUpdateBudget = async (updatedBudget: Budget) => {
     await updateBudgetData(updatedBudget.id, updatedBudget);
+    mobileService.lightHaptic();
   };
 
   const handleDeleteBudget = async (id: string) => {
     await removeBudget(id);
+    mobileService.errorHaptic();
   };
 
   const handleFilteredResults = (filtered: Expense[]) => {
@@ -238,6 +245,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>MoneyBee Dashboard — Track Expenses & Budgets</title>
+        <meta name="description" content="View insights, manage budgets, and track expenses with MoneyBee's AI-powered dashboard." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/` : '/'} />
+      </Helmet>
       {/* Header with Hamburger Menu */}
       <div className="bg-gradient-to-r from-card via-muted/30 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-sm">
         <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
@@ -290,9 +302,11 @@ const Index = () => {
             </ProgressiveLoader>
             
             <ProgressiveLoader isLoading={isLoading} type="chart" delay={100}>
-              <CategoryBreakdown 
-                expenses={filteredExpenses}
-              />
+              <Suspense fallback={null}>
+                <CategoryBreakdown 
+                  expenses={filteredExpenses}
+                />
+              </Suspense>
             </ProgressiveLoader>
             
             {filteredExpenses.length > 0 ? (
@@ -320,12 +334,16 @@ const Index = () => {
           <div className="space-y-6">
             {filteredExpenses.length > 0 ? (
               <>
-                <AdvancedAnalytics 
-                  expenses={filteredExpenses}
-                />
-                <CategoryBreakdown 
-                  expenses={filteredExpenses}
-                />
+                <Suspense fallback={null}>
+                  <AdvancedAnalytics 
+                    expenses={filteredExpenses}
+                  />
+                </Suspense>
+                <Suspense fallback={null}>
+                  <CategoryBreakdown 
+                    expenses={filteredExpenses}
+                  />
+                </Suspense>
               </>
             ) : (
               <EmptyState 
@@ -363,7 +381,9 @@ const Index = () => {
         {/* Financial Simulation Tab Content */}
         {activeTab === "simulation" && (
           <div className="space-y-6">
-            <FinancialSimulation expenses={filteredExpenses} />
+            <Suspense fallback={null}>
+              <FinancialSimulation expenses={filteredExpenses} />
+            </Suspense>
           </div>
         )}
 

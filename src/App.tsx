@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import ClerkAuth from "./pages/ClerkAuth";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
+import { HelmetProvider } from "react-helmet-async";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <HelmetProvider>
       <ThemeProvider
         attribute="class"
         defaultTheme="light"
@@ -52,6 +54,7 @@ const App = () => {
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>
+      </HelmetProvider>
     </QueryClientProvider>
   );
 };

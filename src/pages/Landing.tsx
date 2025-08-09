@@ -33,13 +33,15 @@ import {
   Zap
 } from 'lucide-react';
 import * as THREE from 'three';
-import { InteractiveDemo } from '@/components/3d/InteractiveDemo';
-import { GuidedTour } from '@/components/3d/GuidedTour';
-import { MobileOptimized3D } from '@/components/3d/MobileOptimized3D';
-import { FeatureCallouts } from '@/components/3d/FeatureCallouts';
-import { StatsDisplay } from '@/components/3d/StatsDisplay';
-import { UserJourneyFlow } from '@/components/3d/UserJourneyFlow';
+const InteractiveDemo = React.lazy(() => import('@/components/3d/InteractiveDemo').then(m => ({ default: m.InteractiveDemo })));
+const GuidedTour = React.lazy(() => import('@/components/3d/GuidedTour').then(m => ({ default: m.GuidedTour })));
+const MobileOptimized3D = React.lazy(() => import('@/components/3d/MobileOptimized3D').then(m => ({ default: m.MobileOptimized3D })));
+const FeatureCallouts = React.lazy(() => import('@/components/3d/FeatureCallouts').then(m => ({ default: m.FeatureCallouts })));
+const StatsDisplay = React.lazy(() => import('@/components/3d/StatsDisplay').then(m => ({ default: m.StatsDisplay })));
+const UserJourneyFlow = React.lazy(() => import('@/components/3d/UserJourneyFlow').then(m => ({ default: m.UserJourneyFlow })));
+
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Helmet } from 'react-helmet-async';
 
 // Floating particles for background
 function FloatingParticles() {
@@ -232,6 +234,23 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 relative overflow-hidden touch-manipulation">
+      <Helmet>
+        <title>MoneyBee | AI Expense Tracker & Budget App</title>
+        <meta name="description" content="Track expenses, scan receipts, and build smart budgets with AI-powered insights. Try MoneyBee free." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/landing` : '/landing'} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "MoneyBee",
+            "applicationCategory": "FinanceApplication",
+            "operatingSystem": "Web",
+            "description": "AI-powered expense tracking, receipt scanning, and smart budgets.",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "url": typeof window !== 'undefined' ? `${window.location.origin}/landing` : '/landing'
+          })}
+        </script>
+      </Helmet>
       {/* Background Canvas - Reduced complexity on mobile */}
       <div className={`absolute inset-0 z-0 ${isMobile ? 'opacity-70' : 'opacity-100'}`}>
         <Canvas

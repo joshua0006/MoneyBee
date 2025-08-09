@@ -1,10 +1,16 @@
 import { SignIn, SignUp } from '@clerk/clerk-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Helmet } from 'react-helmet-async';
 
 export default function ClerkAuth() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+      <Helmet>
+        <title>Sign In or Sign Up | MoneyBee</title>
+        <meta name="description" content="Access MoneyBee to track expenses, scan receipts, and manage smart budgets." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/auth` : '/auth'} />
+      </Helmet>
       <div className="w-full max-w-md">
         <Card className="shadow-xl border-0 bg-card/95 backdrop-blur">
           <CardHeader className="space-y-1 text-center">
