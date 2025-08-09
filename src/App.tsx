@@ -1,10 +1,12 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider, useTheme } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from '@clerk/clerk-react';
+import { useEffect } from 'react';
+import { mobileService } from "@/utils/mobileService";
 
 import Index from "./pages/Index";
 import ClerkAuth from "./pages/ClerkAuth";
@@ -16,6 +18,13 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const { isSignedIn, isLoaded } = useAuth();
+
+  // Update native status bar on theme changes (mobile)
+  const { theme } = useTheme();
+  useEffect(() => {
+    const isDark = theme === 'dark';
+    mobileService.setStatusBarColor(isDark ? '#0b0f1a' : '#ffffff', !isDark);
+  }, [theme]);
 
   // Show loading while Clerk is initializing
   if (!isLoaded) {

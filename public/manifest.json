@@ -9,14 +9,14 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
+      "src": "/icon-512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
-      "sizes": "512x512", 
+      "src": "/app-icon-1024.png",
+      "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any maskable"
     }
@@ -36,14 +36,14 @@
       "short_name": "Add",
       "description": "Quickly add a new expense",
       "url": "/?action=add",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icon-512.png", "sizes": "512x512" }]
     },
     {
       "name": "Scan Receipt",
       "short_name": "Scan",
       "description": "Scan a receipt with AI",
       "url": "/?action=scan",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icon-512.png", "sizes": "512x512" }]
     }
   ],
   "share_target": {
