@@ -5,8 +5,9 @@ import { ThemeProvider, useTheme } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from '@clerk/clerk-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { mobileService } from "@/utils/mobileService";
+import { AppLockGate } from "@/components/security/AppLockGate";
 
 import Index from "./pages/Index";
 import ClerkAuth from "./pages/ClerkAuth";
@@ -47,6 +48,7 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <AppLockGate onUnlocked={() => {}} />
           <BrowserRouter>
             <Routes>
               <Route path="/landing" element={<Landing />} />

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { mobileService } from '@/utils/mobileService';
 import { useToast } from '@/hooks/use-toast';
+import { registerForPush } from '@/utils/pushNotifications';
 
 interface MobileSettingsProps {
   onClose?: () => void;
@@ -181,7 +182,18 @@ export const MobileSettings: React.FC<MobileSettingsProps> = ({ onClose }) => {
                 </div>
                 <Switch
                   checked={settings.pushNotifications}
-                  onCheckedChange={(checked) => saveSettings({ pushNotifications: checked })}
+                  onCheckedChange={async (checked) => {
+                    saveSettings({ pushNotifications: checked });
+                    if (checked) {
+                      const res = await registerForPush();
+                      toast({
+                        title: res.granted ? 'Push enabled' : 'Push not enabled',
+                        description: res.granted ? 'You will receive notifications.' : (res.reason || 'Permission denied'),
+                      });
+                    } else {
+                      toast({ title: 'Push disabled', description: 'You will not receive notifications.' });
+                    }
+                  }}
                 />
               </div>
 

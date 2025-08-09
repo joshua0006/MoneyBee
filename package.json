@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aparajita/capacitor-biometric-auth": "^6.0.1",
     "@capacitor/android": "^7.4.2",
     "@capacitor/assets": "^3.0.5",
     "@capacitor/camera": "^7.0.1",
@@ -20,6 +21,7 @@
     "@capacitor/haptics": "^7.0.2",
     "@capacitor/ios": "^7.4.2",
     "@capacitor/keyboard": "^7.0.2",
+    "@capacitor/push-notifications": "^7.0.2",
     "@capacitor/splash-screen": "^7.0.2",
     "@capacitor/status-bar": "^7.0.2",
     "@clerk/clerk-react": "^5.38.1",
