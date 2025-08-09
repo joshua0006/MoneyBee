@@ -1,5 +1,6 @@
 import { PushNotifications } from '@capacitor/push-notifications';
 import { mobileService } from '@/utils/mobileService';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface RegistrationResult {
   token?: string;
@@ -33,10 +34,29 @@ export const registerForPush = async (): Promise<RegistrationResult> => {
         PushNotifications.removeAllListeners();
       };
 
-      PushNotifications.addListener('registration', (token) => {
-        localStorage.setItem('pushToken', token.value);
-        cleanup();
-        resolve({ granted: true, token: token.value });
+      PushNotifications.addListener('registration', async (token) => {
+        try {
+          localStorage.setItem('pushToken', token.value);
+          let deviceId = localStorage.getItem('device_id');
+          if (!deviceId) {
+            deviceId = (crypto as any)?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            localStorage.setItem('device_id', deviceId);
+          }
+          await supabase.functions.invoke('push-register', {
+            body: {
+              device_id: deviceId,
+              token: token.value,
+              platform: mobileService.platform || 'web',
+              user_id: localStorage.getItem('clerk_user_id') || undefined,
+              user_email: localStorage.getItem('clerk_user_email') || undefined,
+            },
+          });
+        } catch (e) {
+          console.warn('push-register error', e);
+        } finally {
+          cleanup();
+          resolve({ granted: true, token: token.value });
+        }
       });
 
       PushNotifications.addListener('registrationError', (err) => {
