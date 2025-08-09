@@ -22,6 +22,7 @@ import {
 import { mobileService } from '@/utils/mobileService';
 import { useToast } from '@/hooks/use-toast';
 import { registerForPush } from '@/utils/pushNotifications';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MobileSettingsProps {
   onClose?: () => void;
@@ -59,6 +60,7 @@ export const MobileSettings: React.FC<MobileSettingsProps> = ({ onClose }) => {
     platform: mobileService.platform,
     isMobile: mobileService.isMobile
   });
+  const [isSendingPush, setIsSendingPush] = useState(false);
 
   useEffect(() => {
     // Load settings from localStorage
@@ -113,6 +115,34 @@ export const MobileSettings: React.FC<MobileSettingsProps> = ({ onClose }) => {
         description: "Use your browser's 'Add to Home Screen' option",
         duration: 3000
       });
+    }
+  };
+  
+  const sendTestPush = async () => {
+    try {
+      setIsSendingPush(true);
+      const res = await registerForPush();
+      if (!res.granted || !res.token) {
+        toast({
+          title: 'Cannot send push',
+          description: res.reason || 'No device token available.',
+        });
+        return;
+      }
+      const { error } = await supabase.functions.invoke('push-send', {
+        body: {
+          token: res.token,
+          title: 'Test notification',
+          body: 'Hello from MoneyBee!',
+          data: { source: 'mobile-settings' },
+        },
+      });
+      if (error) throw error;
+      toast({ title: 'Push sent', description: 'Check your device.' });
+    } catch (e: any) {
+      toast({ title: 'Failed to send', description: e?.message || 'Unknown error' });
+    } finally {
+      setIsSendingPush(false);
     }
   };
 
@@ -195,6 +225,12 @@ export const MobileSettings: React.FC<MobileSettingsProps> = ({ onClose }) => {
                     }
                   }}
                 />
+              </div>
+
+              <div className="mt-2">
+                <Button size="sm" onClick={sendTestPush} disabled={isSendingPush}>
+                  {isSendingPush ? 'Sending...' : 'Send test notification'}
+                </Button>
               </div>
 
               {/* Biometric Auth */}
