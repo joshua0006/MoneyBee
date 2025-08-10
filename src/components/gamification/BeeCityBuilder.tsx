@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text, Html, Float, Environment } from '@react-three/drei';
+import { OrbitControls, Html, Float, Sky, ContactShadows, AdaptiveDpr, AdaptiveEvents, Edges } from '@react-three/drei';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +48,8 @@ const CityBuilding: React.FC<{ building: Building; onClick: () => void }> = ({ b
         ref={meshRef}
         position={building.position}
         onClick={onClick}
+        castShadow
+        receiveShadow
         onPointerOver={(e) => {
           e.stopPropagation();
           document.body.style.cursor = 'pointer';
@@ -57,7 +59,8 @@ const CityBuilding: React.FC<{ building: Building; onClick: () => void }> = ({ b
         }}
       >
         {getBuildingGeometry(building.type)}
-        <meshStandardMaterial color={color} opacity={opacity} transparent />
+        <meshStandardMaterial color={color} opacity={opacity} transparent flatShading roughness={1} metalness={0} />
+        <Edges visible={building.unlocked} threshold={25} color="#000000" />
         
         {building.unlocked && (
           <Html position={[0, 2, 0]} center>
@@ -73,10 +76,30 @@ const CityBuilding: React.FC<{ building: Building; onClick: () => void }> = ({ b
 
 // Ground Component
 const Ground: React.FC = () => (
-  <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]}>
-    <planeGeometry args={[20, 20]} />
-    <meshStandardMaterial color="#90EE90" />
+  <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]} receiveShadow>
+    <planeGeometry args={[40, 40]} />
+    <meshStandardMaterial color="#b8e994" flatShading />
   </mesh>
+);
+
+// Low Poly Tree Component
+const LowPolyTree: React.FC<{ position: [number, number, number] }> = ({ position }) => (
+  <group position={position}>
+    {/* Trunk */}
+    <mesh position={[0, 0.5, 0]} castShadow receiveShadow>
+      <cylinderGeometry args={[0.15, 0.2, 1.0, 6]} />
+      <meshStandardMaterial color="#8B5A2B" flatShading roughness={1} metalness={0} />
+    </mesh>
+    {/* Foliage */}
+    <mesh position={[0, 1.2, 0]} castShadow>
+      <coneGeometry args={[0.9, 1.0, 6]} />
+      <meshStandardMaterial color="#2E8B57" flatShading roughness={1} metalness={0} />
+    </mesh>
+    <mesh position={[0, 1.8, 0]} castShadow>
+      <coneGeometry args={[0.7, 0.8, 6]} />
+      <meshStandardMaterial color="#3CB371" flatShading roughness={1} metalness={0} />
+    </mesh>
+  </group>
 );
 
 // Helper functions
@@ -234,13 +257,33 @@ export const BeeCityBuilder: React.FC<BeeCityBuilderProps> = ({
       <Card>
         <CardContent className="p-0">
           <div className="h-96 rounded-lg overflow-hidden">
-            <Canvas camera={{ position: [8, 8, 8], fov: 50 }}>
-              <Environment preset="sunset" />
-              <ambientLight intensity={0.4} />
-              <directionalLight position={[10, 10, 5]} intensity={1} />
-              
+            <Canvas camera={{ position: [8, 8, 8], fov: 50 }} shadows dpr={[1, 2]}>
+              {/* Stylized Sky and Fog */}
+              <Sky sunPosition={[50, 40, 10]} turbidity={6} rayleigh={1.2} mieCoefficient={0.02} mieDirectionalG={0.8} inclination={0.49} azimuth={0.25} />
+              <fog attach="fog" args={["#cfe8ff", 12, 45]} />
+
+              {/* Lighting */}
+              <hemisphereLight intensity={0.7} color="#fff7d6" groundColor="#d9eef7" />
+              <directionalLight
+                position={[8, 12, 6]}
+                intensity={1.2}
+                castShadow
+                shadow-mapSize-width={1024}
+                shadow-mapSize-height={1024}
+                shadow-camera-near={1}
+                shadow-camera-far={50}
+              />
+
+              {/* Ground and Shadows */}
               <Ground />
+              <ContactShadows position={[0, -0.49, 0]} opacity={0.4} scale={40} blur={2.5} far={10} />
+
+              {/* Low Poly Trees */}
+              {[[-6, 0, -2], [-5, 0, 4], [6, 0, 3], [3, 0, -5], [-2, 0, -6], [7, 0, -3]].map((p, i) => (
+                <LowPolyTree key={i} position={[p[0], p[1], p[2]] as [number, number, number]} />
+              ))}
               
+              {/* Buildings */}
               {allBuildings.map((building) => (
                 <CityBuilding
                   key={building.id}
@@ -249,14 +292,17 @@ export const BeeCityBuilder: React.FC<BeeCityBuilderProps> = ({
                 />
               ))}
               
+              {/* Controls and Performance */}
               <OrbitControls 
                 enablePan={true}
                 enableZoom={true}
                 enableRotate={true}
                 maxPolarAngle={Math.PI / 2}
                 minDistance={5}
-                maxDistance={15}
+                maxDistance={18}
               />
+              <AdaptiveDpr pixelated />
+              <AdaptiveEvents />
             </Canvas>
           </div>
         </CardContent>
