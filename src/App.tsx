@@ -13,6 +13,7 @@ import Index from "./pages/Index";
 import ClerkAuth from "./pages/ClerkAuth";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
+import MobileToolkit from "./pages/MobileToolkit";
 import { HelmetProvider } from "react-helmet-async";
 
 const queryClient = new QueryClient();
@@ -60,6 +61,7 @@ const App = () => {
                 path="/auth" 
                 element={!isSignedIn ? <ClerkAuth /> : <Navigate to="/" replace />} 
               />
+              <Route path="/mobile" element={<MobileToolkit />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

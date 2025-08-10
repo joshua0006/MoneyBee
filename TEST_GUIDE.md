@@ -66,3 +66,32 @@ npx playwright test --debug
 - Ensure dev server is running before running tests
 - 3D components may take longer to load - timeouts are configured accordingly
 - Some tests skip when user is not authenticated (expected behavior)
+
+---
+
+# Mobile (Capacitor) Quick Start
+
+1) Install native platforms locally
+- npm install
+- npx cap add ios (and/or) npx cap add android
+- npx cap sync
+
+2) Configure live reload
+- capacitor.config.ts already points server.url to your preview for hot reload on device
+
+3) Run on device/emulator
+- npm run build
+- npx cap run ios  (or)  npx cap run android
+
+4) Push notifications
+- Create Firebase project; add iOS/Android app configs
+- iOS: enable Push + Background Modes in Xcode; Android: ensure FCM dependency in Gradle
+- In Supabase, set FCM_SERVICE_ACCOUNT_JSON secret
+- Test registration in app: route /mobile → "Register for Push"
+
+5) Biometrics
+- iOS/Android: ensure capabilities/permissions are enabled by platform
+- Test in app: route /mobile → Biometrics → Verify
+
+For physical device guidance, read our blog post:
+https://lovable.dev/blogs/TODO

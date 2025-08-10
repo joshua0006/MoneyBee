@@ -335,6 +335,13 @@ export default function Landing() {
                 </Button>
               )}
               <Button 
+                onClick={() => navigate('/mobile')} 
+                variant="ghost"
+                size={isMobile ? "sm" : "sm"}
+              >
+                Mobile Toolkit
+              </Button>
+              <Button 
                 onClick={handleGetStarted} 
                 className="bg-primary hover:bg-primary/90 touch-manipulation min-h-[44px]"
                 size={isMobile ? "sm" : "default"}
