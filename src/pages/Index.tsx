@@ -379,6 +379,15 @@ const Index = () => {
           </div>
         )}
 
+        {/* Growth Tab Content */}
+        {activeTab === "growth" && (
+          <div className="space-y-6">
+            <Suspense fallback={null}>
+              <FinancialSimulation expenses={filteredExpenses} />
+            </Suspense>
+          </div>
+        )}
+
         {/* Gamification Tab Content */}
         {activeTab === "gamification" && (
           <div className="space-y-6">
