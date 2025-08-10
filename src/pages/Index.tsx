@@ -32,6 +32,7 @@ import { MobileSettings } from "@/components/MobileSettings";
 import { Settings } from "@/components/Settings";
 import { AppPreferences } from "@/components/AppPreferences";
 const FinancialSimulation = lazy(() => import("@/components/FinancialSimulation").then(m => ({ default: m.FinancialSimulation })));
+const GamificationHub = lazy(() => import("@/components/gamification/GamificationHub").then(m => ({ default: m.GamificationHub })));
 import { mobileService } from "@/utils/mobileService";
 import { useAppData } from "@/hooks/useAppData";
 import type { Expense, Account, Budget } from "@/types/app";
@@ -378,11 +379,11 @@ const Index = () => {
           </div>
         )}
 
-        {/* Financial Simulation Tab Content */}
-        {activeTab === "simulation" && (
+        {/* Gamification Tab Content */}
+        {activeTab === "gamification" && (
           <div className="space-y-6">
             <Suspense fallback={null}>
-              <FinancialSimulation expenses={filteredExpenses} />
+              <GamificationHub expenses={filteredExpenses} />
             </Suspense>
           </div>
         )}
