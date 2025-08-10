@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { BeeCityBuilder } from './BeeCityBuilder';
+
 import { 
   Trophy, 
   Target, 
@@ -222,12 +222,8 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({ expenses }) =>
       </Card>
 
       {/* Main Gamification Tabs */}
-      <Tabs defaultValue="city" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="city" className="flex items-center gap-2">
-            <span>🏙️</span>
-            City
-          </TabsTrigger>
+      <Tabs defaultValue="achievements" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="achievements" className="flex items-center gap-2">
             <Trophy size={16} />
             Achievements
@@ -242,14 +238,6 @@ export const GamificationHub: React.FC<GamificationHubProps> = ({ expenses }) =>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="city">
-          <BeeCityBuilder 
-            expenses={expenses}
-            totalSavings={totalSavings}
-            currentStreak={currentStreak}
-            budgetAdherence={budgetAdherence}
-          />
-        </TabsContent>
 
         <TabsContent value="achievements" className="space-y-4">
           <div className="grid gap-4">
