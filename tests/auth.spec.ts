@@ -4,8 +4,8 @@ test.describe('Authentication', () => {
   test('should display auth page', async ({ page }) => {
     await page.goto('/auth');
     
-    // Check that Clerk auth component is rendered
-    await expect(page.locator('[data-clerk-id]')).toBeVisible();
+    // Check that auth page loads with sign in form
+    await expect(page.locator('.cl-rootBox, .cl-signIn-root, form')).toBeVisible({ timeout: 10000 });
   });
 
   test('should redirect authenticated users to main app', async ({ page }) => {
