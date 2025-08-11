@@ -15,7 +15,6 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddExpense }: Botto
     { id: "add", icon: Plus, label: "Add", isSpecial: true },
     { id: "budget", icon: Target, label: "Budget" },
     { id: "growth", icon: TrendingUp, label: "Growth" },
-    { id: "gamification", icon: Trophy, label: "City" },
   ];
 
   return (
