@@ -400,12 +400,21 @@ const Index = () => {
         {/* More Tab Content */}
         {activeTab === "more" && (
           <div className="space-y-6">
-            <div className="text-center py-8">
-              <h2 className="text-lg font-semibold mb-2">More Options</h2>
-              <p className="text-muted-foreground text-sm">
-                Access advanced features through the menu button in the top left
-              </p>
-            </div>
+            {activeMenuItem ? (
+              <div className="text-center py-8">
+                <h2 className="text-lg font-semibold mb-2">Feature Active</h2>
+                <p className="text-muted-foreground text-sm">
+                  {activeMenuItem} is currently being displayed
+                </p>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <h2 className="text-lg font-semibold mb-2">More Options</h2>
+                <p className="text-muted-foreground text-sm">
+                  Access advanced features through the menu button in the top left
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -466,7 +475,6 @@ const Index = () => {
         {/* Settings from Hamburger Menu */}
         {activeMenuItem === "settings" && (
           <div className="space-y-6">
-            <div className="text-sm text-muted-foreground mb-2">DEBUG: activeMenuItem = {activeMenuItem}</div>
             <AppPreferences />
           </div>
         )}

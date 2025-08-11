@@ -255,18 +255,22 @@ export default function Landing() {
       <div className={`absolute inset-0 z-0 ${isMobile ? 'opacity-70' : 'opacity-100'}`}>
         <Canvas
           camera={{ position: isMobile ? [0, 0, 10] : [0, 0, 8] }}
-          dpr={isMobile ? [1, 1.5] : [1, 2]}
-          performance={{ min: 0.5 }}
+          dpr={isMobile ? [0.5, 1] : [1, 1.5]}
+          performance={{ min: 0.3, max: 0.8 }}
           gl={{ 
-            antialias: !isMobile,
+            antialias: false,
             alpha: false,
-            powerPreference: isMobile ? "low-power" : "high-performance"
+            powerPreference: "low-power",
+            preserveDrawingBuffer: false,
+            failIfMajorPerformanceCaveat: true
+          }}
+          onCreated={({ gl }) => {
+            gl.setClearColor('#f8f9fa', 0);
           }}
         >
           <Suspense fallback={null}>
-            <ambientLight intensity={isMobile ? 0.6 : 0.4} />
-            {!isMobile && <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />}
-            <pointLight position={[-10, -10, -10]} intensity={isMobile ? 0.3 : 0.5} />
+            <ambientLight intensity={0.6} />
+            <pointLight position={[5, 5, 5]} intensity={0.4} />
             
             {!isMobile && <FloatingParticles />}
             
@@ -302,15 +306,15 @@ export default function Landing() {
               />
             )}
             
-            <Environment preset={isMobile ? "sunset" : "city"} />
+            <Environment preset="dawn" />
             <OrbitControls
               enablePan={false}
-              enableZoom={!isMobile}
+              enableZoom={false}
               enableRotate={!isMobile}
               maxPolarAngle={Math.PI / 2}
               minPolarAngle={Math.PI / 3}
-              autoRotate={isMobile}
-              autoRotateSpeed={0.5}
+              autoRotate={true}
+              autoRotateSpeed={0.3}
             />
           </Suspense>
         </Canvas>
