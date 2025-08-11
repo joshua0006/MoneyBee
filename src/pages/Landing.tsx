@@ -251,74 +251,48 @@ export default function Landing() {
           })}
         </script>
       </Helmet>
-      {/* Background Canvas - Reduced complexity on mobile */}
-      <div className={`absolute inset-0 z-0 ${isMobile ? 'opacity-70' : 'opacity-100'}`}>
-        <Canvas
-          camera={{ position: isMobile ? [0, 0, 10] : [0, 0, 8] }}
-          dpr={isMobile ? [0.5, 1] : [1, 1.5]}
-          performance={{ min: 0.3, max: 0.8 }}
-          gl={{ 
-            antialias: false,
-            alpha: false,
-            powerPreference: "low-power",
-            preserveDrawingBuffer: false,
-            failIfMajorPerformanceCaveat: true
-          }}
-          onCreated={({ gl }) => {
-            gl.setClearColor('#f8f9fa', 0);
-          }}
-        >
-          <Suspense fallback={null}>
-            <ambientLight intensity={0.6} />
-            <pointLight position={[5, 5, 5]} intensity={0.4} />
-            
-            {!isMobile && <FloatingParticles />}
-            
-            <Phone3D demoState={demoState} onDemoStateChange={handleDemoStateChange} />
-            
-            {/* Feature Callouts - Simplified on mobile */}
-            {!isMobile && (
-              <FeatureCallouts 
-                onFeatureClick={handleFeatureClick}
-                activeFeature={activeFeature}
+      {/* Background Canvas - Fallback for 3D issues */}
+      {!isMobile ? (
+        <div className="absolute inset-0 z-0">
+          <Suspense fallback={
+            <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-primary/5" />
+          }>
+            <Canvas
+              camera={{ position: [0, 0, 8] }}
+              dpr={[1, 1.5]}
+              performance={{ min: 0.5, max: 0.9 }}
+              gl={{ 
+                antialias: true,
+                alpha: true,
+                powerPreference: "default"
+              }}
+              fallback={
+                <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-primary/5" />
+              }
+            >
+              <ambientLight intensity={0.4} />
+              <pointLight position={[10, 10, 10]} intensity={0.6} />
+              
+              <FloatingParticles />
+              <Phone3D demoState={demoState} onDemoStateChange={handleDemoStateChange} />
+              <Chart3D position={[0, -3, 0]} />
+              
+              <Environment preset="dawn" />
+              <OrbitControls
+                enablePan={false}
+                enableZoom={false}
+                enableRotate={true}
+                maxPolarAngle={Math.PI / 2}
+                minPolarAngle={Math.PI / 3}
+                autoRotate={true}
+                autoRotateSpeed={0.3}
               />
-            )}
-
-            {/* Stats Display */}
-            {!isMobile && <StatsDisplay position={[0, 4, 0]} />}
-
-            {/* User Journey Flow */}
-            {!isMobile && showJourney && (
-              <UserJourneyFlow 
-                position={[0, -4, 2]} 
-                isActive={showJourney}
-              />
-            )}
-            
-            {!isMobile && <Chart3D position={[0, -3, 0]} />}
-            
-            {/* Guided Tour */}
-            {!isMobile && (
-              <GuidedTour
-                isActive={showTour}
-                onClose={() => setShowTour(false)}
-                onGetStarted={handleGetStarted}
-              />
-            )}
-            
-            <Environment preset="dawn" />
-            <OrbitControls
-              enablePan={false}
-              enableZoom={false}
-              enableRotate={!isMobile}
-              maxPolarAngle={Math.PI / 2}
-              minPolarAngle={Math.PI / 3}
-              autoRotate={true}
-              autoRotateSpeed={0.3}
-            />
+            </Canvas>
           </Suspense>
-        </Canvas>
-      </div>
+        </div>
+      ) : (
+        <div className="absolute inset-0 z-0 bg-gradient-to-br from-background via-background/95 to-primary/5" />
+      )}
 
       {/* Foreground Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
