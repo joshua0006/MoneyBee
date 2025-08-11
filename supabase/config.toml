@@ -1,13 +1,13 @@
 project_id = "zzzhmwwidepbnkwtppqj"
 
 [functions.parse-expense]
-verify_jwt = false
+verify_jwt = true
 
 [functions.parse-expense-fallback]
-verify_jwt = false
+verify_jwt = true
 
 [functions.process-receipt]
-verify_jwt = false
+verify_jwt = true
 
 [functions.push-register]
 verify_jwt = false

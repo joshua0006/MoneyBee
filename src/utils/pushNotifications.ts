@@ -2,6 +2,7 @@ import { PushNotifications } from '@capacitor/push-notifications';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { mobileService } from '@/utils/mobileService';
 import { supabase } from '@/integrations/supabase/client';
+import { generateSecureDeviceId, rateLimiter } from './securityUtils';
 
 export interface RegistrationResult {
   token?: string;
@@ -36,7 +37,7 @@ export const registerForPush = async (): Promise<RegistrationResult> => {
         localStorage.setItem('pushToken', String(fcmToken));
         let deviceId = localStorage.getItem('device_id');
         if (!deviceId) {
-          deviceId = (crypto as any)?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+          deviceId = generateSecureDeviceId();
           localStorage.setItem('device_id', deviceId);
         }
         await supabase.functions.invoke('push-register', {
@@ -75,7 +76,7 @@ export const registerForPush = async (): Promise<RegistrationResult> => {
           localStorage.setItem('pushToken', token.value);
           let deviceId = localStorage.getItem('device_id');
           if (!deviceId) {
-            deviceId = (crypto as any)?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            deviceId = generateSecureDeviceId();
             localStorage.setItem('device_id', deviceId);
           }
           await supabase.functions.invoke('push-register', {
