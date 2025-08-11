@@ -11,8 +11,8 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    // Conditionally disable lovable-tagger for 3D compatibility
-    ...(mode === 'development' ? [componentTagger()] : [])
+    // Disable lovable-tagger to prevent 3D rendering conflicts
+    // ...(mode === 'development' ? [componentTagger()] : [])
   ],
   resolve: {
     alias: {

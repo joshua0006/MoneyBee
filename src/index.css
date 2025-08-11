@@ -99,6 +99,19 @@ All colors MUST be HSL.
     --sidebar-ring: 207 90% 54%;
   }
 
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
   .dark {
     /* Enhanced Dark Mode with Bee Theme */
     --background: 210 40% 6%;
