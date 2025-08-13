@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Camera, Receipt, Zap, Sparkles, CheckCircle2, Bot, X } from "lucide-react";
+import { Plus, Camera, Receipt, Zap, Sparkles, CheckCircle2, Bot, X, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Expense, Account } from '@/types/app';
 import { EXPENSE_CATEGORIES, suggestCategoryFromDescription as getCategorySuggestion } from '@/utils/categories';
@@ -12,6 +12,7 @@ import { getSmartSuggestions } from '@/utils/smartSuggestions';
 import { EnhancedExpenseParser, type ParsedExpense } from "@/utils/enhancedExpenseParser";
 import { supabase } from "@/integrations/supabase/client";
 import { ReceiptScanner } from "@/components/ReceiptScanner";
+import { BankStatementUploader } from "@/components/BankStatementUploader";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 interface QuickAddExpenseProps {
@@ -43,6 +44,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [parsedData, setParsedData] = useState<ParsedExpense | null>(null);
   const [useFallback, setUseFallback] = useState(true);
   const [showReceiptScanner, setShowReceiptScanner] = useState(false);
+  const [showStatementUploader, setShowStatementUploader] = useState(false);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
   const { toast } = useToast();
   const descriptionRef = useRef<HTMLInputElement>(null);
@@ -451,6 +453,14 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     }
   };
 
+  const handleBulkTransactions = (transactions: Omit<Expense, 'id'>[]) => {
+    // Add all transactions
+    transactions.forEach(transaction => {
+      onAddExpense(transaction);
+    });
+    setShowStatementUploader(false);
+  };
+
   const isMobile = useIsMobile();
 
   return (
@@ -599,7 +609,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-2xl font-bold text-muted-foreground">
                 $
               </div>
-              {/* Camera and Receipt buttons inline */}
+              {/* Camera, Receipt, and Statement buttons inline */}
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
                 <Button
                   type="button"
@@ -620,6 +630,16 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                   disabled={isLoading}
                 >
                   <Receipt size={16} />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setShowStatementUploader(true)}
+                  disabled={isLoading}
+                >
+                  <FileText size={16} />
                 </Button>
               </div>
             </div>
@@ -837,6 +857,13 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
           />
         </DialogContent>
       </Dialog>
+
+      {/* Bank Statement Uploader */}
+      <BankStatementUploader
+        isOpen={showStatementUploader}
+        onClose={() => setShowStatementUploader(false)}
+        onTransactionsAdded={handleBulkTransactions}
+      />
     </div>
   );
 };
