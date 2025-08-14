@@ -22,19 +22,12 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       external: mode === 'development' ? [] : undefined,
-      output: {
-        // Handle PDF.js worker properly
-        manualChunks: {
-          'pdf-worker': ['pdfjs-dist']
-        }
-      }
     },
   },
   optimizeDeps: {
-    include: ['@capacitor/core', '@capacitor/camera', '@capacitor/filesystem', 'pdfjs-dist']
+    include: ['@capacitor/core', '@capacitor/camera', '@capacitor/filesystem']
   },
   define: {
     'process.env.NODE_ENV': JSON.stringify(mode),
-  },
-  assetsInclude: ['**/*.worker.js']
+  }
 }));
