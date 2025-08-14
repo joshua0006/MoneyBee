@@ -22,6 +22,12 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       external: mode === 'development' ? [] : undefined,
+      output: {
+        // Handle PDF.js worker properly
+        manualChunks: {
+          'pdf-worker': ['pdfjs-dist']
+        }
+      }
     },
   },
   optimizeDeps: {
