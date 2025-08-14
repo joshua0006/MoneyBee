@@ -49,7 +49,7 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <AppLockGate onUnlocked={() => {}} />
+          {/* <AppLockGate onUnlocked={() => {}} /> */}
           <BrowserRouter>
             <Routes>
               <Route path="/landing" element={<Landing />} />
