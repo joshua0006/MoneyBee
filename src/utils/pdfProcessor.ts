@@ -1,8 +1,17 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Disable worker for simplicity and reliability
-pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-pdfjsLib.GlobalWorkerOptions.workerPort = null;
+// Configure PDF.js with a minimal inline worker to avoid loading issues
+if (typeof window !== 'undefined') {
+  // Create a minimal worker using data URL to avoid fetch issues
+  const workerCode = `
+    importScripts('https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js');
+  `;
+  const workerBlob = new Blob([workerCode], { type: 'application/javascript' });
+  const workerUrl = URL.createObjectURL(workerBlob);
+  pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+  
+  console.log('PDF.js worker configured with blob URL');
+}
 
 export interface BankTransaction {
   date: string;
