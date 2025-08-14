@@ -21,23 +21,23 @@ export class PDFProcessor {
         throw new Error('PDF file is too large (maximum 10MB)');
       }
 
-      // Use Supabase edge function for processing
+      // Use Supabase client to invoke edge function
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL!,
+        import.meta.env.VITE_SUPABASE_ANON_KEY!
+      );
+
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-pdf-text`, {
-        method: 'POST',
+      const { data: result, error } = await supabase.functions.invoke('process-pdf-text', {
         body: formData,
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
       });
 
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
+      if (error) {
+        throw new Error(`Server error: ${error.message}`);
       }
-
-      const result = await response.json();
       
       if (result.error) {
         throw new Error(result.error);
