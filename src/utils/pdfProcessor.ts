@@ -1,16 +1,8 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js to use local worker bundled with the library
-if (typeof window !== 'undefined') {
-  // Use the bundled worker that comes with pdfjs-dist
-  // This avoids CDN loading issues
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/build/pdf.worker.min.js',
-    import.meta.url
-  ).toString();
-  
-  console.log('PDF.js worker configured to use local bundled worker');
-}
+// Disable worker for simplicity and reliability
+pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+pdfjsLib.GlobalWorkerOptions.workerPort = null;
 
 export interface BankTransaction {
   date: string;
@@ -31,8 +23,8 @@ export class PDFProcessor {
         throw new Error('File must be a PDF document');
       }
       
-      if (file.size > 50 * 1024 * 1024) { // 50MB limit
-        throw new Error('PDF file is too large (maximum 50MB)');
+      if (file.size > 10 * 1024 * 1024) { // Reduce to 10MB limit for stability
+        throw new Error('PDF file is too large (maximum 10MB)');
       }
       
       console.log('Converting file to array buffer...');
@@ -42,11 +34,15 @@ export class PDFProcessor {
         throw new Error('PDF file appears to be empty');
       }
       
-      console.log('Loading PDF document...');
+      console.log('Loading PDF document without worker...');
+      // Simplified configuration without worker dependencies
       const pdf = await pdfjsLib.getDocument({ 
         data: arrayBuffer,
-        // Remove external cMap dependency to avoid network issues
+        useWorkerFetch: false,
+        isEvalSupported: false,
         disableFontFace: true,
+        disableAutoFetch: true,
+        disableStream: true
       }).promise;
       
       console.log(`PDF loaded successfully. Pages: ${pdf.numPages}`);
@@ -56,9 +52,10 @@ export class PDFProcessor {
       }
       
       let fullText = '';
+      const maxPages = Math.min(pdf.numPages, 10); // Limit to first 10 pages for stability
       
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        console.log(`Processing page ${pageNum}/${pdf.numPages}`);
+      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+        console.log(`Processing page ${pageNum}/${maxPages}`);
         
         try {
           const page = await pdf.getPage(pageNum);
@@ -66,7 +63,7 @@ export class PDFProcessor {
           
           const pageText = textContent.items
             .map((item: any) => {
-              if (item && typeof item.str === 'string') {
+              if (item && typeof item.str === 'string' && item.str.trim()) {
                 return item.str;
               }
               return '';
@@ -75,7 +72,7 @@ export class PDFProcessor {
             .join(' ');
           
           if (pageText.trim()) {
-            fullText += pageText + '\n';
+            fullText += pageText + '\n\n';
           }
           
           // Clean up page resources
@@ -90,21 +87,22 @@ export class PDFProcessor {
       pdf.destroy();
       
       if (!fullText.trim()) {
-        throw new Error('No text content found in PDF. The file might be image-based or corrupted.');
+        throw new Error('No text content found in PDF. The file might be image-based, scanned, or corrupted.');
       }
       
-      console.log(`PDF processing completed. Extracted ${fullText.length} characters from ${pdf.numPages} pages`);
-      return fullText;
+      console.log(`PDF processing completed. Extracted ${fullText.length} characters from ${maxPages} pages`);
+      return fullText.trim();
       
     } catch (error) {
       console.error('Error extracting text from PDF:', error);
       
       if (error instanceof Error) {
-        // Provide more specific error messages
-        if (error.message.includes('Invalid PDF')) {
+        if (error.message.includes('Invalid PDF') || error.message.includes('PDF header')) {
           throw new Error('Invalid PDF file. Please ensure the file is not corrupted.');
-        } else if (error.message.includes('password')) {
-          throw new Error('Password-protected PDFs are not supported.');
+        } else if (error.message.includes('password') || error.message.includes('encrypted')) {
+          throw new Error('Password-protected or encrypted PDFs are not supported.');
+        } else if (error.message.includes('too large')) {
+          throw new Error('PDF file is too large. Please try a smaller file (max 10MB).');
         } else {
           throw new Error(`PDF processing failed: ${error.message}`);
         }
