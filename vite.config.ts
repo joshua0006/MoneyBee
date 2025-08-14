@@ -25,6 +25,10 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    include: ['@capacitor/core', '@capacitor/camera', '@capacitor/filesystem']
-  }
+    include: ['@capacitor/core', '@capacitor/camera', '@capacitor/filesystem', 'pdfjs-dist']
+  },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(mode),
+  },
+  assetsInclude: ['**/*.worker.js']
 }));
