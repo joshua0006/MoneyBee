@@ -1,11 +1,14 @@
 import * as pdfjsLib from 'pdfjs-dist';
-import 'pdfjs-dist/build/pdf.worker.js';
 
-// Configure PDF.js worker for Vite
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url
-).toString();
+// Configure PDF.js worker with fallback handling
+if (typeof window !== 'undefined') {
+  try {
+    // Try to use local worker first, fallback to CDN
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  } catch (error) {
+    console.warn('Failed to set PDF.js worker, will use fallback');
+  }
+}
 
 export interface BankTransaction {
   date: string;
