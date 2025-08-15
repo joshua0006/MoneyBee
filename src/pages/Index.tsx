@@ -150,20 +150,16 @@ const Index = () => {
   };
 
   const handleEditExpense = (expense: Expense) => {
-    console.log('Edit expense clicked:', expense);
     setEditingExpense(expense);
     setIsDetailOpen(false);
     setIsAddExpenseOpen(false);
-    console.log('Editing expense set, should open sheet');
   };
 
   const handleUpdateExpense = async (updatedExpense: Omit<Expense, 'id'>) => {
     if (!editingExpense) return;
     
-    console.log('Updating expense:', editingExpense.id, 'with data:', updatedExpense);
     await updateExpenseData(editingExpense.id, updatedExpense);
     setEditingExpense(null);
-    console.log('Expense updated and editing state cleared');
   };
 
   const handleExport = () => {
@@ -256,7 +252,6 @@ const Index = () => {
         <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between min-h-[44px]">
             <HamburgerMenu onMenuItemClick={(item) => {
-              console.log('Index received menu click:', item);
               setActiveMenuItem(item);
             }} />
             <div className="flex items-center gap-2">
@@ -517,17 +512,16 @@ const Index = () => {
             {editingExpense && (
                <EnhancedQuickAddExpense 
               key={editingExpense.id}
-              onAddExpense={(expense) => {
-                console.log('Edit form submitted with expense:', expense);
-                handleUpdateExpense(expense);
-                setEditingExpense(null);
-                setActiveTab("home");
-                toast({
-                  title: "✅ Transaction Updated",
-                  description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} updated`,
-                  duration: 3000
-                });
-              }}
+               onAddExpense={(expense) => {
+                 handleUpdateExpense(expense);
+                 setEditingExpense(null);
+                 setActiveTab("home");
+                 toast({
+                   title: "✅ Transaction Updated",
+                   description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} updated`,
+                   duration: 3000
+                 });
+               }}
                 existingExpenses={allExpenses}
                 accounts={accounts}
                 editingExpense={editingExpense}

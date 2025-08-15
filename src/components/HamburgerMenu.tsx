@@ -21,7 +21,6 @@ export const HamburgerMenu = ({ onMenuItemClick }: HamburgerMenuProps) => {
   ];
 
   const handleMenuClick = (id: string) => {
-    console.log('Menu item clicked:', id); // Debug log
     mobileService.lightHaptic();
     onMenuItemClick(id);
     setIsOpen(false);
