@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLocaleCurrency } from "@/hooks/useLocaleCurrency";
 
 interface ExpenseOverviewProps {
   totalIncome: number;
@@ -11,6 +12,7 @@ export const ExpenseOverview = ({
   totalExpenses, 
   monthlyBudget = 5000 
 }: ExpenseOverviewProps) => {
+  const { formatCurrency } = useLocaleCurrency();
   const netTotal = totalIncome - totalExpenses;
   const incomePercentage = totalIncome > 0 ? Math.round((totalIncome / (totalIncome + totalExpenses)) * 100) : 0;
   const expensePercentage = totalExpenses > 0 ? Math.round((totalExpenses / (totalIncome + totalExpenses)) * 100) : 0;
@@ -50,7 +52,7 @@ export const ExpenseOverview = ({
                 </div>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground">Income</p>
-              <p className="text-sm sm:text-base font-semibold text-income">${totalIncome.toFixed(2)}</p>
+              <p className="text-sm sm:text-base font-semibold text-income">{formatCurrency(totalIncome)}</p>
             </div>
 
             {/* Expenses Circle */}
@@ -77,7 +79,7 @@ export const ExpenseOverview = ({
                 </div>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground">Expenses</p>
-              <p className="text-sm sm:text-base font-semibold text-expense">${totalExpenses.toFixed(2)}</p>
+              <p className="text-sm sm:text-base font-semibold text-expense">{formatCurrency(totalExpenses)}</p>
             </div>
           </div>
 
@@ -85,7 +87,7 @@ export const ExpenseOverview = ({
           <div className="text-center pt-3 sm:pt-4 border-t">
             <p className="text-sm text-muted-foreground">Net Total</p>
             <p className={`text-xl sm:text-2xl font-bold ${netTotal >= 0 ? 'text-success' : 'text-expense'}`}>
-              ${netTotal.toFixed(2)}
+              {formatCurrency(netTotal)}
             </p>
           </div>
 
@@ -106,8 +108,8 @@ export const ExpenseOverview = ({
               />
             </div>
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>${totalExpenses.toFixed(2)}</span>
-              <span>${monthlyBudget.toFixed(2)}</span>
+              <span>{formatCurrency(totalExpenses)}</span>
+              <span>{formatCurrency(monthlyBudget)}</span>
             </div>
           </div>
         </CardContent>

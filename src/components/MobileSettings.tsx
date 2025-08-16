@@ -50,7 +50,7 @@ export const MobileSettings: React.FC<MobileSettingsProps> = ({ onClose }) => {
     offlineMode: true,
     autoBackup: false,
     theme: 'auto',
-    currency: 'USD',
+    currency: 'SGD', // Default to SGD for Singapore users
     quickAmountButtons: [5, 10, 20, 50],
     defaultCategory: 'Other',
     soundEffects: true
@@ -306,9 +306,11 @@ export const MobileSettings: React.FC<MobileSettingsProps> = ({ onClose }) => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="SGD">SGD (S$)</SelectItem>
                     <SelectItem value="USD">USD ($)</SelectItem>
                     <SelectItem value="EUR">EUR (€)</SelectItem>
                     <SelectItem value="GBP">GBP (£)</SelectItem>
+                    <SelectItem value="MYR">MYR (RM)</SelectItem>
                     <SelectItem value="JPY">JPY (¥)</SelectItem>
                   </SelectContent>
                 </Select>

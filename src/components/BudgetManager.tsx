@@ -11,6 +11,7 @@ import { Plus, Target, AlertTriangle, TrendingUp } from 'lucide-react';
 import type { Budget, Expense } from '@/types/app';
 import { calculateBudgetUsage } from '@/utils/budgetUtils';
 import { useToast } from '@/hooks/use-toast';
+import { useLocaleCurrency } from '@/hooks/useLocaleCurrency';
 
 interface BudgetManagerProps {
   budgets: Budget[];
@@ -36,6 +37,7 @@ export const BudgetManager = ({
     period: 'monthly' as 'monthly' | 'weekly' | 'yearly'
   });
   const { toast } = useToast();
+  const { formatCurrency } = useLocaleCurrency();
 
   const handleAddBudget = () => {
     if (!newBudget.category || !newBudget.amount) {
@@ -166,12 +168,12 @@ export const BudgetManager = ({
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Total Budget</span>
-              <span className="font-bold">${totalBudget.toFixed(2)}</span>
+              <span className="font-bold">{formatCurrency(totalBudget)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Total Used</span>
               <span className={`font-bold ${overallPercentage >= 100 ? 'text-destructive' : 'text-foreground'}`}>
-                ${totalUsed.toFixed(2)}
+                {formatCurrency(totalUsed)}
               </span>
             </div>
             <Progress value={Math.min(overallPercentage, 100)} className="h-2" />
@@ -180,7 +182,7 @@ export const BudgetManager = ({
                 {overallPercentage.toFixed(1)}% used
               </span>
               <span className="text-xs text-muted-foreground">
-                ${(totalBudget - totalUsed).toFixed(2)} remaining
+                {formatCurrency(totalBudget - totalUsed)} remaining
               </span>
             </div>
           </div>
@@ -235,8 +237,8 @@ export const BudgetManager = ({
 
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>${used.toFixed(2)} used</span>
-                        <span>${budget.amount.toFixed(2)} budget</span>
+                        <span>{formatCurrency(used)} used</span>
+                        <span>{formatCurrency(budget.amount)} budget</span>
                       </div>
                       <Progress 
                         value={Math.min(percentage, 100)} 
@@ -249,7 +251,7 @@ export const BudgetManager = ({
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>{percentage.toFixed(1)}% used</span>
                         <span className={remaining < 0 ? 'text-destructive' : ''}>
-                          ${Math.abs(remaining).toFixed(2)} {remaining < 0 ? 'over' : 'left'}
+                          {formatCurrency(Math.abs(remaining))} {remaining < 0 ? 'over' : 'left'}
                         </span>
                       </div>
                     </div>
@@ -261,7 +263,7 @@ export const BudgetManager = ({
                           : 'bg-orange-500/10 text-orange-600'
                       }`}>
                         {status.status === 'exceeded' 
-                          ? `You've exceeded your budget by $${(used - budget.amount).toFixed(2)}`
+                          ? `You've exceeded your budget by ${formatCurrency(used - budget.amount)}`
                           : `You're approaching your budget limit`
                         }
                       </div>

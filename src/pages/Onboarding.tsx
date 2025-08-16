@@ -55,7 +55,7 @@ export default function Onboarding() {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<OnboardingData>({
     displayName: '',
-    currency: 'USD',
+    currency: 'SGD', // Default to SGD for Singapore users
     monthlyIncome: '',
     primaryGoal: '',
     notifications: {
@@ -138,11 +138,12 @@ export default function Onboarding() {
                   <SelectValue placeholder="Select currency" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="SGD">SGD (S$)</SelectItem>
                   <SelectItem value="USD">USD ($)</SelectItem>
                   <SelectItem value="EUR">EUR (€)</SelectItem>
                   <SelectItem value="GBP">GBP (£)</SelectItem>
-                  <SelectItem value="CAD">CAD (C$)</SelectItem>
-                  <SelectItem value="AUD">AUD (A$)</SelectItem>
+                  <SelectItem value="MYR">MYR (RM)</SelectItem>
+                  <SelectItem value="JPY">JPY (¥)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
