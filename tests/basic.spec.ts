@@ -5,15 +5,15 @@ test.describe('Basic App Tests', () => {
     // Navigate to the root and ensure it redirects properly
     await page.goto('/');
     
-    // Should redirect to landing page for unauthenticated users
-    await expect(page).toHaveURL('/landing');
+    // Should redirect to welcome page for new users
+    await expect(page).toHaveURL('/welcome');
     
     // Check that the page loaded successfully
     await expect(page.locator('body')).toBeVisible();
   });
 
-  test('landing page renders core elements', async ({ page }) => {
-    await page.goto('/landing');
+  test('welcome page renders core elements', async ({ page }) => {
+    await page.goto('/welcome');
     
     // Wait for the page to fully load
     await page.waitForLoadState('networkidle');
@@ -27,7 +27,7 @@ test.describe('Basic App Tests', () => {
   });
 
   test('navigation to auth page works', async ({ page }) => {
-    await page.goto('/landing');
+    await page.goto('/welcome');
     
     // Wait for page to load
     await page.waitForLoadState('networkidle');

@@ -17,6 +17,8 @@ import { useAppData } from "@/hooks/useAppData";
 
 import Index from "./pages/Index";
 import ClerkAuth from "./pages/ClerkAuth";
+import Welcome from "./pages/Welcome";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import MobileToolkit from "./pages/MobileToolkit";
 import Transactions from "./pages/Transactions";
@@ -44,8 +46,15 @@ const AppContent = () => {
   const { expenses, accounts, addExpense } = useAppData();
   const { toast } = useToast();
 
-  // Don't show bottom navigation on auth pages
-  const showBottomNav = isSignedIn && !location.pathname.includes('/auth');
+  // Check onboarding states
+  const hasSeenIntro = localStorage.getItem('intro_seen') === 'true';
+  const hasCompletedOnboarding = localStorage.getItem('onboarding_completed') === 'true';
+
+  // Don't show bottom navigation on auth pages, welcome, or onboarding
+  const showBottomNav = isSignedIn && 
+    !location.pathname.includes('/auth') && 
+    !location.pathname.includes('/welcome') && 
+    !location.pathname.includes('/onboarding');
 
   const handleAddExpense = async (expense: any) => {
     await addExpense(expense);
@@ -63,7 +72,29 @@ const AppContent = () => {
       <Routes>
         <Route 
           path="/" 
-          element={isSignedIn ? <Index /> : <Navigate to="/auth" replace />} 
+          element={
+            !hasSeenIntro ? (
+              <Navigate to="/welcome" replace />
+            ) : !isSignedIn ? (
+              <Navigate to="/auth" replace />
+            ) : !hasCompletedOnboarding ? (
+              <Navigate to="/onboarding" replace />
+            ) : (
+              <Index />
+            )
+          } 
+        />
+        <Route 
+          path="/welcome" 
+          element={!hasSeenIntro ? <Welcome /> : <Navigate to={isSignedIn ? "/" : "/auth"} replace />} 
+        />
+        <Route 
+          path="/onboarding" 
+          element={
+            isSignedIn && !hasCompletedOnboarding ? 
+            <Onboarding /> : 
+            <Navigate to="/" replace />
+          } 
         />
         <Route 
           path="/auth" 
