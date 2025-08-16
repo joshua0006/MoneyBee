@@ -1,20 +1,22 @@
 import { Home, BarChart2, Plus, Target, Trophy, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface BottomNavigationProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
   onAddExpense: () => void;
 }
 
-export const BottomNavigation = ({ activeTab, onTabChange, onAddExpense }: BottomNavigationProps) => {
+export const BottomNavigation = ({ onAddExpense }: BottomNavigationProps) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const navItems = [
-    { id: "home", icon: Home, label: "Home" },
-    { id: "stats", icon: BarChart2, label: "Stats" },
+    { id: "home", icon: Home, label: "Home", path: "/" },
+    { id: "budgets", icon: Target, label: "Budgets", path: "/budgets" },
     { id: "add", icon: Plus, label: "Add", isSpecial: true },
-    { id: "budget", icon: Target, label: "Budget" },
-    { id: "growth", icon: TrendingUp, label: "Growth" },
+    { id: "analytics", icon: BarChart2, label: "Analytics", path: "/analytics" },
+    { id: "goals", icon: TrendingUp, label: "Goals", path: "/goals" },
   ];
 
   return (
@@ -26,12 +28,12 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddExpense }: Botto
               key={item.id}
               variant={item.isSpecial ? "default" : "ghost"}
               size={item.isSpecial ? "lg" : "sm"}
-              onClick={item.isSpecial ? onAddExpense : () => onTabChange(item.id)}
+              onClick={item.isSpecial ? onAddExpense : () => navigate(item.path)}
               className={cn(
                 "flex flex-col items-center gap-1 h-auto py-2 px-2 sm:px-3 min-h-[44px] min-w-[44px]",
                 item.isSpecial && "h-12 w-12 rounded-full gradient-gold bee-button bee-glow hover:scale-110 transition-all duration-300",
-                !item.isSpecial && activeTab === item.id && "text-bee-blue bg-bee-blue/10",
-                !item.isSpecial && "text-muted-foreground hover:text-foreground"
+                !item.isSpecial && location.pathname === item.path && "text-bee-blue bg-bee-blue/10",
+                !item.isSpecial && location.pathname !== item.path && "text-muted-foreground hover:text-foreground"
               )}
               aria-label={item.label}
             >

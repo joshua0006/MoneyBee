@@ -1,28 +1,34 @@
 import { useState } from "react";
-import { Menu, Search, Calendar, CreditCard, Repeat, Download, Settings } from "lucide-react";
+import { Menu, Search, Calendar, CreditCard, Repeat, Download, Settings, Receipt, Bell, Shield, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { mobileService } from "@/utils/mobileService";
+import { useNavigate } from "react-router-dom";
 
 interface HamburgerMenuProps {
-  onMenuItemClick: (item: string) => void;
+  // No longer needed - navigation is handled internally
 }
 
-export const HamburgerMenu = ({ onMenuItemClick }: HamburgerMenuProps) => {
+export const HamburgerMenu = ({}: HamburgerMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
   
   const menuItems = [
-    { id: "search", label: "Search & Filter", icon: Search },
-    { id: "calendar", label: "Calendar View", icon: Calendar },
-    { id: "accounts", label: "Accounts", icon: CreditCard },
-    { id: "recurring", label: "Recurring", icon: Repeat },
-    { id: "export", label: "Export Data", icon: Download },
-    { id: "settings", label: "Settings", icon: Settings },
+    { id: "transactions", label: "Transactions", icon: CreditCard, path: "/transactions" },
+    { id: "scanner", label: "Receipt Scanner", icon: Receipt, path: "/scanner" },
+    { id: "calendar", label: "Calendar View", icon: Calendar, path: "/calendar" },
+    { id: "accounts", label: "Accounts", icon: CreditCard, path: "/accounts" },
+    { id: "recurring", label: "Recurring", icon: Repeat, path: "/recurring" },
+    { id: "reports", label: "Reports & Export", icon: Download, path: "/reports" },
+    { id: "notifications", label: "Notifications", icon: Bell, path: "/notifications" },
+    { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
+    { id: "security", label: "Security", icon: Shield, path: "/security" },
+    { id: "help", label: "Help & Support", icon: HelpCircle, path: "/help" },
   ];
 
-  const handleMenuClick = (id: string) => {
+  const handleMenuClick = (path: string) => {
     mobileService.lightHaptic();
-    onMenuItemClick(id);
+    navigate(path);
     setIsOpen(false);
   };
 
@@ -43,7 +49,7 @@ export const HamburgerMenu = ({ onMenuItemClick }: HamburgerMenuProps) => {
             <Button
               key={item.id}
               variant="ghost"
-              onClick={() => handleMenuClick(item.id)}
+              onClick={() => handleMenuClick(item.path)}
               className="w-full justify-start hover:bg-accent/50 transition-colors touch-manipulation"
             >
               <item.icon className="w-4 h-4 mr-3" />

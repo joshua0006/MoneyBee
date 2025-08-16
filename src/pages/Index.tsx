@@ -251,9 +251,7 @@ const Index = () => {
       <div className="bg-gradient-to-r from-card via-muted/30 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-sm">
         <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between min-h-[44px]">
-            <HamburgerMenu onMenuItemClick={(item) => {
-              setActiveMenuItem(item);
-            }} />
+            <HamburgerMenu />
             <div className="flex items-center gap-2">
               <div className="bg-gradient-to-br from-bee-gold to-accent p-1.5 rounded-lg shadow-md">
                 <img 
@@ -545,11 +543,6 @@ const Index = () => {
 
       {/* Bottom Navigation */}
       <BottomNavigation 
-        activeTab={activeTab}
-        onTabChange={(tab) => {
-          setActiveTab(tab);
-          setActiveMenuItem(null); // Clear menu item when switching tabs
-        }}
         onAddExpense={() => setIsAddExpenseOpen(true)}
       />
     </div>
