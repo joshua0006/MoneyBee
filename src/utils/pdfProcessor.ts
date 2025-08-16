@@ -21,12 +21,8 @@ export class PDFProcessor {
         throw new Error('PDF file is too large (maximum 10MB)');
       }
 
-      // Use Supabase client to invoke edge function
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(
-        import.meta.env.VITE_SUPABASE_URL!,
-        import.meta.env.VITE_SUPABASE_ANON_KEY!
-      );
+      // Use existing Supabase client
+      const { supabase } = await import('@/integrations/supabase/client');
 
       const formData = new FormData();
       formData.append('file', file);
