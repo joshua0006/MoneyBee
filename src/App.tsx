@@ -18,6 +18,7 @@ import Transactions from "./pages/Transactions";
 import Budgets from "./pages/Budgets";
 import Analytics from "./pages/Analytics";
 import Goals from "./pages/Goals";
+import Growth from "./pages/Growth";
 import Scanner from "./pages/Scanner";
 import Calendar from "./pages/Calendar";
 import Accounts from "./pages/Accounts";
@@ -78,6 +79,7 @@ const App = () => {
               <Route path="/budgets" element={isSignedIn ? <Budgets /> : <Navigate to="/auth" replace />} />
               <Route path="/analytics" element={isSignedIn ? <Analytics /> : <Navigate to="/auth" replace />} />
               <Route path="/goals" element={isSignedIn ? <Goals /> : <Navigate to="/auth" replace />} />
+              <Route path="/growth" element={isSignedIn ? <Growth /> : <Navigate to="/auth" replace />} />
               <Route path="/scanner" element={isSignedIn ? <Scanner /> : <Navigate to="/auth" replace />} />
               <Route path="/calendar" element={isSignedIn ? <Calendar /> : <Navigate to="/auth" replace />} />
               <Route path="/accounts" element={isSignedIn ? <Accounts /> : <Navigate to="/auth" replace />} />
