@@ -3,12 +3,17 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider, useTheme } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from '@clerk/clerk-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { mobileService } from "@/utils/mobileService";
 import { AppLockGate } from "@/components/security/AppLockGate";
 import { HelmetProvider } from "react-helmet-async";
+import { BottomNavigation } from "@/components/BottomNavigation";
+import { EnhancedQuickAddExpense } from "@/components/EnhancedQuickAddExpense";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useToast } from "@/hooks/use-toast";
+import { useAppData } from "@/hooks/useAppData";
 
 import Index from "./pages/Index";
 import ClerkAuth from "./pages/ClerkAuth";
@@ -30,6 +35,82 @@ import Security from "./pages/Security";
 import Help from "./pages/Help";
 
 const queryClient = new QueryClient();
+
+// AppContent component to handle authenticated state
+const AppContent = () => {
+  const { isSignedIn } = useAuth();
+  const location = useLocation();
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const { expenses, accounts, addExpense } = useAppData();
+  const { toast } = useToast();
+
+  // Don't show bottom navigation on auth pages
+  const showBottomNav = isSignedIn && !location.pathname.includes('/auth');
+
+  const handleAddExpense = async (expense: any) => {
+    await addExpense(expense);
+    mobileService.successHaptic();
+    setIsAddExpenseOpen(false);
+    toast({
+      title: "✅ Transaction Added",
+      description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} recorded`,
+      duration: 3000
+    });
+  };
+
+  return (
+    <>
+      <Routes>
+        <Route 
+          path="/" 
+          element={isSignedIn ? <Index /> : <Navigate to="/auth" replace />} 
+        />
+        <Route 
+          path="/auth" 
+          element={!isSignedIn ? <ClerkAuth /> : <Navigate to="/" replace />} 
+        />
+        
+        {/* Protected Routes - Only accessible when signed in */}
+        <Route path="/transactions" element={isSignedIn ? <Transactions /> : <Navigate to="/auth" replace />} />
+        <Route path="/budgets" element={isSignedIn ? <Budgets /> : <Navigate to="/auth" replace />} />
+        <Route path="/analytics" element={isSignedIn ? <Analytics /> : <Navigate to="/auth" replace />} />
+        <Route path="/goals" element={isSignedIn ? <Goals /> : <Navigate to="/auth" replace />} />
+        <Route path="/growth" element={isSignedIn ? <Growth /> : <Navigate to="/auth" replace />} />
+        <Route path="/scanner" element={isSignedIn ? <Scanner /> : <Navigate to="/auth" replace />} />
+        <Route path="/calendar" element={isSignedIn ? <Calendar /> : <Navigate to="/auth" replace />} />
+        <Route path="/accounts" element={isSignedIn ? <Accounts /> : <Navigate to="/auth" replace />} />
+        <Route path="/recurring" element={isSignedIn ? <Recurring /> : <Navigate to="/auth" replace />} />
+        <Route path="/reports" element={isSignedIn ? <Reports /> : <Navigate to="/auth" replace />} />
+        <Route path="/notifications" element={isSignedIn ? <Notifications /> : <Navigate to="/auth" replace />} />
+        <Route path="/settings" element={isSignedIn ? <SettingsPage /> : <Navigate to="/auth" replace />} />
+        <Route path="/security" element={isSignedIn ? <Security /> : <Navigate to="/auth" replace />} />
+        <Route path="/help" element={isSignedIn ? <Help /> : <Navigate to="/auth" replace />} />
+        
+        {/* Public Routes */}
+        <Route path="/mobile" element={<MobileToolkit />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+
+      {/* Global Bottom Navigation - only show when signed in */}
+      {showBottomNav && (
+        <BottomNavigation onAddExpense={() => setIsAddExpenseOpen(true)} />
+      )}
+
+      {/* Global Add Expense Modal */}
+      {isSignedIn && (
+        <Sheet open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
+          <SheetContent side="bottom" className="h-[95vh] sm:h-[90vh] rounded-t-xl p-0">
+            <EnhancedQuickAddExpense 
+              onAddExpense={handleAddExpense}
+              existingExpenses={expenses || []}
+              accounts={accounts || []}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
+    </>
+  );
+};
 
 const App = () => {
   const { isSignedIn, isLoaded } = useAuth();
@@ -64,36 +145,7 @@ const App = () => {
           <Sonner />
           {/* <AppLockGate onUnlocked={() => {}} /> */}
           <BrowserRouter>
-            <Routes>
-              <Route 
-                path="/" 
-                element={isSignedIn ? <Index /> : <Navigate to="/auth" replace />} 
-              />
-              <Route 
-                path="/auth" 
-                element={!isSignedIn ? <ClerkAuth /> : <Navigate to="/" replace />} 
-              />
-              
-              {/* Protected Routes - Only accessible when signed in */}
-              <Route path="/transactions" element={isSignedIn ? <Transactions /> : <Navigate to="/auth" replace />} />
-              <Route path="/budgets" element={isSignedIn ? <Budgets /> : <Navigate to="/auth" replace />} />
-              <Route path="/analytics" element={isSignedIn ? <Analytics /> : <Navigate to="/auth" replace />} />
-              <Route path="/goals" element={isSignedIn ? <Goals /> : <Navigate to="/auth" replace />} />
-              <Route path="/growth" element={isSignedIn ? <Growth /> : <Navigate to="/auth" replace />} />
-              <Route path="/scanner" element={isSignedIn ? <Scanner /> : <Navigate to="/auth" replace />} />
-              <Route path="/calendar" element={isSignedIn ? <Calendar /> : <Navigate to="/auth" replace />} />
-              <Route path="/accounts" element={isSignedIn ? <Accounts /> : <Navigate to="/auth" replace />} />
-              <Route path="/recurring" element={isSignedIn ? <Recurring /> : <Navigate to="/auth" replace />} />
-              <Route path="/reports" element={isSignedIn ? <Reports /> : <Navigate to="/auth" replace />} />
-              <Route path="/notifications" element={isSignedIn ? <Notifications /> : <Navigate to="/auth" replace />} />
-              <Route path="/settings" element={isSignedIn ? <SettingsPage /> : <Navigate to="/auth" replace />} />
-              <Route path="/security" element={isSignedIn ? <Security /> : <Navigate to="/auth" replace />} />
-              <Route path="/help" element={isSignedIn ? <Help /> : <Navigate to="/auth" replace />} />
-              
-              {/* Public Routes */}
-              <Route path="/mobile" element={<MobileToolkit />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AppContent />
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>
