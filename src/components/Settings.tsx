@@ -10,7 +10,9 @@ import {
   Trash2, 
   Shield, 
   LogOut,
-  Mail
+  Mail,
+  RotateCcw,
+  HelpCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -46,6 +48,42 @@ export const Settings = () => {
     toast({
       title: "Clear data",
       description: "This feature is coming soon.",
+    });
+  };
+
+  const handleResetIntro = () => {
+    localStorage.removeItem('intro_seen');
+    toast({
+      title: "Welcome intro reset",
+      description: "You'll see the intro screens again next time you visit.",
+    });
+  };
+
+  const handleResetOnboarding = () => {
+    localStorage.removeItem('onboarding_completed');
+    localStorage.removeItem('onboarding_data');
+    toast({
+      title: "Setup flow reset",
+      description: "You'll go through the setup process again next time you sign in.",
+    });
+  };
+
+  const handleResetQuickTour = () => {
+    localStorage.removeItem('hasSeenOnboarding');
+    toast({
+      title: "Quick tour reset",
+      description: "You'll see the feature tooltips again in the main app.",
+    });
+  };
+
+  const handleResetAllOnboarding = () => {
+    localStorage.removeItem('intro_seen');
+    localStorage.removeItem('onboarding_completed');
+    localStorage.removeItem('onboarding_data');
+    localStorage.removeItem('hasSeenOnboarding');
+    toast({
+      title: "All onboarding reset",
+      description: "All tutorial experiences have been reset.",
     });
   };
 
@@ -128,6 +166,58 @@ export const Settings = () => {
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Clear All Data
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Onboarding & Help */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <HelpCircle className="h-5 w-5" />
+            Onboarding & Help
+          </CardTitle>
+          <CardDescription>
+            Reset tutorial experiences to see them again
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Button 
+            variant="outline" 
+            className="w-full justify-start"
+            onClick={handleResetIntro}
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reset Welcome Intro
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="w-full justify-start"
+            onClick={handleResetOnboarding}
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reset Setup Flow
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="w-full justify-start"
+            onClick={handleResetQuickTour}
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reset Quick Tour
+          </Button>
+          
+          <Separator />
+          
+          <Button 
+            variant="outline" 
+            className="w-full justify-start"
+            onClick={handleResetAllOnboarding}
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reset All Onboarding
           </Button>
         </CardContent>
       </Card>
