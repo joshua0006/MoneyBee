@@ -59,7 +59,12 @@ export const CATEGORY_KEYWORDS: Record<ExpenseCategory, string[]> = {
     'coffee', 'starbucks', 'mcdonalds', 'restaurant', 'lunch', 'dinner', 'breakfast',
     'food', 'pizza', 'burger', 'sandwich', 'cafe', 'bar', 'pub', 'drink', 'beer', 
     'wine', 'soda', 'snack', 'eat', 'meal', 'dine', 'dining', 'takeout', 'delivery',
-    'chipotle', 'taco bell', 'kfc', 'subway', 'uber eats', 'doordash', 'grubhub'
+    'chipotle', 'taco bell', 'kfc', 'subway', 'uber eats', 'doordash', 'grubhub',
+    // Singapore-specific food items
+    'nasi lemak', 'char kway teow', 'laksa', 'chicken rice', 'bak kut teh', 'roti prata',
+    'mee goreng', 'satay', 'dim sum', 'zi char', 'wanton mee', 'hokkien mee', 'carrot cake',
+    'rojak', 'cendol', 'ice kachang', 'kopitiam', 'hawker', 'food court', 'newton',
+    'lau pa sat', 'maxwell', 'old airport road', 'tiong bahru', 'amoy street'
   ],
   'Groceries': [
     'grocery', 'groceries', 'supermarket', 'walmart', 'target', 'costco', 'safeway',

@@ -609,7 +609,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-2xl font-bold text-muted-foreground">
                 $
               </div>
-              {/* Camera, Receipt, and Statement buttons inline */}
+              {/* Receipt and Statement buttons inline */}
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
                 <Button
                   type="button"
@@ -618,16 +618,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                   className="h-8 w-8 p-0"
                   onClick={() => setShowReceiptScanner(true)}
                   disabled={isLoading}
-                >
-                  <Camera size={16} />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() => setShowReceiptScanner(true)}
-                  disabled={isLoading}
+                  title="Scan Receipt or Upload Image"
                 >
                   <Receipt size={16} />
                 </Button>
@@ -638,6 +629,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                   className="h-8 w-8 p-0"
                   onClick={() => setShowStatementUploader(true)}
                   disabled={isLoading}
+                  title="Upload Bank Statement"
                 >
                   <FileText size={16} />
                 </Button>

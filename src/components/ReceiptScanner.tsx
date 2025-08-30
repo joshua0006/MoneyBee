@@ -164,13 +164,13 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
               Capture or select a receipt image to extract expense data
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <Button 
                 onClick={handleCameraCapture}
                 disabled={isCapturing}
-                className="h-20 flex-col gap-2"
+                className="h-16 flex items-center justify-center gap-3"
               >
-                <Camera className="h-6 w-6" />
+                <Camera className="h-5 w-5" />
                 Take Photo
               </Button>
               
@@ -178,11 +178,15 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
                 onClick={handleGallerySelect}
                 disabled={isCapturing}
                 variant="outline"
-                className="h-20 flex-col gap-2"
+                className="h-16 flex items-center justify-center gap-3"
               >
-                <Upload className="h-6 w-6" />
-                Select Image
+                <Upload className="h-5 w-5" />
+                Upload Image
               </Button>
+              
+              <div className="text-xs text-muted-foreground text-center">
+                Supports bank statements, receipts, and credit card statements
+              </div>
             </div>
           </div>
         ) : (
