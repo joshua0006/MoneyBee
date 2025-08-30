@@ -4,9 +4,16 @@ import { useNavigate } from "react-router-dom";
 import { BudgetManager } from "@/components/BudgetManager";
 import { mobileService } from "@/utils/mobileService";
 import { Helmet } from "react-helmet-async";
+import { useAppData } from "@/hooks/useAppData";
+import type { Budget } from "@/types/app";
 
 export default function Budgets() {
   const navigate = useNavigate();
+  const { budgets, expenses, addBudget, updateBudget, deleteBudget } = useAppData();
+
+  const handleUpdateBudget = (budget: Budget) => {
+    updateBudget(budget.id, budget);
+  };
 
   return (
     <>
@@ -37,11 +44,11 @@ export default function Budgets() {
         {/* Content */}
         <div className="p-4">
           <BudgetManager
-            budgets={[]}
-            expenses={[]}
-            onAddBudget={() => {}}
-            onUpdateBudget={() => {}}
-            onDeleteBudget={() => {}}
+            budgets={budgets}
+            expenses={expenses}
+            onAddBudget={addBudget}
+            onUpdateBudget={handleUpdateBudget}
+            onDeleteBudget={deleteBudget}
           />
         </div>
       </div>
