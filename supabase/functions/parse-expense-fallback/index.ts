@@ -63,16 +63,24 @@ serve(async (req) => {
     }
 
     const categories = [
-      'Food', 'Entertainment', 'Transport', 'Groceries', 'Housing', 'Clothing', 
-      'Utilities', 'Health', 'Education', 'Insurance', 'Tax', 'Work', 'Donations', 'Other'
+      'Food & Dining', 'Groceries', 'Transportation', 'Entertainment', 'Housing', 
+      'Utilities', 'Health', 'Clothing', 'Education', 'Insurance', 'Work', 'Donations', 'Other'
     ]
 
-    const prompt = `You are categorizing an expense that a local parser couldn't confidently categorize.
+    const prompt = `You are categorizing an expense with Singapore context awareness. A local parser couldn't confidently categorize this.
 
 Text: "${text}"
 Available categories: ${categories.join(', ')}
 
 The local parser suggested "Other" with low confidence. Please suggest a better category if possible.
+
+SINGAPORE CONTEXT:
+- Local food (nasi lemak, laksa, char kway teow, chicken rice, etc.) → Food & Dining
+- Hawker centers, kopitiams, food courts → Food & Dining
+- Grab, Gojek, MRT, LRT, EZ-Link → Transportation
+- NTUC, Cold Storage, Giant, Sheng Siong → Groceries
+- Guardian, Watsons, polyclinics → Health
+- SP Group, PUB, Singtel, StarHub → Utilities
 
 Return ONLY a JSON object with this structure:
 {
@@ -82,7 +90,7 @@ Return ONLY a JSON object with this structure:
   "shouldUpdate": <true if you suggest a different category than Other>
 }
 
-Focus on finding the most appropriate category. If truly unclear, keep "Other" but explain why.`
+Focus on finding the most appropriate category using Singapore context. If truly unclear, keep "Other" but explain why.`
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

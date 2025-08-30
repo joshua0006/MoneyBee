@@ -56,7 +56,7 @@ serve(async (req) => {
       )
     }
 
-    const prompt = `You are an expert financial expense parser. Parse the following text into a structured expense:
+    const prompt = `You are an expert financial expense parser with deep knowledge of Singapore's local context. Parse the following text into a structured expense:
 
 Text: "${text}"
 
@@ -78,9 +78,17 @@ Extract and return ONLY a JSON object with this exact structure:
   "reasoning": "<brief explanation of categorization>"
 }
 
+SINGAPORE CONTEXT AWARENESS:
+- Local food: nasi lemak, char kway teow, laksa, chicken rice, bak kut teh, roti prata, etc. → Food & Dining
+- Hawker centers: Newton, Lau Pa Sat, Maxwell, Old Airport Road, etc. → Food & Dining
+- Local transport: Grab, Gojek, MRT, LRT, EZ-Link, CEPAS → Transportation
+- Local grocery: NTUC FairPrice, Cold Storage, Giant, Sheng Siong → Groceries
+- Local chains: Ya Kun, Toast Box, BreadTalk, Guardian, Watsons → respective categories
+- Local utilities: SP Group, PUB, Singtel, StarHub, M1 → Utilities
+
 Rules:
-- Amount should be a positive number (extract from text like "$5", "5 bucks", "twenty dollars", "around 15", etc.)
-- Description should be clean and descriptive (e.g., "Coffee at Starbucks" not "coffee 5 bucks starbucks")
+- Amount should be a positive number (extract from "$5", "5 bucks", "twenty dollars", "around 15", etc.)
+- Description should be clean and descriptive (e.g., "Nasi lemak at hawker center" not "nasi lemak 5")
 - Category MUST be one from the provided list
 - Type should be "expense" for spending or "income" for earnings
 - Confidence scores should reflect how certain you are (0.0-1.0)
@@ -88,9 +96,10 @@ Rules:
 - If multiple expenses, parse the first/main one
 
 Examples:
-- "coffee 5 bucks starbucks" → amount: 5, description: "Coffee at Starbucks", category: "Food & Dining"
-- "uber ride downtown 12.50" → amount: 12.5, description: "Uber ride downtown", category: "Transportation"
-- "salary deposit 2500" → amount: 2500, description: "Salary deposit", type: "income", category: "Other"`
+- "nasi lemak 5" → amount: 5, description: "Nasi lemak", category: "Food & Dining"
+- "grab to orchard 8.50" → amount: 8.5, description: "Grab ride to Orchard", category: "Transportation"
+- "ntuc groceries 45" → amount: 45, description: "NTUC groceries", category: "Groceries"
+- "uniqlo shirt 29.90" → amount: 29.9, description: "Uniqlo shirt", category: "Clothing"`
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

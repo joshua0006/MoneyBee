@@ -32,33 +32,65 @@ export class EnhancedExpenseParser {
   ];
 
   private static readonly merchantCategories = {
-    // Food & Dining
+    // Food & Dining - International
     'starbucks': 'Food & Dining', 'mcdonalds': 'Food & Dining', 'subway': 'Food & Dining',
     'pizza': 'Food & Dining', 'restaurant': 'Food & Dining', 'cafe': 'Food & Dining',
     'uber eats': 'Food & Dining', 'doordash': 'Food & Dining', 'grubhub': 'Food & Dining',
     'chipotle': 'Food & Dining', 'taco bell': 'Food & Dining', 'kfc': 'Food & Dining',
     
-    // Transportation
+    // Food & Dining - Singapore specific
+    'kopitiam': 'Food & Dining', 'hawker': 'Food & Dining', 'food court': 'Food & Dining',
+    'newton': 'Food & Dining', 'lau pa sat': 'Food & Dining', 'maxwell': 'Food & Dining',
+    'old airport road': 'Food & Dining', 'tiong bahru': 'Food & Dining', 'amoy street': 'Food & Dining',
+    'ya kun': 'Food & Dining', 'toast box': 'Food & Dining', 'breadtalk': 'Food & Dining',
+    'din tai fung': 'Food & Dining', 'crystal jade': 'Food & Dining', 'long john silver': 'Food & Dining',
+    'macs': 'Food & Dining', 'mos burger': 'Food & Dining', 'pastamania': 'Food & Dining',
+    
+    // Transportation - International
     'uber': 'Transportation', 'lyft': 'Transportation', 'taxi': 'Transportation',
     'gas station': 'Transportation', 'shell': 'Transportation', 'bp': 'Transportation',
     'exxon': 'Transportation', 'chevron': 'Transportation', 'bus': 'Transportation',
     'metro': 'Transportation', 'parking': 'Transportation', 'toll': 'Transportation',
     
-    // Shopping
-    'amazon': 'Shopping', 'walmart': 'Shopping', 'target': 'Shopping',
-    'costco': 'Shopping', 'best buy': 'Shopping', 'apple store': 'Shopping',
-    'mall': 'Shopping', 'grocery': 'Shopping', 'supermarket': 'Shopping',
+    // Transportation - Singapore specific
+    'grab': 'Transportation', 'gojek': 'Transportation', 'comfort': 'Transportation',
+    'mrt': 'Transportation', 'lrt': 'Transportation', 'smrt': 'Transportation',
+    'sbs transit': 'Transportation', 'ez link': 'Transportation', 'cepas': 'Transportation',
+    'sim lim square': 'Transportation', 'carpark': 'Transportation', 'hdb carpark': 'Transportation',
+    
+    // Groceries - Singapore specific
+    'ntuc': 'Groceries', 'fairprice': 'Groceries', 'cold storage': 'Groceries',
+    'giant': 'Groceries', 'sheng siong': 'Groceries', 'prime': 'Groceries',
+    'redmart': 'Groceries', 'amazon fresh': 'Groceries', 'market place': 'Groceries',
+    'wet market': 'Groceries', 'provision shop': 'Groceries',
+    
+    // Shopping - International
+    'amazon': 'Clothing', 'walmart': 'Clothing', 'target': 'Clothing',
+    'costco': 'Clothing', 'best buy': 'Clothing', 'apple store': 'Clothing',
+    'mall': 'Clothing', 'uniqlo': 'Clothing', 'h&m': 'Clothing', 'zara': 'Clothing',
+    
+    // Shopping - Singapore specific
+    'orchard road': 'Clothing', 'ion orchard': 'Clothing', 'ngee ann city': 'Clothing',
+    'plaza singapura': 'Clothing', 'bugis junction': 'Clothing', 'vivo city': 'Clothing',
+    'jurong point': 'Clothing', 'tampines mall': 'Clothing', 'westgate': 'Clothing',
+    'challenger': 'Clothing', 'courts': 'Clothing', 'harvey norman': 'Clothing',
     
     // Entertainment
     'netflix': 'Entertainment', 'spotify': 'Entertainment', 'cinema': 'Entertainment',
     'movie': 'Entertainment', 'concert': 'Entertainment', 'theater': 'Entertainment',
-    'gym': 'Entertainment', 'fitness': 'Entertainment',
+    'gym': 'Health', 'fitness': 'Health', 'activesg': 'Health',
+    'cathay': 'Entertainment', 'golden village': 'Entertainment', 'shaw': 'Entertainment',
+    'ktv': 'Entertainment', 'karaoke': 'Entertainment', 'toto': 'Entertainment',
     
-    // Healthcare
-    'hospital': 'Healthcare', 'pharmacy': 'Healthcare', 'doctor': 'Healthcare',
-    'dentist': 'Healthcare', 'clinic': 'Healthcare', 'medical': 'Healthcare',
+    // Health - Singapore specific
+    'polyclinic': 'Health', 'sgh': 'Health', 'nuh': 'Health', 'ttsh': 'Health',
+    'guardian': 'Health', 'watsons': 'Health', 'unity': 'Health',
+    'hospital': 'Health', 'pharmacy': 'Health', 'doctor': 'Health',
+    'dentist': 'Health', 'clinic': 'Health', 'medical': 'Health',
     
-    // Utilities
+    // Utilities - Singapore specific
+    'sp group': 'Utilities', 'city gas': 'Utilities', 'pub': 'Utilities',
+    'singtel': 'Utilities', 'starhub': 'Utilities', 'm1': 'Utilities',
     'electric': 'Utilities', 'gas bill': 'Utilities', 'water': 'Utilities',
     'internet': 'Utilities', 'phone': 'Utilities', 'cable': 'Utilities'
   };
