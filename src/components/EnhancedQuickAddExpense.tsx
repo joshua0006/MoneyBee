@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Expense, Account } from '@/types/app';
 import { EXPENSE_CATEGORIES, suggestCategoryFromDescription as getCategorySuggestion } from '@/utils/categories';
 import { getSmartSuggestions } from '@/utils/smartSuggestions';
-import { EnhancedExpenseParser, type ParsedExpense } from "@/utils/enhancedExpenseParser";
+import { UnifiedExpenseParser, type ParsedExpense } from "@/utils/unifiedExpenseParser";
 import { supabase } from "@/integrations/supabase/client";
 import { ReceiptScanner } from "@/components/ReceiptScanner";
 import { BankStatementUploader } from "@/components/BankStatementUploader";
@@ -338,36 +338,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     }
   }, [aiMode, editingExpense]);
 
-  // OpenAI fallback for category re-classification
-  const tryFallbackParsing = async (text: string, localCategory: string, localConfidence: number) => {
-    if (!useFallback) return null;
-    
-    setIsUsingFallback(true);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('parse-expense-fallback', {
-        body: {
-          text,
-          localCategory,
-          localConfidence
-        }
-      });
-
-      if (error) {
-        console.error('Fallback parsing error:', error);
-        return null;
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Fallback parsing failed:', error);
-      return null;
-    } finally {
-      setIsUsingFallback(false);
-    }
-  };
-
-  // Real-time enhanced parsing with auto-fill and fallback
+  // Real-time unified parsing with auto-fill
   const debouncedParse = useCallback(async (input: string) => {
     if (!input.trim()) {
       setAiParseSuccess(false);
@@ -378,35 +349,25 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
     setIsParsing(true);
 
     try {
-      // Use enhanced parser first
-      const parsed = EnhancedExpenseParser.parseExpenseText(input);
-      let finalParsed = { ...parsed };
+      // Use unified parser with AI fallback enabled
+      const parsed = await UnifiedExpenseParser.parseExpenseText(input, {
+        useAIFallback: useFallback,
+        confidenceThreshold: 0.7,
+        enableRealTimeValidation: true
+      });
       
-      // Check if we should use OpenAI fallback for category
-      const overallConfidence = EnhancedExpenseParser.getOverallConfidence(parsed.confidence);
-      if (parsed.category === 'Other' && parsed.confidence.category < 0.6 && useFallback) {
-        const fallbackResult = await tryFallbackParsing(input, parsed.category, parsed.confidence.category);
-        
-        if (fallbackResult?.shouldUpdate && fallbackResult.suggestedCategory !== 'Other') {
-          finalParsed.category = fallbackResult.suggestedCategory;
-          finalParsed.confidence.category = fallbackResult.confidence;
-          finalParsed.reasoning = `Local: ${parsed.reasoning || 'Basic parsing'} | AI: ${fallbackResult.reasoning}`;
-        }
-      }
-      
-      setParsedData(finalParsed);
+      setParsedData(parsed);
       
       // Auto-fill form fields if confidence is decent
-      const finalConfidence = EnhancedExpenseParser.getOverallConfidence(finalParsed.confidence);
-      if (finalConfidence > 0.5 && finalParsed.amount > 0) {
-        setAmount(finalParsed.amount.toString());
-        setDescription(finalParsed.description);
-        setCategory(finalParsed.category);
-        setType(finalParsed.type);
+      if (parsed.confidence.overall > 0.5 && parsed.amount > 0) {
+        setAmount(parsed.amount.toString());
+        setDescription(parsed.description);
+        setCategory(parsed.category);
+        setType(parsed.type);
         setAiParseSuccess(true);
         
         // Auto-submit if enabled and high confidence
-        if (autoSubmit && finalConfidence > 0.8) {
+        if (autoSubmit && parsed.confidence.overall > 0.8) {
           setTimeout(() => {
             const form = document.querySelector('form');
             if (form) {
@@ -417,7 +378,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
         }
       }
     } catch (error) {
-      console.warn('Enhanced parsing failed:', error);
+      console.warn('Unified parsing failed:', error);
       setAiParseSuccess(false);
     }
     
@@ -543,11 +504,11 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium">AI Parsed</span>
-                  <span className={`text-xs px-2 py-1 rounded ${EnhancedExpenseParser.getConfidenceColor(
-                    EnhancedExpenseParser.getOverallConfidence(parsedData.confidence)
-                  )}`}>
-                    {Math.round(EnhancedExpenseParser.getOverallConfidence(parsedData.confidence) * 100)}%
-                  </span>
+                   <span className={`text-xs px-2 py-1 rounded ${UnifiedExpenseParser.getConfidenceColor(
+                     parsedData.confidence.overall
+                   )}`}>
+                     {Math.round(parsedData.confidence.overall * 100)}%
+                   </span>
                   {isUsingFallback && (
                     <Bot className="h-3 w-3 text-blue-600" />
                   )}

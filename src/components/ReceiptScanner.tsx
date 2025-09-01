@@ -103,34 +103,35 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
     try {
       setIsProcessing(true);
 
-      // Extract basic receipt data using our OCR service
-      const merchantData = OCRService.extractReceiptData(ocrText);
-
-      // Call our Supabase function to process with OpenAI
-      const { data, error } = await supabase.functions.invoke('process-receipt', {
-        body: {
-          ocrText,
-          merchantData,
-        },
+      // Use unified parser for consistent parsing
+      const { UnifiedExpenseParser } = await import('@/utils/unifiedExpenseParser');
+      const parsed = await UnifiedExpenseParser.parseExpenseText(ocrText, {
+        useAIFallback: true,
+        confidenceThreshold: 0.6,
+        enableRealTimeValidation: true
       });
 
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      const receiptData: ReceiptData = data;
+      const receiptData: ReceiptData = {
+        amount: parsed.amount,
+        description: parsed.description,
+        category: parsed.category,
+        type: parsed.type,
+        confidence: parsed.confidence,
+        merchant: parsed.merchant,
+        reasoning: parsed.reasoning
+      };
       
       // Add the storage file name if available
       if (fileName) {
         (receiptData as any).receiptImage = fileName;
       }
 
-      toast.success('Receipt processed successfully!');
+      toast.success(`Receipt processed successfully! (${parsed.parsingMethod} method)`);
       onExpenseExtracted(receiptData);
       
     } catch (error) {
-      console.error('AI processing error:', error);
-      toast.error('Failed to process receipt with AI');
+      console.error('Unified parsing error:', error);
+      toast.error('Failed to process receipt');
     } finally {
       setIsProcessing(false);
     }
