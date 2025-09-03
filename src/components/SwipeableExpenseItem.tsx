@@ -1,7 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Trash2, Edit } from 'lucide-react';
 import { useSwipeToDelete } from '@/hooks/useTouchGestures';
 import { mobileService } from '@/utils/mobileService';
@@ -27,6 +38,7 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
   onEdit,
   onClick
 }) => {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { ref, isSwipingToDelete, resetSwipe } = useSwipeToDelete(() => {
     mobileService.heavyHaptic();
     onDelete(expense.id);
@@ -41,6 +53,18 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
     e.stopPropagation();
     mobileService.lightHaptic();
     onEdit?.(expense);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    mobileService.lightHaptic();
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    mobileService.heavyHaptic();
+    onDelete(expense.id);
+    setIsDeleteDialogOpen(false);
   };
 
   const categoryColors = {
@@ -120,6 +144,35 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
                   <Edit size={16} />
                 </Button>
               )}
+              <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDeleteClick}
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this transaction? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteConfirm}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <div className={cn(
                 "font-semibold text-lg sm:text-xl",
                 expense.type === 'income' 
