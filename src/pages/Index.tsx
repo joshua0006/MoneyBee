@@ -292,6 +292,7 @@ const Index = () => {
               <ExpenseOverview 
                 totalIncome={totalIncome}
                 totalExpenses={totalExpenses}
+                monthlyBudget={budgets.reduce((sum, budget) => sum + budget.amount, 0)}
               />
             </ProgressiveLoader>
             
