@@ -111,6 +111,8 @@ export default function Transactions() {
           <ExpenseList
             expenses={filteredExpenses}
             onExpenseClick={(expense) => handleEditExpense(expense)}
+            onEditExpense={(expense) => handleEditExpense(expense)}
+            onDeleteExpense={(id) => handleDeleteExpense(id)}
           />
         </div>
 

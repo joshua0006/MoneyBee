@@ -45,8 +45,9 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
   });
 
   const handleClick = () => {
-    mobileService.lightHaptic();
-    onClick();
+    // Remove auto-click to edit - now only manual edit button works
+    // mobileService.lightHaptic();
+    // onClick();
   };
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -133,17 +134,15 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
               </p>
             </div>
             
-            <div className="flex items-center gap-2 shrink-0 ml-4">
-              {onEdit && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleEdit}
-                  className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
-                >
-                  <Edit size={16} />
-                </Button>
-              )}
+            <div className="flex items-center gap-1 shrink-0 ml-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleEdit}
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+              >
+                <Edit size={16} />
+              </Button>
               <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <AlertDialogTrigger asChild>
                   <Button
@@ -174,7 +173,7 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
                 </AlertDialogContent>
               </AlertDialog>
               <div className={cn(
-                "font-semibold text-lg sm:text-xl",
+                "font-semibold text-lg sm:text-xl ml-2",
                 expense.type === 'income' 
                   ? "text-income" 
                   : "text-expense"
