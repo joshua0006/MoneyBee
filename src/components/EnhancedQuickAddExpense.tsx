@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Camera, Receipt, Zap, Sparkles, CheckCircle2, Bot, X, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import type { Expense, Account } from '@/types/app';
 import { EXPENSE_CATEGORIES, suggestCategoryFromDescription as getCategorySuggestion } from '@/utils/categories';
 import { getSmartSuggestions } from '@/utils/smartSuggestions';
@@ -46,7 +47,9 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [showReceiptScanner, setShowReceiptScanner] = useState(false);
   const [showStatementUploader, setShowStatementUploader] = useState(false);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
+  // Hooks
   const { toast } = useToast();
+  const { user } = useAuth();
   const descriptionRef = useRef<HTMLInputElement>(null);
   const aiInputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -241,10 +244,45 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       setIsLoading(false);
       return;
     }
+    
     // Simulate processing time for better UX
-    setTimeout(() => {
+    setTimeout(async () => {
       onAddExpense(expense);
       lastSavedHashRef.current = manualHash;
+      
+      // If recurring is enabled, also create a recurring transaction
+      if (isRecurring && !editingExpense && user?.id) {
+        try {
+          const { saveRecurringTransactionToDatabase } = await import('@/utils/supabaseExpenseUtils');
+          
+          const recurringTransaction = {
+            user_id: user.id,
+            amount: validAmount,
+            description: expense.description,
+            category: expense.category,
+            type: expense.type,
+            frequency: 'monthly' as const,
+            account_id: expense.accountId,
+            next_due_date: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
+            is_active: true
+          };
+          
+          await saveRecurringTransactionToDatabase(recurringTransaction);
+          
+          toast({
+            title: "🔄 Recurring Transaction Created",
+            description: `Monthly recurring transaction set up for ${description}`,
+            duration: 3000
+          });
+        } catch (error) {
+          console.error('Error creating recurring transaction:', error);
+          toast({
+            title: "Recurring Setup Failed",
+            description: "Transaction added but recurring setup failed",
+            variant: "destructive"
+          });
+        }
+      }
       
       // Reset form only if not editing
       if (!editingExpense) {

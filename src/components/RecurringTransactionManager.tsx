@@ -18,14 +18,19 @@ import { useToast } from "@/hooks/use-toast";
 import { EXPENSE_CATEGORIES } from '@/utils/categories';
 import { 
   type RecurringTransaction,
-  saveRecurringToStorage,
-  loadRecurringFromStorage,
   calculateNextDueDate,
   getUpcomingRecurring,
   getFrequencyDisplay,
   getNextOccurrenceText,
   processDueRecurringTransactions
 } from "@/utils/recurringUtils";
+import { 
+  loadRecurringTransactionsFromDatabase,
+  saveRecurringTransactionToDatabase,
+  updateRecurringTransactionInDatabase,
+  deleteRecurringTransactionFromDatabase
+} from "@/utils/supabaseExpenseUtils";
+import { useAuth } from "@/hooks/useAuth";
 import type { Account } from '@/types/app';
 
 interface RecurringTransactionManagerProps {
@@ -38,7 +43,9 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<RecurringTransaction | null>(null);
   const [showUpcoming, setShowUpcoming] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -56,13 +63,48 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
   });
 
 
+  // Load recurring transactions from database
   useEffect(() => {
-    setRecurringTransactions(loadRecurringFromStorage());
-  }, []);
+    const loadRecurringTransactions = async () => {
+      if (!user?.id) return;
+      
+      setIsLoading(true);
+      try {
+        const dbTransactions = await loadRecurringTransactionsFromDatabase(user.id);
+        // Transform database records to local interface
+        const transactions: RecurringTransaction[] = dbTransactions.map(tx => ({
+          id: tx.id,
+          amount: Number(tx.amount),
+          description: tx.description,
+          category: tx.category,
+          type: tx.type as 'expense' | 'income',
+          accountId: tx.account_id,
+          frequency: tx.frequency as RecurringTransaction['frequency'],
+          startDate: new Date(), // Use next_due_date as startDate for now
+          endDate: undefined,
+          dayOfWeek: undefined,
+          dayOfMonth: undefined,
+          isActive: tx.is_active,
+          nextDueDate: new Date(tx.next_due_date),
+          notes: '',
+          createdAt: new Date(tx.created_at),
+          updatedAt: new Date(tx.updated_at)
+        }));
+        setRecurringTransactions(transactions);
+      } catch (error) {
+        console.error('Error loading recurring transactions:', error);
+        toast({
+          title: "Loading Error",
+          description: "Failed to load recurring transactions",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  useEffect(() => {
-    saveRecurringToStorage(recurringTransactions);
-  }, [recurringTransactions]);
+    loadRecurringTransactions();
+  }, [user?.id, toast]);
 
   // Check for due transactions on component mount and periodically
   useEffect(() => {
@@ -103,8 +145,8 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
     });
   };
 
-  const handleSubmit = () => {
-    if (!formData.amount || !formData.description || !formData.category || !formData.accountId) {
+  const handleSubmit = async () => {
+    if (!formData.amount || !formData.description || !formData.category || !formData.accountId || !user?.id) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields",
@@ -130,44 +172,100 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
       formData.dayOfMonth
     );
 
-    const recurringTransaction: RecurringTransaction = {
-      id: editingTransaction?.id || Date.now().toString(),
-      amount,
-      description: formData.description,
-      category: formData.category,
-      type: formData.type,
-      accountId: formData.accountId,
-      frequency: formData.frequency,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      dayOfWeek: formData.frequency === 'weekly' ? formData.dayOfWeek : undefined,
-      dayOfMonth: formData.frequency !== 'weekly' ? formData.dayOfMonth : undefined,
-      isActive: true,
-      nextDueDate,
-      notes: formData.notes,
-      createdAt: editingTransaction?.createdAt || new Date(),
-      updatedAt: new Date()
-    };
+    try {
+      if (editingTransaction) {
+        // Update existing transaction
+        const updateData = {
+          amount,
+          description: formData.description,
+          category: formData.category,
+          type: formData.type,
+          frequency: formData.frequency,
+          account_id: formData.accountId,
+          next_due_date: nextDueDate.toISOString().split('T')[0],
+          is_active: true
+        };
+        
+        await updateRecurringTransactionInDatabase(editingTransaction.id, updateData);
+        
+        // Update local state
+        const updatedTransaction: RecurringTransaction = {
+          ...editingTransaction,
+          amount,
+          description: formData.description,
+          category: formData.category,
+          type: formData.type,
+          accountId: formData.accountId,
+          frequency: formData.frequency,
+          nextDueDate,
+          updatedAt: new Date()
+        };
+        
+        setRecurringTransactions(prev => 
+          prev.map(r => r.id === editingTransaction.id ? updatedTransaction : r)
+        );
+        
+        toast({
+          title: "✅ Recurring Transaction Updated",
+          description: `${formData.description} updated successfully`
+        });
+      } else {
+        // Create new transaction
+        const newTransaction = {
+          user_id: user.id,
+          amount,
+          description: formData.description,
+          category: formData.category,
+          type: formData.type,
+          frequency: formData.frequency,
+          account_id: formData.accountId,
+          next_due_date: nextDueDate.toISOString().split('T')[0],
+          is_active: true
+        };
+        
+        const savedTransaction = await saveRecurringTransactionToDatabase(newTransaction);
+        
+        if (savedTransaction) {
+          // Add to local state
+          const localTransaction: RecurringTransaction = {
+            id: savedTransaction.id,
+            amount: Number(savedTransaction.amount),
+            description: savedTransaction.description,
+            category: savedTransaction.category,
+            type: savedTransaction.type as 'expense' | 'income',
+            accountId: savedTransaction.account_id,
+            frequency: savedTransaction.frequency as RecurringTransaction['frequency'],
+            startDate: formData.startDate,
+            endDate: formData.endDate,
+            dayOfWeek: formData.dayOfWeek,
+            dayOfMonth: formData.dayOfMonth,
+            isActive: savedTransaction.is_active,
+            nextDueDate: new Date(savedTransaction.next_due_date),
+            notes: formData.notes,
+            createdAt: new Date(savedTransaction.created_at),
+            updatedAt: new Date(savedTransaction.updated_at)
+          };
+          
+          setRecurringTransactions(prev => [...prev, localTransaction]);
+          
+          toast({
+            title: "✅ Recurring Transaction Added",
+            description: `${formData.description} will repeat ${getFrequencyDisplay(formData.frequency).toLowerCase()}`
+          });
+        }
+      }
 
-    if (editingTransaction) {
-      setRecurringTransactions(prev => 
-        prev.map(r => r.id === editingTransaction.id ? recurringTransaction : r)
-      );
+      setIsAddDialogOpen(false);
+      setEditingTransaction(null);
+      resetForm();
+    } catch (error) {
+      console.error('Error saving recurring transaction:', error);
       toast({
-        title: "✅ Recurring Transaction Updated",
-        description: `${formData.description} updated successfully`
-      });
-    } else {
-      setRecurringTransactions(prev => [...prev, recurringTransaction]);
-      toast({
-        title: "✅ Recurring Transaction Added",
-        description: `${formData.description} will repeat ${getFrequencyDisplay(formData.frequency).toLowerCase()}`
+        title: "Save Error",
+        description: "Failed to save recurring transaction",
+        variant: "destructive"
       });
     }
-
-    setIsAddDialogOpen(false);
-    setEditingTransaction(null);
-    resetForm();
   };
 
   const handleEdit = (transaction: RecurringTransaction) => {
@@ -188,18 +286,52 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
     setIsAddDialogOpen(true);
   };
 
-  const handleToggleActive = (id: string) => {
-    setRecurringTransactions(prev =>
-      prev.map(r => r.id === id ? { ...r, isActive: !r.isActive, updatedAt: new Date() } : r)
-    );
+  const handleToggleActive = async (id: string) => {
+    const transaction = recurringTransactions.find(r => r.id === id);
+    if (!transaction) return;
+
+    try {
+      const newActiveState = !transaction.isActive;
+      await updateRecurringTransactionInDatabase(id, { is_active: newActiveState });
+      
+      setRecurringTransactions(prev =>
+        prev.map(r => r.id === id ? { ...r, isActive: newActiveState, updatedAt: new Date() } : r)
+      );
+      
+      toast({
+        title: newActiveState ? "🔄 Recurring Transaction Activated" : "⏸️ Recurring Transaction Paused",
+        description: `${transaction.description} ${newActiveState ? 'activated' : 'paused'}`
+      });
+    } catch (error) {
+      console.error('Error toggling transaction:', error);
+      toast({
+        title: "Update Error",
+        description: "Failed to update transaction status",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setRecurringTransactions(prev => prev.filter(r => r.id !== id));
-    toast({
-      title: "🗑️ Recurring Transaction Deleted",
-      description: "The recurring transaction has been removed"
-    });
+  const handleDelete = async (id: string) => {
+    const transaction = recurringTransactions.find(r => r.id === id);
+    if (!transaction) return;
+
+    try {
+      await deleteRecurringTransactionFromDatabase(id);
+      setRecurringTransactions(prev => prev.filter(r => r.id !== id));
+      
+      toast({
+        title: "🗑️ Recurring Transaction Deleted",
+        description: `${transaction.description} has been removed`
+      });
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      toast({
+        title: "Delete Error",
+        description: "Failed to delete recurring transaction",
+        variant: "destructive"
+      });
+    }
   };
 
   const activeTransactions = recurringTransactions.filter(r => r.isActive);
