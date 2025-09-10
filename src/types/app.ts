@@ -97,7 +97,8 @@ export const convertDbExpenseToApp = (dbExpense: DbExpense): Expense => ({
   accountId: dbExpense.account_id || undefined,
   creditCardId: dbExpense.credit_card_id || undefined,
   milesEarned: dbExpense.miles_earned || undefined,
-  milesRate: dbExpense.miles_rate || undefined
+  milesRate: dbExpense.miles_rate || undefined,
+  valueTags: dbExpense.value_tags || undefined
 });
 
 export const convertAppExpenseToDb = (expense: Omit<Expense, 'id'>, userId: string): Omit<DbExpense, 'id' | 'created_at' | 'updated_at'> => ({
@@ -110,7 +111,8 @@ export const convertAppExpenseToDb = (expense: Omit<Expense, 'id'>, userId: stri
   account_id: expense.accountId || null,
   credit_card_id: expense.creditCardId || null,
   miles_earned: expense.milesEarned || 0,
-  miles_rate: expense.milesRate || 0
+  miles_rate: expense.milesRate || 0,
+  value_tags: expense.valueTags || null
 });
 
 export const convertDbAccountToApp = (dbAccount: DbAccount): Account => ({

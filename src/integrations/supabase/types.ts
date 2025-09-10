@@ -583,6 +583,7 @@ export type Database = {
           type: string
           updated_at: string
           user_id: string
+          value_tags: string[] | null
         }
         Insert: {
           account_id?: string | null
@@ -598,6 +599,7 @@ export type Database = {
           type?: string
           updated_at?: string
           user_id: string
+          value_tags?: string[] | null
         }
         Update: {
           account_id?: string | null
@@ -613,6 +615,7 @@ export type Database = {
           type?: string
           updated_at?: string
           user_id?: string
+          value_tags?: string[] | null
         }
         Relationships: [
           {
