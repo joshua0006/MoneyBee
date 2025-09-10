@@ -1,8 +1,40 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { 
+  Utensils, 
+  ShoppingCart, 
+  Car, 
+  Film, 
+  Home, 
+  Zap, 
+  Heart, 
+  Shirt, 
+  GraduationCap, 
+  Shield, 
+  Briefcase, 
+  HandHeart, 
+  MoreHorizontal 
+} from 'lucide-react';
 
 import type { Expense } from '@/types/app';
 import { CATEGORY_COLORS } from '@/utils/categories';
+
+// Category icon mapping
+const CATEGORY_ICONS = {
+  'Food & Dining': Utensils,
+  'Groceries': ShoppingCart,
+  'Transportation': Car,
+  'Entertainment': Film,
+  'Housing': Home,
+  'Utilities': Zap,
+  'Health': Heart,
+  'Clothing': Shirt,
+  'Education': GraduationCap,
+  'Insurance': Shield,
+  'Work': Briefcase,
+  'Donations': HandHeart,
+  'Other': MoreHorizontal
+} as const;
 
 interface CategoryBreakdownProps {
   expenses: Expense[];
@@ -38,13 +70,18 @@ export const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
           return (
             <div key={category} className="space-y-2">
               <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: CATEGORY_COLORS[category] || CATEGORY_COLORS.Other }}
-                  />
-                  <span className="text-sm font-medium">{category}</span>
-                </div>
+                 <div className="flex items-center gap-2">
+                   {(() => {
+                     const IconComponent = CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS] || CATEGORY_ICONS.Other;
+                     return (
+                       <IconComponent 
+                         size={16} 
+                         style={{ color: CATEGORY_COLORS[category] || CATEGORY_COLORS.Other }}
+                       />
+                     );
+                   })()}
+                   <span className="text-sm font-medium">{category}</span>
+                 </div>
                 <div className="text-right">
                   <span className="text-sm font-semibold">${amount.toFixed(2)}</span>
                   <span className="text-xs text-muted-foreground ml-2">{percentage}%</span>
