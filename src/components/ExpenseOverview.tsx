@@ -1,16 +1,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocaleCurrency } from "@/hooks/useLocaleCurrency";
+import { MonthPicker } from "@/components/MonthPicker";
 
 interface ExpenseOverviewProps {
   totalIncome: number;
   totalExpenses: number;
   monthlyBudget?: number;
+  selectedMonth: Date;
+  onMonthChange: (month: Date) => void;
 }
 
 export const ExpenseOverview = ({ 
   totalIncome, 
   totalExpenses, 
-  monthlyBudget = 5000 
+  monthlyBudget = 5000,
+  selectedMonth,
+  onMonthChange 
 }: ExpenseOverviewProps) => {
   const { formatCurrency } = useLocaleCurrency();
   const netTotal = totalIncome - totalExpenses;
@@ -23,7 +28,13 @@ export const ExpenseOverview = ({
       {/* Main Overview Card */}
       <Card className="glass-card expense-card">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-center">Monthly Overview</CardTitle>
+          <div className="flex flex-col items-center gap-3">
+            <CardTitle className="text-lg">Monthly Overview</CardTitle>
+            <MonthPicker
+              selectedMonth={selectedMonth}
+              onMonthChange={onMonthChange}
+            />
+          </div>
         </CardHeader>
         <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
           {/* Circular Progress Indicators */}

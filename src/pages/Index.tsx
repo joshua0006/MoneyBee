@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser, useClerk } from "@clerk/clerk-react";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 import { ExpenseOverview } from "@/components/ExpenseOverview";
 import { EnhancedQuickAddExpense } from "@/components/EnhancedQuickAddExpense";
 import moneyBeesLogo from "@/assets/moneybees-logo.png";
@@ -61,6 +62,7 @@ const Index = () => {
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -92,6 +94,14 @@ const Index = () => {
       description: 'Start tracking your expenses and watch your financial insights grow.',
     }
   ];
+
+  // Filter expenses by selected month
+  const monthlyExpenses = allExpenses.filter(expense => {
+    const expenseDate = new Date(expense.date);
+    const monthStart = startOfMonth(selectedMonth);
+    const monthEnd = endOfMonth(selectedMonth);
+    return expenseDate >= monthStart && expenseDate <= monthEnd;
+  });
 
   // Sync filteredExpenses with allExpenses when no filters are active
   useEffect(() => {
@@ -204,11 +214,11 @@ const Index = () => {
     setActiveMenuItem("search");
   };
 
-  const totalIncome = allExpenses
+  const totalIncome = monthlyExpenses
     .filter(e => e.type === 'income')
     .reduce((sum, e) => sum + e.amount, 0);
 
-  const totalExpenses = allExpenses
+  const totalExpenses = monthlyExpenses
     .filter(e => e.type === 'expense')
     .reduce((sum, e) => sum + e.amount, 0);
 
@@ -293,25 +303,27 @@ const Index = () => {
                 totalIncome={totalIncome}
                 totalExpenses={totalExpenses}
                 monthlyBudget={budgets.reduce((sum, budget) => sum + budget.amount, 0)}
+                selectedMonth={selectedMonth}
+                onMonthChange={setSelectedMonth}
               />
             </ProgressiveLoader>
             
             <ProgressiveLoader isLoading={isLoading} type="chart" delay={100}>
               <Suspense fallback={null}>
                 <CategoryBreakdown 
-                  expenses={filteredExpenses}
+                  expenses={monthlyExpenses}
                 />
               </Suspense>
             </ProgressiveLoader>
             
-            {filteredExpenses.length > 0 ? (
+            {monthlyExpenses.length > 0 ? (
               <ProgressiveLoader isLoading={isLoading} type="list" delay={200}>
                 <ExpenseList
-                  expenses={filteredExpenses.slice(0, 10)} // Show only recent 10
+                  expenses={monthlyExpenses.slice(0, 10)} // Show only recent 10
                   onExpenseClick={handleExpenseClick}
                   onEditExpense={handleEditExpense}
                   onDeleteExpense={handleDeleteExpense}
-                  showViewAll={filteredExpenses.length > 10}
+                  showViewAll={monthlyExpenses.length > 10}
                   onViewAll={handleViewAllTransactions}
                 />
               </ProgressiveLoader>
