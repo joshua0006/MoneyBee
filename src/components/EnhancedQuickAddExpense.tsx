@@ -17,6 +17,8 @@ import { ReceiptScanner } from "@/components/ReceiptScanner";
 import { BankStatementUploader } from "@/components/BankStatementUploader";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ValueTagSelector } from "@/components/ValueTagSelector";
+import { suggestValueTags } from "@/utils/valueTagging";
 interface QuickAddExpenseProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => void;
   existingExpenses: Expense[];
@@ -38,6 +40,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [valueTags, setValueTags] = useState<string[]>([]);
   
   // AI Recognition states
   const [aiMode, setAiMode] = useState(true);
@@ -98,9 +101,10 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       date: new Date(),
       type,
       accountId: accountId || accounts[0]?.id,
-      creditCardId: creditCardId || undefined
+      creditCardId: creditCardId || undefined,
+      valueTags: valueTags.length > 0 ? valueTags : undefined
     };
-  }, [amount, description, category, type, accountId, creditCardId, accounts]);
+  }, [amount, description, category, type, accountId, creditCardId, accounts, valueTags]);
 
   const hashDraft = (exp: Omit<Expense, 'id'>) =>
     JSON.stringify({ a: exp.amount, d: exp.description, c: exp.category, t: exp.type, acc: exp.accountId });
@@ -143,6 +147,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
         setIsRecurring(false);
         setShowSuggestions(false);
         setAiInput("");
+        setValueTags([]);
       }
       setAiParseSuccess(false);
 
@@ -297,6 +302,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
         setIsRecurring(false);
         setShowSuggestions(false);
         setAiInput("");
+        setValueTags([]);
       }
       setIsLoading(false);
       setAiParseSuccess(false);
@@ -408,6 +414,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
         setDescription(parsed.description);
         setCategory(parsed.category);
         setType(parsed.type);
+        setValueTags(suggestValueTags(parsed.category, parsed.description));
         setAiParseSuccess(true);
         
         // Auto-submit if enabled and high confidence
@@ -811,6 +818,13 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             </div>
           )}
 
+          {/* Value Tags */}
+          <ValueTagSelector 
+            selectedTags={valueTags}
+            onTagsChange={setValueTags}
+            suggestions={category && description ? suggestValueTags(category, description) : []}
+          />
+
           {/* Action Button - Full Width */}
           <div className="pt-4">
             <Button
@@ -852,6 +866,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               setDescription(expenseData.description);
               setCategory(expenseData.category);
               setType(expenseData.type);
+              setValueTags(suggestValueTags(expenseData.category, expenseData.description));
               
               // Auto-submit if confidence is high and auto-submit is enabled
               const avgConfidence = (

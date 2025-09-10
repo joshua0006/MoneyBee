@@ -20,6 +20,7 @@ export interface Expense {
   photos?: string[];
   location?: string;
   tags?: string[];
+  valueTags?: string[];
   recurring?: boolean;
   recurringId?: string;
 }

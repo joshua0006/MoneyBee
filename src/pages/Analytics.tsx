@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { CategoryBreakdown } from "@/components/CategoryBreakdown";
+import { SpendingReflection } from "@/components/SpendingReflection";
 import { mobileService } from "@/utils/mobileService";
 import { useAppData } from "@/hooks/useAppData";
 import { Helmet } from "react-helmet-async";
@@ -55,6 +56,7 @@ export default function Analytics() {
           </div>
 
           <CategoryBreakdown expenses={expenses} />
+          <SpendingReflection expenses={expenses} />
           <AdvancedAnalytics expenses={expenses} />
         </div>
       </div>
