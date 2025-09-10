@@ -14,11 +14,45 @@ export interface Expense {
   date: Date;
   type: 'expense' | 'income';
   accountId?: string;
+  creditCardId?: string;
+  milesEarned?: number;
+  milesRate?: number;
   photos?: string[];
   location?: string;
   tags?: string[];
   recurring?: boolean;
   recurringId?: string;
+}
+
+export interface CreditCard {
+  id: string;
+  userId: string;
+  name: string;
+  network: 'visa' | 'mastercard' | 'amex' | 'other';
+  lastFourDigits: string;
+  color?: string;
+  isActive: boolean;
+}
+
+export interface CardRewardCategory {
+  id: string;
+  cardId: string;
+  category: string;
+  milesPerDollar: number;
+  monthlyCapAmount?: number;
+  capResetDay: number;
+  isActive: boolean;
+}
+
+export interface MonthlyCardSpending {
+  id: string;
+  cardId: string;
+  category: string;
+  year: number;
+  month: number;
+  totalSpent: number;
+  milesEarned: number;
+  capReachedDate?: Date;
 }
 
 export interface Account {
@@ -45,7 +79,10 @@ export const convertDbExpenseToApp = (dbExpense: DbExpense): Expense => ({
   category: dbExpense.category,
   date: new Date(dbExpense.date),
   type: dbExpense.type as 'expense' | 'income',
-  accountId: dbExpense.account_id || undefined
+  accountId: dbExpense.account_id || undefined,
+  creditCardId: dbExpense.credit_card_id || undefined,
+  milesEarned: dbExpense.miles_earned || undefined,
+  milesRate: dbExpense.miles_rate || undefined
 });
 
 export const convertAppExpenseToDb = (expense: Omit<Expense, 'id'>, userId: string): Omit<DbExpense, 'id' | 'created_at' | 'updated_at'> => ({
@@ -55,7 +92,10 @@ export const convertAppExpenseToDb = (expense: Omit<Expense, 'id'>, userId: stri
   category: expense.category,
   date: expense.date.toISOString().split('T')[0], // Format as YYYY-MM-DD
   type: expense.type,
-  account_id: expense.accountId || null
+  account_id: expense.accountId || null,
+  credit_card_id: expense.creditCardId || null,
+  miles_earned: expense.milesEarned || 0,
+  miles_rate: expense.milesRate || 0
 });
 
 export const convertDbAccountToApp = (dbAccount: DbAccount): Account => ({

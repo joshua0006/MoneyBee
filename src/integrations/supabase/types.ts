@@ -237,6 +237,50 @@ export type Database = {
         }
         Relationships: []
       }
+      card_reward_categories: {
+        Row: {
+          cap_reset_day: number | null
+          card_id: string
+          category: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          miles_per_dollar: number
+          monthly_cap_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          cap_reset_day?: number | null
+          card_id: string
+          category: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          miles_per_dollar?: number
+          monthly_cap_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          cap_reset_day?: number | null
+          card_id?: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          miles_per_dollar?: number
+          monthly_cap_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_reward_categories_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "credit_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -276,6 +320,98 @@ export type Database = {
           id?: number
           label?: string
           sort_order?: number
+        }
+        Relationships: []
+      }
+      checklist_template_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          estimated_impact: string | null
+          estimated_value: number | null
+          id: string
+          metric: string | null
+          name: string
+          owner: string
+          priority: string
+          sort_order: number
+          target: string | null
+          template_id: string
+          updated_at: string
+          why_it_matters: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          estimated_impact?: string | null
+          estimated_value?: number | null
+          id?: string
+          metric?: string | null
+          name: string
+          owner?: string
+          priority?: string
+          sort_order?: number
+          target?: string | null
+          template_id: string
+          updated_at?: string
+          why_it_matters?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          estimated_impact?: string | null
+          estimated_value?: number | null
+          id?: string
+          metric?: string | null
+          name?: string
+          owner?: string
+          priority?: string
+          sort_order?: number
+          target?: string | null
+          template_id?: string
+          updated_at?: string
+          why_it_matters?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -323,6 +459,42 @@ export type Database = {
             referencedColumns: ["uid"]
           },
         ]
+      }
+      credit_cards: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          last_four_digits: string
+          name: string
+          network: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_four_digits: string
+          name: string
+          network: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_four_digits?: string
+          name?: string
+          network?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       custom_roles: {
         Row: {
@@ -402,9 +574,12 @@ export type Database = {
           amount: number
           category: string
           created_at: string
+          credit_card_id: string | null
           date: string
           description: string
           id: string
+          miles_earned: number | null
+          miles_rate: number | null
           type: string
           updated_at: string
           user_id: string
@@ -414,9 +589,12 @@ export type Database = {
           amount: number
           category: string
           created_at?: string
+          credit_card_id?: string | null
           date?: string
           description: string
           id?: string
+          miles_earned?: number | null
+          miles_rate?: number | null
           type?: string
           updated_at?: string
           user_id: string
@@ -426,14 +604,24 @@ export type Database = {
           amount?: number
           category?: string
           created_at?: string
+          credit_card_id?: string | null
           date?: string
           description?: string
           id?: string
+          miles_earned?: number | null
+          miles_rate?: number | null
           type?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "expenses_credit_card_id_fkey"
+            columns: ["credit_card_id"]
+            isOneToOne: false
+            referencedRelation: "credit_cards"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_expenses_accounts"
             columns: ["account_id"]
@@ -513,6 +701,53 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["uid"]
+          },
+        ]
+      }
+      monthly_card_spending: {
+        Row: {
+          cap_reached_date: string | null
+          card_id: string
+          category: string
+          created_at: string
+          id: string
+          miles_earned: number | null
+          month: number
+          total_spent: number | null
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          cap_reached_date?: string | null
+          card_id: string
+          category: string
+          created_at?: string
+          id?: string
+          miles_earned?: number | null
+          month: number
+          total_spent?: number | null
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          cap_reached_date?: string | null
+          card_id?: string
+          category?: string
+          created_at?: string
+          id?: string
+          miles_earned?: number | null
+          month?: number
+          total_spent?: number | null
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_card_spending_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "credit_cards"
+            referencedColumns: ["id"]
           },
         ]
       }

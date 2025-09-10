@@ -19,6 +19,7 @@ export const HamburgerMenu = ({}: HamburgerMenuProps) => {
     { id: "calendar", label: "Calendar View", icon: Calendar, path: "/calendar" },
     { id: "goals", label: "Goals", icon: Target, path: "/goals" },
     { id: "accounts", label: "Accounts", icon: CreditCard, path: "/accounts" },
+    { id: "cards", label: "Credit Cards", icon: Target, path: "#", onClick: () => window.dispatchEvent(new CustomEvent('menu-cards')) },
     { id: "recurring", label: "Recurring", icon: Repeat, path: "/recurring" },
     { id: "reports", label: "Reports & Export", icon: Download, path: "/reports" },
     { id: "notifications", label: "Notifications", icon: Bell, path: "/notifications" },

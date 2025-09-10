@@ -7,7 +7,8 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Camera, Receipt, Zap, Sparkles, CheckCircle2, Bot, X, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import type { Expense, Account } from '@/types/app';
+import type { Expense, Account, CreditCard } from '@/types/app';
+import { useCreditCards } from '@/hooks/useCreditCards';
 import { EXPENSE_CATEGORIES, suggestCategoryFromDescription as getCategorySuggestion } from '@/utils/categories';
 import { getSmartSuggestions } from '@/utils/smartSuggestions';
 import { UnifiedExpenseParser, type ParsedExpense } from "@/utils/unifiedExpenseParser";
@@ -20,17 +21,19 @@ interface QuickAddExpenseProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => void;
   existingExpenses: Expense[];
   accounts: Account[];
+  creditCards?: CreditCard[];
   editingExpense?: Expense;
 }
 
 const quickAmounts = [5, 10, 15, 20, 25, 50];
 
-export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accounts, editingExpense }: QuickAddExpenseProps) => {
+export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accounts, creditCards = [], editingExpense }: QuickAddExpenseProps) => {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [accountId, setAccountId] = useState(accounts[0]?.id || "");
+  const [creditCardId, setCreditCardId] = useState("");
   const [isRecurring, setIsRecurring] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -94,9 +97,10 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       category: finalCategory,
       date: new Date(),
       type,
-      accountId: accountId || accounts[0]?.id
+      accountId: accountId || accounts[0]?.id,
+      creditCardId: creditCardId || undefined
     };
-  }, [amount, description, category, type, accountId, accounts]);
+  }, [amount, description, category, type, accountId, creditCardId, accounts]);
 
   const hashDraft = (exp: Omit<Expense, 'id'>) =>
     JSON.stringify({ a: exp.amount, d: exp.description, c: exp.category, t: exp.type, acc: exp.accountId });
@@ -230,7 +234,8 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       category: type === 'income' ? 'Income' : (category || suggestCategoryFromDescription(description) || "Other"),
       date: new Date(),
       type,
-      accountId: accountId || accounts[0]?.id
+      accountId: accountId || accounts[0]?.id,
+      creditCardId: creditCardId || undefined
     };
 
     // Prevent duplicate submissions and queue if needed
@@ -362,6 +367,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       setCategory(editingExpense.category);
       setType(editingExpense.type);
       setAccountId(editingExpense.accountId || accounts[0]?.id || "");
+      setCreditCardId(editingExpense.creditCardId || "");
       // Disable AI and auto-save when editing
       setAiMode(false);
       setAutoSubmit(false);
@@ -747,6 +753,26 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                   </Select>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Credit Card Selection */}
+          {type === 'expense' && creditCards.length > 0 && (
+            <div className="space-y-2">
+              <span className="text-xs font-medium text-muted-foreground">Credit Card</span>
+              <Select value={creditCardId} onValueChange={setCreditCardId}>
+                <SelectTrigger className="h-10">
+                  <SelectValue placeholder="Select credit card" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No card / Cash</SelectItem>
+                  {creditCards.map((card) => (
+                    <SelectItem key={card.id} value={card.id}>
+                      {card.name} ••••{card.lastFourDigits}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 

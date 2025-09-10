@@ -36,6 +36,8 @@ const FinancialSimulation = lazy(() => import("@/components/FinancialSimulation"
 const GamificationHub = lazy(() => import("@/components/gamification/GamificationHub").then(m => ({ default: m.GamificationHub })));
 import { mobileService } from "@/utils/mobileService";
 import { useAppData } from "@/hooks/useAppData";
+import { CreditCardManager } from "@/components/CreditCardManager";
+import { useCreditCards } from "@/hooks/useCreditCards";
 import type { Expense, Account, Budget } from "@/types/app";
 
 const Index = () => {
@@ -58,6 +60,8 @@ const Index = () => {
     deleteBudget: removeBudget,
     refreshData
   } = useAppData();
+  
+  const { creditCards } = useCreditCards();
   
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
@@ -493,6 +497,12 @@ const Index = () => {
           </div>
         )}
 
+        {activeMenuItem === "cards" && (
+          <div className="space-y-6">
+            <CreditCardManager />
+          </div>
+        )}
+
         {activeMenuItem === "recurring" && (
           <div className="space-y-6">
             <RecurringTransactionManager 
@@ -569,8 +579,9 @@ const Index = () => {
                    duration: 3000
                  });
                }}
-                existingExpenses={allExpenses}
-                accounts={accounts}
+                 existingExpenses={allExpenses}
+                 accounts={accounts}
+                 creditCards={creditCards}
                 editingExpense={editingExpense}
               />
             )}
