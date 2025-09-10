@@ -55,6 +55,20 @@ export interface MonthlyCardSpending {
   capReachedDate?: Date;
 }
 
+export interface MicrosavingsChallenge {
+  id: string;
+  title: string;
+  description: string;
+  dailySavings: number;
+  category: string;
+  icon: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  duration: number; // days
+  isActive: boolean;
+  streak: number;
+  totalSaved: number;
+}
+
 export interface Account {
   id: string;
   name: string;

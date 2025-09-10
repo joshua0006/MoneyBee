@@ -38,6 +38,7 @@ import { mobileService } from "@/utils/mobileService";
 import { useAppData } from "@/hooks/useAppData";
 import { CreditCardManager } from "@/components/CreditCardManager";
 import { useCreditCards } from "@/hooks/useCreditCards";
+import { MicroSavingsChallenge } from "@/components/MicroSavingsChallenge";
 import type { Expense, Account, Budget } from "@/types/app";
 
 const Index = () => {
@@ -352,6 +353,19 @@ const Index = () => {
               </div>
             </ProgressiveLoader>
             
+            {/* Micro Savings Challenge */}
+            <ProgressiveLoader isLoading={isLoading} type="card" delay={150}>
+              <MicroSavingsChallenge 
+                onSavingsTrack={(amount) => {
+                  toast({
+                    title: "💪 Challenge Completed!",
+                    description: `You saved $${amount} today. Keep building those habits!`,
+                    duration: 4000
+                  });
+                }}
+              />
+            </ProgressiveLoader>
+
             {monthlyExpenses.length > 0 ? (
               <ProgressiveLoader isLoading={isLoading} type="list" delay={200}>
                 <div className="bg-card/40 backdrop-blur-sm rounded-2xl border border-border/20 shadow-soft p-1">
