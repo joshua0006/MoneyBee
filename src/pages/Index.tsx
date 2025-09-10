@@ -64,6 +64,28 @@ const Index = () => {
   
   const { creditCards } = useCreditCards();
   
+  // Mock goals data (in a real app, this would come from the database)
+  const goals = [
+    {
+      id: '1',
+      title: 'Emergency Fund',
+      target: 5000,
+      current: 2500,
+      category: 'savings',
+      deadline: new Date('2024-12-31'),
+      description: 'Build a 6-month emergency fund'
+    },
+    {
+      id: '2',
+      title: 'Vacation Fund',
+      target: 2000,
+      current: 800,
+      category: 'travel',
+      deadline: new Date('2024-08-15'),
+      description: 'Save for summer vacation'
+    }
+  ];
+  
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -493,6 +515,9 @@ const Index = () => {
           <div className="space-y-6">
             <CalendarView 
               expenses={filteredExpenses}
+              budgets={budgets}
+              accounts={accounts}
+              goals={goals}
               onDateSelect={setSelectedDate}
               selectedDate={selectedDate}
             />

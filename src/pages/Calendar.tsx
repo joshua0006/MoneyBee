@@ -8,7 +8,29 @@ import { Helmet } from "react-helmet-async";
 
 export default function Calendar() {
   const navigate = useNavigate();
-  const { expenses } = useAppData();
+  const { expenses, budgets, accounts } = useAppData();
+  
+  // Mock goals data (in a real app, this would come from the database)
+  const goals = [
+    {
+      id: '1',
+      title: 'Emergency Fund',
+      target: 5000,
+      current: 2500,
+      category: 'savings',
+      deadline: new Date('2024-12-31'),
+      description: 'Build a 6-month emergency fund'
+    },
+    {
+      id: '2',
+      title: 'Vacation Fund',
+      target: 2000,
+      current: 800,
+      category: 'travel',
+      deadline: new Date('2024-08-15'),
+      description: 'Save for summer vacation'
+    }
+  ];
 
   return (
     <>
@@ -40,6 +62,9 @@ export default function Calendar() {
         <div className="p-4">
           <CalendarView 
             expenses={expenses}
+            budgets={budgets}
+            accounts={accounts}
+            goals={goals}
             onDateSelect={() => {}}
           />
         </div>

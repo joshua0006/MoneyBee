@@ -54,6 +54,12 @@ All colors MUST be HSL.
     --success: 158 65% 48%;
     --success-foreground: 45 95% 96%;
     
+    --warning: 45 95% 60%;
+    --warning-foreground: 210 20% 12%;
+    
+    --info: 220 85% 58%;
+    --info-foreground: 45 95% 96%;
+    
     /* Bee Brand Colors */
     --bee-blue: 220 85% 58%;
     --bee-blue-foreground: 45 95% 96%;
@@ -153,6 +159,12 @@ All colors MUST be HSL.
     
     --success: 158 60% 55%;
     --success-foreground: 45 35% 92%;
+    
+    --warning: 45 90% 68%;
+    --warning-foreground: 210 40% 6%;
+    
+    --info: 220 80% 68%;
+    --info-foreground: 210 40% 6%;
     
     --bee-blue: 220 80% 68%;
     --bee-blue-foreground: 210 40% 6%;

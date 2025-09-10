@@ -86,6 +86,16 @@ export interface Budget {
   startDate: Date;
 }
 
+export interface Goal {
+  id: string;
+  title: string;
+  target: number;
+  current: number;
+  category: string;
+  deadline: Date;
+  description?: string;
+}
+
 // Conversion utilities
 export const convertDbExpenseToApp = (dbExpense: DbExpense): Expense => ({
   id: dbExpense.id,
