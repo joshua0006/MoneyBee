@@ -18,6 +18,7 @@ import { useAppData } from "@/hooks/useAppData";
 import Index from "./pages/Index";
 import ClerkAuth from "./pages/ClerkAuth";
 import Welcome from "./pages/Welcome";
+import Cover from "./pages/Cover";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import MobileToolkit from "./pages/MobileToolkit";
@@ -48,12 +49,14 @@ const AppContent = () => {
 
   // Check onboarding states
   const hasSeenIntro = localStorage.getItem('intro_seen') === 'true';
+  const hasSeenCover = localStorage.getItem('cover_seen') === 'true';
   const hasCompletedOnboarding = localStorage.getItem('onboarding_completed') === 'true';
 
-  // Don't show bottom navigation on auth pages, welcome, or onboarding
+  // Don't show bottom navigation on auth pages, welcome, cover, or onboarding
   const showBottomNav = isSignedIn && 
     !location.pathname.includes('/auth') && 
     !location.pathname.includes('/welcome') && 
+    !location.pathname.includes('/cover') && 
     !location.pathname.includes('/onboarding');
 
   const handleAddExpense = async (expense: any) => {
@@ -79,6 +82,8 @@ const AppContent = () => {
               <Navigate to="/auth" replace />
             ) : !hasCompletedOnboarding ? (
               <Navigate to="/onboarding" replace />
+            ) : !hasSeenCover ? (
+              <Navigate to="/cover" replace />
             ) : (
               <Index />
             )
@@ -87,6 +92,14 @@ const AppContent = () => {
         <Route 
           path="/welcome" 
           element={!hasSeenIntro ? <Welcome /> : <Navigate to={isSignedIn ? "/" : "/auth"} replace />} 
+        />
+        <Route 
+          path="/cover" 
+          element={
+            isSignedIn && hasCompletedOnboarding && !hasSeenCover ? 
+            <Cover /> : 
+            <Navigate to="/" replace />
+          } 
         />
         <Route 
           path="/onboarding" 
