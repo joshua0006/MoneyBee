@@ -16,7 +16,7 @@ export const BottomNavigation = ({ onAddExpense }: BottomNavigationProps) => {
     { id: "budgets", icon: Target, label: "Budgets", path: "/budgets" },
     { id: "add", icon: Plus, label: "Add", isSpecial: true },
     { id: "analytics", icon: BarChart2, label: "Analytics", path: "/analytics" },
-    { id: "growth", icon: TrendingUp, label: "Growth", path: "/growth" },
+    { id: "investments", icon: TrendingUp, label: "Investments", path: "/investments" },
   ];
 
   return (

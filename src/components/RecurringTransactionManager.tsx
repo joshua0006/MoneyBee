@@ -31,6 +31,7 @@ import {
   deleteRecurringTransactionFromDatabase
 } from "@/utils/supabaseExpenseUtils";
 import { useAuth } from "@/hooks/useAuth";
+import { scheduleBillReminderCheck } from "@/utils/billReminderService";
 import type { Account } from '@/types/app';
 
 interface RecurringTransactionManagerProps {
@@ -91,6 +92,9 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
           updatedAt: new Date(tx.updated_at)
         }));
         setRecurringTransactions(transactions);
+        
+        // Schedule bill reminder checks
+        scheduleBillReminderCheck(transactions);
       } catch (error) {
         console.error('Error loading recurring transactions:', error);
         toast({

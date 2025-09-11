@@ -257,58 +257,70 @@ const Index = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/5 to-background">
         {/* Header Skeleton */}
-        <div className="bg-gradient-to-r from-card via-muted/30 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-sm">
-          <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-            <div className="flex items-center justify-between min-h-[44px]">
+        <div className="bg-gradient-to-r from-background via-card/30 to-background border-b border-border/20 sticky top-0 z-40 backdrop-blur-xl">
+          <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between h-12 lg:h-16">
               <LoadingSkeleton type="card" count={1} />
             </div>
           </div>
         </div>
         
-        {/* Content Skeleton */}
-        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-20 space-y-6">
+        {/* Content Skeleton - Responsive Grid */}
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-20 space-y-6">
           <LoadingSkeleton type="overview" />
-          <LoadingSkeleton type="chart" />
-          <LoadingSkeleton type="list" count={5} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <LoadingSkeleton type="chart" />
+            <LoadingSkeleton type="chart" />
+            <div className="xl:col-span-1">
+              <LoadingSkeleton type="list" count={3} />
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/5 to-background">
       <Helmet>
         <title>MoneyBee Dashboard — Track Expenses & Budgets</title>
         <meta name="description" content="View insights, manage budgets, and track expenses with MoneyBee's AI-powered dashboard." />
         <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/` : '/'} />
       </Helmet>
-      {/* Enhanced Branded Header */}
-      <div className="bg-gradient-to-r from-background via-card/50 to-background border-b border-border/30 sticky top-0 z-40 backdrop-blur-md shadow-soft">
-        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
-          <div className="flex items-center justify-between min-h-[48px]">
+      
+      {/* Enhanced Responsive Header */}
+      <header className="bg-gradient-to-r from-background via-card/30 to-background border-b border-border/20 sticky top-0 z-40 backdrop-blur-xl shadow-elegant">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 lg:h-20">
             <HamburgerMenu />
-            <div className="flex items-center gap-3">
+            
+            {/* Logo Section - Responsive */}
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="relative">
-                <div className="bg-gradient-to-br from-bee-gold via-bee-amber to-accent p-2 rounded-xl shadow-gold animate-bounce-gentle">
+                <div className="bg-gradient-to-br from-bee-gold via-bee-amber to-accent p-1.5 sm:p-2 rounded-xl shadow-gold">
                   <img 
                     src={moneyBeesLogo} 
                     alt="MoneyBee" 
-                    className="w-6 h-6 object-contain hover:scale-105 transition-transform duration-200" 
+                    className="w-5 h-5 sm:w-6 sm:h-6 object-contain hover:scale-105 transition-transform duration-200" 
                   />
                 </div>
                 <div className="absolute -inset-1 bg-gradient-to-br from-bee-gold/20 to-accent/20 rounded-xl blur-sm -z-10"></div>
               </div>
-              <div className="text-center">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-bee-blue via-primary to-bee-amber bg-clip-text text-transparent">
+              <div className="hidden sm:block">
+                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-bee-blue via-primary to-bee-amber bg-clip-text text-transparent">
                   MoneyBee
                 </h1>
-                <p className="text-xs text-muted-foreground font-medium -mt-0.5">Smart Finance Tracker</p>
+                <p className="text-xs text-muted-foreground font-medium -mt-0.5 hidden lg:block">
+                  Smart Finance Tracker
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="bg-gradient-to-r from-bee-blue/10 to-primary/10 px-2 py-1 rounded-lg border border-bee-blue/20">
+            
+            {/* Action Section - Responsive */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="hidden sm:flex bg-gradient-to-r from-bee-blue/10 to-primary/10 px-2 py-1 rounded-lg border border-bee-blue/20">
                 <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-transparent border-0 text-bee-blue font-medium">
                   {allExpenses.length} entries
                 </Badge>
@@ -318,124 +330,142 @@ const Index = () => {
                 size="sm"
                 className="p-2 hover:bg-destructive/10 hover:text-destructive transition-colors"
                 onClick={() => signOut()}
+                aria-label="Sign out"
               >
-                <LogOut size={16} />
+                <LogOut size={16} className="sm:w-4 sm:h-4" />
               </Button>
             </div>
           </div>
         </div>
-      </div>
-
+      </header>
 
       {/* Main Content with Pull to Refresh */}
       <PullToRefresh onRefresh={handleRefresh}>
-        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-20 safe-area-inset-bottom">
+        <main className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-24 sm:pb-20 safe-area-inset-bottom">
         
-        {/* Welcome Banner */}
-        <div className="mb-6 p-6 bg-gradient-to-br from-bee-gold/5 via-background to-bee-blue/5 rounded-2xl border border-bee-gold/20 shadow-soft">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground mb-1">
-                Welcome back, {user?.firstName || 'Saver'}! 🐝
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Let's make your money grow like a busy bee hive
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-xs text-muted-foreground">Today</div>
-              <div className="text-sm font-medium text-bee-blue">
-                {format(new Date(), 'MMM dd, yyyy')}
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Home Tab Content */}
-        {activeTab === "home" && (
-          <div className="space-y-6">
-            <ProgressiveLoader isLoading={isLoading} type="overview">
-              <div className="bg-gradient-to-br from-card via-background to-card/50 rounded-2xl border border-border/50 shadow-medium p-1">
-                <ExpenseOverview 
-                  totalIncome={totalIncome}
-                  totalExpenses={totalExpenses}
-                  monthlyBudget={budgets.reduce((sum, budget) => sum + budget.amount, 0)}
-                  selectedMonth={selectedMonth}
-                  onMonthChange={setSelectedMonth}
-                />
-              </div>
-            </ProgressiveLoader>
-            
-            <ProgressiveLoader isLoading={isLoading} type="chart" delay={100}>
-              <div className="bg-card/60 backdrop-blur-sm rounded-2xl border border-border/30 shadow-soft p-1">
-                <Suspense fallback={null}>
-                  <CategoryBreakdown 
-                    expenses={monthlyExpenses}
-                  />
-                </Suspense>
-              </div>
-            </ProgressiveLoader>
-            
-            {/* Micro Savings Challenge */}
-            <ProgressiveLoader isLoading={isLoading} type="card" delay={150}>
-              <MicroSavingsChallenge 
-                onSavingsTrack={(amount) => {
-                  toast({
-                    title: "💪 Challenge Completed!",
-                    description: `You saved $${amount} today. Keep building those habits!`,
-                    duration: 4000
-                  });
-                }}
-              />
-            </ProgressiveLoader>
-
-            {monthlyExpenses.length > 0 ? (
-              <ProgressiveLoader isLoading={isLoading} type="list" delay={200}>
-                <div className="bg-card/40 backdrop-blur-sm rounded-2xl border border-border/20 shadow-soft p-1">
-                  <ExpenseList
-                    expenses={monthlyExpenses.slice(0, 10)} // Show only recent 10
-                    onExpenseClick={handleExpenseClick}
-                    onEditExpense={handleEditExpense}
-                    onDeleteExpense={handleDeleteExpense}
-                    showViewAll={monthlyExpenses.length > 10}
-                    onViewAll={handleViewAllTransactions}
-                  />
+          {/* Welcome Banner - Responsive */}
+          <section className="mb-6 lg:mb-8">
+            <div className="p-4 sm:p-6 bg-gradient-to-br from-bee-gold/5 via-background to-bee-blue/5 rounded-2xl border border-bee-gold/20 shadow-soft">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
+                <div className="flex-1">
+                  <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-foreground mb-1">
+                    Welcome back, {user?.firstName || 'Saver'}! 🐝
+                  </h2>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    Let's make your money grow like a busy bee hive
+                  </p>
                 </div>
-              </ProgressiveLoader>
-            ) : !isLoading && (
-              <div className="bg-gradient-to-br from-muted/30 to-card/50 rounded-2xl border-2 border-dashed border-border/40 shadow-soft">
+                <div className="text-left sm:text-right">
+                  <div className="text-xs text-muted-foreground">Today</div>
+                  <div className="text-sm sm:text-base font-medium text-bee-blue">
+                    {format(new Date(), 'MMM dd, yyyy')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          {/* Home Tab Content - Responsive Grid Layout */}
+          {activeTab === "home" && (
+            <div className="space-y-6 lg:space-y-8">
+              {/* Financial Overview Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                <div className="lg:col-span-2">
+                  <ProgressiveLoader isLoading={isLoading} type="overview">
+                    <div className="bg-gradient-to-br from-card via-background to-card/50 rounded-2xl border border-border/50 shadow-medium p-1 h-full">
+                      <ExpenseOverview 
+                        totalIncome={totalIncome}
+                        totalExpenses={totalExpenses}
+                        monthlyBudget={budgets.reduce((sum, budget) => sum + budget.amount, 0)}
+                        selectedMonth={selectedMonth}
+                        onMonthChange={setSelectedMonth}
+                      />
+                    </div>
+                  </ProgressiveLoader>
+                </div>
+                
+                <div className="lg:col-span-1">
+                  <ProgressiveLoader isLoading={isLoading} type="card" delay={150}>
+                    <MicroSavingsChallenge 
+                      onSavingsTrack={(amount) => {
+                        toast({
+                          title: "💪 Challenge Completed!",
+                          description: `You saved $${amount} today. Keep building those habits!`,
+                          duration: 4000
+                        });
+                      }}
+                    />
+                  </ProgressiveLoader>
+                </div>
+              </div>
+              
+              {/* Charts and Analytics */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+                <ProgressiveLoader isLoading={isLoading} type="chart" delay={100}>
+                  <div className="bg-card/60 backdrop-blur-sm rounded-2xl border border-border/30 shadow-soft p-1 h-full">
+                    <Suspense fallback={null}>
+                      <CategoryBreakdown 
+                        expenses={monthlyExpenses}
+                      />
+                    </Suspense>
+                  </div>
+                </ProgressiveLoader>
+                
+                {/* Recent Transactions */}
+                <div className="xl:col-span-1">
+                  {monthlyExpenses.length > 0 ? (
+                    <ProgressiveLoader isLoading={isLoading} type="list" delay={200}>
+                      <div className="bg-card/40 backdrop-blur-sm rounded-2xl border border-border/20 shadow-soft p-1 h-full">
+                        <ExpenseList
+                          expenses={monthlyExpenses.slice(0, 6)} // Show fewer on desktop for better layout
+                          onExpenseClick={handleExpenseClick}
+                          onEditExpense={handleEditExpense}
+                          onDeleteExpense={handleDeleteExpense}
+                          showViewAll={monthlyExpenses.length > 6}
+                          onViewAll={handleViewAllTransactions}
+                        />
+                      </div>
+                    </ProgressiveLoader>
+                  ) : !isLoading && (
+                    <div className="bg-gradient-to-br from-muted/30 to-card/50 rounded-2xl border-2 border-dashed border-border/40 shadow-soft h-full">
+                      <EmptyState 
+                        type="expenses"
+                        onAction={() => setIsAddExpenseOpen(true)}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Stats Tab Content - Responsive Analytics Grid */}
+          {activeTab === "stats" && (
+            <div className="space-y-6 lg:space-y-8">
+              {filteredExpenses.length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                  <div className="lg:col-span-2">
+                    <Suspense fallback={null}>
+                      <AdvancedAnalytics 
+                        expenses={filteredExpenses}
+                      />
+                    </Suspense>
+                  </div>
+                  <div className="lg:col-span-1">
+                    <Suspense fallback={null}>
+                      <CategoryBreakdown 
+                        expenses={filteredExpenses}
+                      />
+                    </Suspense>
+                  </div>
+                </div>
+              ) : (
                 <EmptyState 
-                  type="expenses"
+                  type="analytics"
                   onAction={() => setIsAddExpenseOpen(true)}
                 />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Stats Tab Content */}
-        {activeTab === "stats" && (
-          <div className="space-y-6">
-            {filteredExpenses.length > 0 ? (
-              <>
-                <Suspense fallback={null}>
-                  <AdvancedAnalytics 
-                    expenses={filteredExpenses}
-                  />
-                </Suspense>
-                <Suspense fallback={null}>
-                  <CategoryBreakdown 
-                    expenses={filteredExpenses}
-                  />
-                </Suspense>
-              </>
-            ) : (
-              <EmptyState 
-                type="analytics"
-                onAction={() => setIsAddExpenseOpen(true)}
-              />
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
 
         {/* Budget Tab Content */}
         {activeTab === "budget" && (
@@ -553,6 +583,27 @@ const Index = () => {
           </div>
         )}
 
+        {activeMenuItem === "investments" && (
+          <div className="space-y-6">
+            <div className="text-center py-8">
+              <h2 className="text-lg font-semibold mb-2">Investments</h2>
+              <p className="text-muted-foreground text-sm mb-6">
+                Your investment portfolio is available on the dedicated page
+              </p>
+              <Button 
+                onClick={() => {
+                  navigate('/investments');
+                  mobileService.lightHaptic();
+                }}
+                className="flex items-center gap-2"
+              >
+                <TrendingUp size={16} />
+                Go to Investments
+              </Button>
+            </div>
+          </div>
+        )}
+
         {activeMenuItem === "export" && (
           <div className="space-y-6 text-center py-8">
             <h2 className="text-lg font-semibold mb-4">Export Data</h2>
@@ -569,7 +620,7 @@ const Index = () => {
             <AppPreferences />
           </div>
         )}
-        </div>
+        </main>
       </PullToRefresh>
 
         {/* Transaction Detail Modal */}
