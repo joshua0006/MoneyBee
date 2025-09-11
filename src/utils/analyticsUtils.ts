@@ -268,7 +268,53 @@ export const generateSmartInsights = (expenses: Expense[]): SmartInsights => {
   const recommendations: string[] = [];
   const achievements: string[] = [];
 
-  // Spending alerts
+  // Enhanced category-specific insights
+  const now = new Date();
+  const currentMonth = startOfMonth(now);
+  const lastMonth = startOfMonth(subMonths(now, 1));
+  const lastMonthEnd = endOfMonth(subMonths(now, 1));
+
+  const currentMonthExpenses = expenses.filter(e => 
+    e.type === 'expense' && 
+    isWithinInterval(e.date, { start: currentMonth, end: now })
+  );
+
+  const lastMonthExpenses = expenses.filter(e => 
+    e.type === 'expense' && 
+    isWithinInterval(e.date, { start: lastMonth, end: lastMonthEnd })
+  );
+
+  // Category comparison between months
+  const currentMonthCategories = currentMonthExpenses.reduce((acc, expense) => {
+    acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const lastMonthCategories = lastMonthExpenses.reduce((acc, expense) => {
+    acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Generate category-specific insights
+  Object.keys(currentMonthCategories).forEach(category => {
+    const currentAmount = currentMonthCategories[category];
+    const lastAmount = lastMonthCategories[category] || 0;
+    
+    if (lastAmount > 0) {
+      const change = ((currentAmount - lastAmount) / lastAmount) * 100;
+      if (Math.abs(change) > 20) {
+        if (change > 0) {
+          spendingAlerts.push(`You spent ${change.toFixed(0)}% more on ${category} this month ($${currentAmount.toFixed(0)} vs $${lastAmount.toFixed(0)})`);
+        } else {
+          achievements.push(`You reduced ${category} spending by ${Math.abs(change).toFixed(0)}% this month! Saved $${(lastAmount - currentAmount).toFixed(0)}`);
+        }
+      }
+    } else if (currentAmount > 100) {
+      patterns.push(`New spending category detected: ${category} ($${currentAmount.toFixed(0)} this month)`);
+    }
+  });
+
+  // Weekly vs monthly patterns
   if (weeklyData.weeklyChange > 20) {
     spendingAlerts.push(`Your spending increased by ${weeklyData.weeklyChange.toFixed(1)}% this week`);
   }
@@ -277,31 +323,55 @@ export const generateSmartInsights = (expenses: Expense[]): SmartInsights => {
     spendingAlerts.push(`Monthly spending is up ${monthlyData.monthlyChange.toFixed(1)}% from last month`);
   }
 
-  // Patterns
+  // Advanced patterns
   const highestSpendingDay = weeklyData.dailyBreakdown.reduce((max, day) => 
     day.amount > max.amount ? day : max
   );
   if (highestSpendingDay.amount > 0) {
-    patterns.push(`You typically spend most on ${highestSpendingDay.day}s`);
+    patterns.push(`You typically spend most on ${highestSpendingDay.day}s ($${highestSpendingDay.amount.toFixed(0)} average)`);
   }
 
   if (weeklyData.topCategories.length > 0) {
     patterns.push(`${weeklyData.topCategories[0].category} accounts for ${weeklyData.topCategories[0].percentage.toFixed(1)}% of weekly spending`);
   }
 
-  // Recommendations
+  // Seasonal insights
+  const currentSeason = getCurrentSeason(now);
+  const seasonalExpenses = expenses.filter(e => 
+    e.type === 'expense' && 
+    getCurrentSeason(e.date) === currentSeason &&
+    e.date.getFullYear() === now.getFullYear()
+  );
+  const seasonalAverage = seasonalExpenses.reduce((sum, e) => sum + e.amount, 0) / 3; // 3 months per season
+  
+  if (monthlyData.currentMonthSpending > seasonalAverage * 1.3) {
+    spendingAlerts.push(`Your spending this month is 30% higher than your ${currentSeason.toLowerCase()} average`);
+  }
+
+  // Smart recommendations
   if (weeklyData.averageDailySpending > 0) {
-    recommendations.push(`Consider setting a daily budget of $${(weeklyData.averageDailySpending * 0.9).toFixed(0)} to reduce spending`);
+    recommendations.push(`Consider setting a daily budget of $${(weeklyData.averageDailySpending * 0.9).toFixed(0)} to reduce spending by 10%`);
   }
 
   if (monthlyData.categoryBreakdown.length > 0) {
     const topCategory = monthlyData.categoryBreakdown[0];
     if (topCategory.percentage > 40) {
-      recommendations.push(`${topCategory.category} takes up ${topCategory.percentage.toFixed(1)}% of your budget - consider reducing this category`);
+      recommendations.push(`${topCategory.category} takes up ${topCategory.percentage.toFixed(1)}% of your budget - try the 50/30/20 rule`);
     }
   }
 
-  // Achievements
+  // Find categories with consistent overspending
+  const consistentOverspenders = Object.keys(currentMonthCategories).filter(category => {
+    const current = currentMonthCategories[category];
+    const last = lastMonthCategories[category] || 0;
+    return current > last * 1.15 && current > 200;
+  });
+
+  if (consistentOverspenders.length > 0) {
+    recommendations.push(`Consider reviewing these categories: ${consistentOverspenders.join(', ')} - they're consistently above budget`);
+  }
+
+  // AI-powered achievements
   if (weeklyData.weeklyChange < -10) {
     achievements.push(`Great job! You reduced spending by ${Math.abs(weeklyData.weeklyChange).toFixed(1)}% this week`);
   }
@@ -310,10 +380,30 @@ export const generateSmartInsights = (expenses: Expense[]): SmartInsights => {
     achievements.push("You had positive cash flow in recent months!");
   }
 
+  // Find best performing categories
+  const improvedCategories = Object.keys(lastMonthCategories).filter(category => {
+    const current = currentMonthCategories[category] || 0;
+    const last = lastMonthCategories[category];
+    return current < last * 0.8 && last > 100;
+  });
+
+  if (improvedCategories.length > 0) {
+    achievements.push(`You're doing great with ${improvedCategories[0]} - down ${(((lastMonthCategories[improvedCategories[0]] - (currentMonthCategories[improvedCategories[0]] || 0)) / lastMonthCategories[improvedCategories[0]]) * 100).toFixed(0)}% this month!`);
+  }
+
   return {
     spendingAlerts,
     patterns,
     recommendations,
     achievements
   };
+};
+
+// Helper function to determine current season
+const getCurrentSeason = (date: Date): string => {
+  const month = date.getMonth() + 1;
+  if (month >= 12 || month <= 2) return 'Winter';
+  if (month >= 3 && month <= 5) return 'Spring';
+  if (month >= 6 && month <= 8) return 'Summer';
+  return 'Fall';
 };
