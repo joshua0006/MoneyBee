@@ -1,621 +1,679 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { 
-  PiggyBank, 
-  Smartphone, 
-  BarChart3, 
-  Shield, 
-  Zap, 
-  Users, 
-  Star,
-  Check,
-  ArrowRight,
-  TrendingUp,
-  CreditCard,
-  Bell,
-  Lock,
-  Download,
-  Globe
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, lazy, Suspense } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUser, useClerk } from "@clerk/clerk-react";
+import { format, startOfMonth, endOfMonth } from "date-fns";
+import { ExpenseOverview } from "@/components/ExpenseOverview";
+import { EnhancedQuickAddExpense } from "@/components/EnhancedQuickAddExpense";
 import moneyBeesLogo from "@/assets/moneybees-logo.png";
+import { ExpenseList } from "@/components/ExpenseList";
+const CategoryBreakdown = lazy(() => import("@/components/CategoryBreakdown").then(m => ({ default: m.CategoryBreakdown })));
+import { SearchAndFilter } from "@/components/SearchAndFilter";
+const AdvancedAnalytics = lazy(() => import("@/components/AdvancedAnalytics").then(m => ({ default: m.AdvancedAnalytics })));
+import { TransactionDetail } from "@/components/TransactionDetail";
+import { CalendarView } from "@/components/CalendarView";
+import { BudgetManager } from "@/components/BudgetManager";
+import { AccountManager } from "@/components/AccountManager";
+import { RecurringTransactionManager } from "@/components/RecurringTransactionManager";
+import { BottomNavigation } from "@/components/BottomNavigation";
+import { HamburgerMenu } from "@/components/HamburgerMenu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Clock, LogOut } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Helmet } from "react-helmet-async";
+import { LoadingSkeleton } from "@/components/LoadingSkeleton";
+import { EmptyState } from "@/components/EmptyState";
+import { OnboardingTooltip, useOnboarding } from "@/components/OnboardingTooltip";
+import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { ProgressiveLoader } from "@/components/ProgressiveLoader";
+import { PullToRefresh } from "@/components/PullToRefresh";
+import { MobileSettings } from "@/components/MobileSettings";
+import { Settings } from "@/components/Settings";
+import { AppPreferences } from "@/components/AppPreferences";
+const FinancialSimulation = lazy(() => import("@/components/FinancialSimulation").then(m => ({ default: m.FinancialSimulation })));
+const GamificationHub = lazy(() => import("@/components/gamification/GamificationHub").then(m => ({ default: m.GamificationHub })));
+import { mobileService } from "@/utils/mobileService";
+import { useAppData } from "@/hooks/useAppData";
+import { CreditCardManager } from "@/components/CreditCardManager";
+import { useCreditCards } from "@/hooks/useCreditCards";
+import { MicroSavingsChallenge } from "@/components/MicroSavingsChallenge";
+import type { Expense, Account, Budget } from "@/types/app";
 
 const Index = () => {
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const navigate = useNavigate();
+  const {
+    expenses: allExpenses,
+    accounts,
+    budgets,
+    isLoading,
+    addExpense: saveExpense,
+    updateExpense: updateExpenseData,
+    deleteExpense: removeExpense,
+    addAccount: saveAccount,
+    updateAccount: updateAccountData,
+    deleteAccount: removeAccount,
+    addBudget: saveBudget,
+    updateBudget: updateBudgetData,
+    deleteBudget: removeBudget,
+    refreshData
+  } = useAppData();
+  
+  const { creditCards } = useCreditCards();
+  
+  // Mock goals data (in a real app, this would come from the database)
+  const goals = [
+    {
+      id: '1',
+      title: 'Emergency Fund',
+      target: 5000,
+      current: 2500,
+      category: 'savings',
+      deadline: new Date('2024-12-31'),
+      description: 'Build a 6-month emergency fund'
+    },
+    {
+      id: '2',
+      title: 'Vacation Fund',
+      target: 2000,
+      current: 800,
+      category: 'travel',
+      deadline: new Date('2024-08-15'),
+      description: 'Save for summer vacation'
+    }
+  ];
+  
+  const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [activeTab, setActiveTab] = useState("home");
+  const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
+  const { toast } = useToast();
+  const { shouldShowOnboarding, markAsComplete } = useOnboarding();
 
-  const features = [
+  // Onboarding steps
+  const onboardingSteps = [
     {
-      icon: Smartphone,
-      title: "Smart Expense Tracking",
-      description: "Automatically categorize expenses with AI-powered receipt scanning and smart suggestions."
+      id: 'welcome',
+      title: 'Welcome to MoneyBee! 🐝',
+      description: 'Your smart expense tracking companion. Let\'s get you started with the basics.',
     },
     {
-      icon: BarChart3,
-      title: "Advanced Analytics",
-      description: "Get detailed insights into your spending patterns with beautiful charts and reports."
+      id: 'add-expense',
+      title: 'Add Your First Expense',
+      description: 'Tap the golden bee button to add expenses quickly. You can type naturally or scan receipts!',
     },
     {
-      icon: CreditCard,
-      title: "Credit Card Rewards",
-      description: "Track miles and points earned across all your credit cards automatically."
+      id: 'features',
+      title: 'Explore Features',
+      description: 'Use the menu (☰) to access budgets, analytics, and more. The bottom tabs switch between different views.',
     },
     {
-      icon: Shield,
-      title: "Bank-Level Security",
-      description: "Your financial data is protected with enterprise-grade encryption and security."
-    },
-    {
-      icon: Bell,
-      title: "Smart Notifications",
-      description: "Get timely alerts about budget limits, recurring payments, and financial goals."
-    },
-    {
-      icon: Zap,
-      title: "Real-time Sync",
-      description: "Access your data instantly across all devices with real-time synchronization."
+      id: 'ready',
+      title: 'You\'re All Set! ✨',
+      description: 'Start tracking your expenses and watch your financial insights grow.',
     }
   ];
 
-  const pricingTiers = [
-    {
-      name: "Basic",
-      price: "Free",
-      description: "Perfect for getting started with expense tracking",
-      features: [
-        "Track up to 50 transactions per month",
-        "Basic expense categories",
-        "Simple charts and reports",
-        "Mobile app access"
-      ],
-      cta: "Get Started Free",
-      popular: false
-    },
-    {
-      name: "Pro",
-      price: "$9.99/month",
-      description: "Advanced features for serious money managers",
-      features: [
-        "Unlimited transactions",
-        "AI-powered receipt scanning",
-        "Advanced analytics and insights",
-        "Credit card rewards tracking",
-        "Custom categories and tags",
-        "Priority support"
-      ],
-      cta: "Start Free Trial",
-      popular: true
-    },
-    {
-      name: "Family",
-      price: "$19.99/month",
-      description: "Perfect for families and shared finances",
-      features: [
-        "Everything in Pro",
-        "Up to 6 family members",
-        "Shared budgets and goals",
-        "Family spending insights",
-        "Individual privacy controls",
-        "Family financial education"
-      ],
-      cta: "Start Free Trial",
-      popular: false
-    },
-    {
-      name: "Business",
-      price: "$49.99/month",
-      description: "Complete solution for small businesses",
-      features: [
-        "Everything in Family",
-        "Business expense categories",
-        "Tax preparation tools",
-        "Employee expense tracking",
-        "Advanced reporting",
-        "API access"
-      ],
-      cta: "Contact Sales",
-      popular: false
-    }
-  ];
+  // Filter expenses by selected month
+  const monthlyExpenses = allExpenses.filter(expense => {
+    const expenseDate = new Date(expense.date);
+    const monthStart = startOfMonth(selectedMonth);
+    const monthEnd = endOfMonth(selectedMonth);
+    return expenseDate >= monthStart && expenseDate <= monthEnd;
+  });
 
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      role: "Marketing Manager",
-      avatar: "SJ",
-      quote: "MoneyBee has completely transformed how I manage my finances. The AI categorization saves me hours every month!"
-    },
-    {
-      name: "Mike Chen",
-      role: "Small Business Owner",
-      avatar: "MC",
-      quote: "The credit card rewards tracking feature has helped me maximize my points. I've earned 3x more rewards this year!"
-    },
-    {
-      name: "Emily Rodriguez",
-      role: "Teacher",
-      avatar: "ER",
-      quote: "As a family of four, the shared budgets feature keeps us all on track. We've saved $2,000 this year using MoneyBee."
+  // Sync filteredExpenses with allExpenses when no filters are active
+  useEffect(() => {
+    if (!activeMenuItem || activeMenuItem !== "search") {
+      setFilteredExpenses(allExpenses);
     }
-  ];
+  }, [allExpenses, activeMenuItem]);
 
-  const faqs = [
-    {
-      question: "Is MoneyBee secure?",
-      answer: "Yes, MoneyBee uses bank-level encryption and follows industry best practices for data security. Your financial information is never stored in plain text and is protected with multi-layer security measures."
-    },
-    {
-      question: "Can I sync data across multiple devices?",
-      answer: "Absolutely! MoneyBee syncs your data in real-time across all your devices. Whether you're on your phone, tablet, or computer, your financial information is always up to date."
-    },
-    {
-      question: "Does MoneyBee work with my bank?",
-      answer: "MoneyBee supports manual entry and receipt scanning for all banks and financial institutions. We're continuously working on adding direct bank connections for automated transaction imports."
-    },
-    {
-      question: "Can I cancel my subscription anytime?",
-      answer: "Yes, you can cancel your subscription at any time. There are no long-term contracts or cancellation fees. You'll continue to have access to your paid features until the end of your billing period."
-    },
-    {
-      question: "Is there a mobile app?",
-      answer: "Yes! MoneyBee is available as a progressive web app that works seamlessly on all mobile devices. You can add it to your home screen for a native app experience."
-    },
-    {
-      question: "What if I need help getting started?",
-      answer: "We offer comprehensive onboarding for all users, plus priority support for Pro subscribers. Our help center includes tutorials, guides, and FAQs to help you get the most out of MoneyBee."
+  const handleAddExpense = async (expense: Omit<Expense, 'id'>) => {
+    await saveExpense(expense);
+    mobileService.successHaptic();
+  };
+
+  const handleAddAccount = async (account: Omit<Account, 'id'>) => {
+    await saveAccount(account);
+    mobileService.successHaptic();
+  };
+
+  const handleUpdateAccount = async (updatedAccount: Account) => {
+    await updateAccountData(updatedAccount.id, updatedAccount);
+    mobileService.lightHaptic();
+  };
+
+  const handleDeleteAccount = async (id: string) => {
+    await removeAccount(id);
+    mobileService.errorHaptic();
+  };
+
+  const handleAddBudget = async (budget: Omit<Budget, 'id'>) => {
+    await saveBudget(budget);
+    mobileService.successHaptic();
+  };
+
+  const handleUpdateBudget = async (updatedBudget: Budget) => {
+    await updateBudgetData(updatedBudget.id, updatedBudget);
+    mobileService.lightHaptic();
+  };
+
+  const handleDeleteBudget = async (id: string) => {
+    await removeBudget(id);
+    mobileService.errorHaptic();
+  };
+
+  const handleFilteredResults = (filtered: Expense[]) => {
+    setFilteredExpenses(filtered);
+  };
+
+  const handleExpenseClick = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setIsDetailOpen(true);
+  };
+
+  const handleDeleteExpense = async (id: string) => {
+    await removeExpense(id);
+    mobileService.errorHaptic();
+  };
+
+  const handleEditExpense = (expense: Expense) => {
+    setEditingExpense(expense);
+    setIsDetailOpen(false);
+    setIsAddExpenseOpen(false);
+  };
+
+  const handleUpdateExpense = async (updatedExpense: Omit<Expense, 'id'>) => {
+    if (!editingExpense) return;
+    
+    await updateExpenseData(editingExpense.id, updatedExpense);
+    setEditingExpense(null);
+  };
+
+  const handleExport = () => {
+    try {
+      // Simple CSV export functionality
+      const csvContent = [
+        ['Date', 'Description', 'Category', 'Amount', 'Type'],
+        ...filteredExpenses.map(expense => [
+          expense.date.toISOString().split('T')[0],
+          expense.description,
+          expense.category,
+          expense.amount.toString(),
+          expense.type
+        ])
+      ].map(row => row.join(',')).join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `expenses_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: "📊 Export Successful",
+        description: `Exported ${filteredExpenses.length} transactions`,
+        duration: 3000
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Could not export expense data",
+        variant: "destructive"
+      });
     }
-  ];
+  };
+
+  const handleViewAllTransactions = () => {
+    mobileService.lightHaptic();
+    setActiveTab("more");
+    setActiveMenuItem("search");
+  };
+
+  const totalIncome = monthlyExpenses
+    .filter(e => e.type === 'income')
+    .reduce((sum, e) => sum + e.amount, 0);
+
+  const totalExpenses = monthlyExpenses
+    .filter(e => e.type === 'expense')
+    .reduce((sum, e) => sum + e.amount, 0);
+
+  // Refresh handler for pull-to-refresh
+  const handleRefresh = async () => {
+    mobileService.lightHaptic();
+    await refreshData();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/5 to-background">
+        {/* Header Skeleton */}
+        <div className="bg-gradient-to-r from-background via-card/30 to-background border-b border-border/20 sticky top-0 z-40 backdrop-blur-xl">
+          <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between h-12 lg:h-16">
+              <LoadingSkeleton type="card" count={1} />
+            </div>
+          </div>
+        </div>
+        
+        {/* Content Skeleton - Responsive Grid */}
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-20 space-y-6">
+          <LoadingSkeleton type="overview" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <LoadingSkeleton type="chart" />
+            <LoadingSkeleton type="chart" />
+            <div className="xl:col-span-1">
+              <LoadingSkeleton type="list" count={3} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <img 
-                src={moneyBeesLogo} 
-                alt="MoneyBee" 
-                className="w-5 h-5 object-contain" 
-              />
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/5 to-background">
+      <Helmet>
+        <title>MoneyBee Dashboard — Track Expenses & Budgets</title>
+        <meta name="description" content="View insights, manage budgets, and track expenses with MoneyBee's AI-powered dashboard." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/` : '/'} />
+      </Helmet>
+      
+      {/* Enhanced Responsive Header */}
+      <header className="bg-gradient-to-r from-background via-card/30 to-background border-b border-border/20 sticky top-0 z-40 backdrop-blur-xl shadow-elegant">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 lg:h-20">
+            <HamburgerMenu />
+            
+            {/* Logo Section - Responsive */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="relative">
+                <div className="bg-gradient-to-br from-bee-gold via-bee-amber to-accent p-1.5 sm:p-2 rounded-xl shadow-gold">
+                  <img 
+                    src={moneyBeesLogo} 
+                    alt="MoneyBee" 
+                    className="w-5 h-5 sm:w-6 sm:h-6 object-contain hover:scale-105 transition-transform duration-200" 
+                  />
+                </div>
+                <div className="absolute -inset-1 bg-gradient-to-br from-bee-gold/20 to-accent/20 rounded-xl blur-sm -z-10"></div>
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-bee-blue via-primary to-bee-amber bg-clip-text text-transparent">
+                  MoneyBee
+                </h1>
+                <p className="text-xs text-muted-foreground font-medium -mt-0.5 hidden lg:block">
+                  Smart Finance Tracker
+                </p>
+              </div>
             </div>
-            <h1 className="text-xl font-bold text-foreground">MoneyBee</h1>
-          </div>
-          <div className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Features
-            </a>
-            <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Pricing
-            </a>
-            <a href="#faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              FAQ
-            </a>
-            <Button onClick={() => navigate('/auth')} variant="outline" size="sm">
-              Sign In
-            </Button>
-            <Button onClick={() => navigate('/auth')} size="sm">
-              Get Started
-            </Button>
+            
+            {/* Action Section - Responsive */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="hidden sm:flex bg-gradient-to-r from-bee-blue/10 to-primary/10 px-2 py-1 rounded-lg border border-bee-blue/20">
+                <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-transparent border-0 text-bee-blue font-medium">
+                  {allExpenses.length} entries
+                </Badge>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-2 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                onClick={() => signOut()}
+                aria-label="Sign out"
+              >
+                <LogOut size={16} className="sm:w-4 sm:h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-subtle opacity-50"></div>
-        <div className="container mx-auto px-4 relative">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <h1 className="text-4xl lg:text-6xl font-bold text-foreground leading-tight">
-                  Take Control of Your
-                  <span className="text-primary"> Financial Future</span>
-                </h1>
-                <p className="text-xl text-muted-foreground max-w-lg">
-                  MoneyBee makes expense tracking effortless with AI-powered categorization, 
-                  smart insights, and beautiful analytics that help you save more and spend smarter.
+      {/* Main Content with Pull to Refresh */}
+      <PullToRefresh onRefresh={handleRefresh}>
+        <main className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-24 sm:pb-20 safe-area-inset-bottom">
+        
+          {/* Welcome Banner - Responsive */}
+          <section className="mb-6 lg:mb-8">
+            <div className="p-4 sm:p-6 bg-gradient-to-br from-bee-gold/5 via-background to-bee-blue/5 rounded-2xl border border-bee-gold/20 shadow-soft">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
+                <div className="flex-1">
+                  <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-foreground mb-1">
+                    Welcome back, {user?.firstName || 'Saver'}! 🐝
+                  </h2>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    Let's make your money grow like a busy bee hive
+                  </p>
+                </div>
+                <div className="text-left sm:text-right">
+                  <div className="text-xs text-muted-foreground">Today</div>
+                  <div className="text-sm sm:text-base font-medium text-bee-blue">
+                    {format(new Date(), 'MMM dd, yyyy')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          {/* Home Tab Content - Responsive Grid Layout */}
+          {activeTab === "home" && (
+            <div className="space-y-6 lg:space-y-8">
+              {/* Financial Overview Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                <div className="lg:col-span-2">
+                  <ProgressiveLoader isLoading={isLoading} type="overview">
+                    <div className="bg-gradient-to-br from-card via-background to-card/50 rounded-2xl border border-border/50 shadow-medium p-1 h-full">
+                      <ExpenseOverview 
+                        totalIncome={totalIncome}
+                        totalExpenses={totalExpenses}
+                        monthlyBudget={budgets.reduce((sum, budget) => sum + budget.amount, 0)}
+                        selectedMonth={selectedMonth}
+                        onMonthChange={setSelectedMonth}
+                      />
+                    </div>
+                  </ProgressiveLoader>
+                </div>
+                
+                <div className="lg:col-span-1">
+                  <ProgressiveLoader isLoading={isLoading} type="card" delay={150}>
+                    <MicroSavingsChallenge 
+                      onSavingsTrack={(amount) => {
+                        toast({
+                          title: "💪 Challenge Completed!",
+                          description: `You saved $${amount} today. Keep building those habits!`,
+                          duration: 4000
+                        });
+                      }}
+                    />
+                  </ProgressiveLoader>
+                </div>
+              </div>
+              
+              {/* Charts and Analytics */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+                <ProgressiveLoader isLoading={isLoading} type="chart" delay={100}>
+                  <div className="bg-card/60 backdrop-blur-sm rounded-2xl border border-border/30 shadow-soft p-1 h-full">
+                    <Suspense fallback={null}>
+                      <CategoryBreakdown 
+                        expenses={monthlyExpenses}
+                      />
+                    </Suspense>
+                  </div>
+                </ProgressiveLoader>
+                
+                {/* Recent Transactions */}
+                <div className="xl:col-span-1">
+                  {monthlyExpenses.length > 0 ? (
+                    <ProgressiveLoader isLoading={isLoading} type="list" delay={200}>
+                      <div className="bg-card/40 backdrop-blur-sm rounded-2xl border border-border/20 shadow-soft p-1 h-full">
+                        <ExpenseList
+                          expenses={monthlyExpenses.slice(0, 6)} // Show fewer on desktop for better layout
+                          onExpenseClick={handleExpenseClick}
+                          onEditExpense={handleEditExpense}
+                          onDeleteExpense={handleDeleteExpense}
+                          showViewAll={monthlyExpenses.length > 6}
+                          onViewAll={handleViewAllTransactions}
+                        />
+                      </div>
+                    </ProgressiveLoader>
+                  ) : !isLoading && (
+                    <div className="bg-gradient-to-br from-muted/30 to-card/50 rounded-2xl border-2 border-dashed border-border/40 shadow-soft h-full">
+                      <EmptyState 
+                        type="expenses"
+                        onAction={() => setIsAddExpenseOpen(true)}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Stats Tab Content - Responsive Analytics Grid */}
+          {activeTab === "stats" && (
+            <div className="space-y-6 lg:space-y-8">
+              {filteredExpenses.length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                  <div className="lg:col-span-2">
+                    <Suspense fallback={null}>
+                      <AdvancedAnalytics 
+                        expenses={filteredExpenses}
+                      />
+                    </Suspense>
+                  </div>
+                  <div className="lg:col-span-1">
+                    <Suspense fallback={null}>
+                      <CategoryBreakdown 
+                        expenses={filteredExpenses}
+                      />
+                    </Suspense>
+                  </div>
+                </div>
+              ) : (
+                <EmptyState 
+                  type="analytics"
+                  onAction={() => setIsAddExpenseOpen(true)}
+                />
+              )}
+            </div>
+          )}
+
+        {/* Budget Tab Content */}
+        {activeTab === "budget" && (
+          <div className="space-y-6">
+            {budgets.length > 0 || filteredExpenses.length > 0 ? (
+              <BudgetManager 
+                budgets={budgets}
+                expenses={filteredExpenses}
+                onAddBudget={handleAddBudget}
+                onUpdateBudget={handleUpdateBudget}
+                onDeleteBudget={handleDeleteBudget}
+              />
+            ) : (
+              <EmptyState 
+                type="budget"
+                description="Set spending limits for different categories to stay on track with your financial goals"
+                onAction={() => {
+                  // Show the budget tab which will have the add budget functionality
+                  setActiveTab("budget");
+                }}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Growth Tab Content */}
+        {activeTab === "growth" && (
+          <div className="space-y-6">
+            <Suspense fallback={null}>
+              <FinancialSimulation expenses={filteredExpenses} />
+            </Suspense>
+          </div>
+        )}
+
+        {/* Gamification Tab Content */}
+        {activeTab === "gamification" && (
+          <div className="space-y-6">
+            <Suspense fallback={null}>
+              <GamificationHub expenses={filteredExpenses} />
+            </Suspense>
+          </div>
+        )}
+
+        {/* More Tab Content */}
+        {activeTab === "more" && (
+          <div className="space-y-6">
+            {activeMenuItem ? (
+              <div className="text-center py-8">
+                <h2 className="text-lg font-semibold mb-2">Feature Active</h2>
+                <p className="text-muted-foreground text-sm">
+                  {activeMenuItem} is currently being displayed
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button onClick={() => navigate('/auth')} size="lg" className="text-lg px-8 py-6">
-                  Start Tracking for Free
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                  <Download className="mr-2 h-5 w-5" />
-                  Download App
-                </Button>
-              </div>
-              <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-primary" />
-                  Free to start
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-primary" />
-                  No credit card required
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-primary" />
-                  Cancel anytime
-                </div>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="relative w-full max-w-sm mx-auto">
-                <div className="absolute inset-0 bg-gradient-primary rounded-3xl blur-3xl opacity-20"></div>
-                <div className="relative bg-card border rounded-3xl p-8 shadow-elegant">
-                  <div className="aspect-[9/16] bg-gradient-primary rounded-2xl p-4 text-primary-foreground">
-                    <div className="h-full flex flex-col justify-between">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <PiggyBank className="h-6 w-6" />
-                          <Bell className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="text-sm opacity-90">Total Balance</p>
-                          <p className="text-2xl font-bold">$12,489.50</p>
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        <div className="bg-white/20 rounded-lg p-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm">Food & Dining</span>
-                            <span className="text-sm font-medium">-$47.50</span>
-                          </div>
-                        </div>
-                        <div className="bg-white/20 rounded-lg p-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm">Transportation</span>
-                            <span className="text-sm font-medium">-$28.00</span>
-                          </div>
-                        </div>
-                        <div className="bg-white/20 rounded-lg p-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm">Shopping</span>
-                            <span className="text-sm font-medium">-$156.99</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
-              Everything You Need to Master Your Money
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Powerful features designed to make expense tracking effortless and financial insights actionable.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Dashboard Preview */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
-              Beautiful Dashboard, Powerful Insights
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Get a complete view of your financial health with our intuitive dashboard and advanced analytics.
-            </p>
-          </div>
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <Badge variant="secondary" className="text-primary">Dashboard</Badge>
-                <h3 className="text-2xl font-bold text-foreground">Real-time Financial Overview</h3>
-                <p className="text-muted-foreground">
-                  See your complete financial picture at a glance. Track income, expenses, and savings goals 
-                  with beautiful visualizations that make complex data easy to understand.
+            ) : (
+              <div className="text-center py-8">
+                <h2 className="text-lg font-semibold mb-2">More Options</h2>
+                <p className="text-muted-foreground text-sm">
+                  Access advanced features through the menu button in the top left
                 </p>
               </div>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Check className="h-5 w-5 text-primary" />
-                  <span className="text-foreground">Interactive charts and graphs</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Check className="h-5 w-5 text-primary" />
-                  <span className="text-foreground">Spending trend analysis</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Check className="h-5 w-5 text-primary" />
-                  <span className="text-foreground">Budget progress tracking</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Check className="h-5 w-5 text-primary" />
-                  <span className="text-foreground">Custom date ranges</span>
-                </div>
-              </div>
-            </div>
-            <div className="relative">
-              <Card className="p-6 shadow-elegant">
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-lg font-semibold">December Overview</h4>
-                    <Badge variant="outline">This Month</Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Total Income</p>
-                      <p className="text-2xl font-bold text-income">$4,250</p>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Total Expenses</p>
-                      <p className="text-2xl font-bold text-expense">$2,890</p>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Food & Dining</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-20 h-2 bg-muted rounded-full">
-                          <div className="w-16 h-2 bg-primary rounded-full"></div>
-                        </div>
-                        <span className="text-sm">$450</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Transportation</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-20 h-2 bg-muted rounded-full">
-                          <div className="w-12 h-2 bg-primary rounded-full"></div>
-                        </div>
-                        <span className="text-sm">$280</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Shopping</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-20 h-2 bg-muted rounded-full">
-                          <div className="w-8 h-2 bg-primary rounded-full"></div>
-                        </div>
-                        <span className="text-sm">$190</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
+            )}
           </div>
-        </div>
-      </section>
+        )}
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
-              Choose Your Plan
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Start free and upgrade as your financial tracking needs grow. All plans include our core features.
-            </p>
+        {/* Menu Item Content */}
+        {activeMenuItem === "search" && (
+          <div className="space-y-6">
+            <SearchAndFilter 
+              expenses={allExpenses}
+              onFilteredResults={handleFilteredResults}
+              onExport={handleExport}
+            />
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {pricingTiers.map((tier, index) => (
-              <Card key={index} className={`p-6 relative ${tier.popular ? 'border-primary shadow-lg scale-105' : ''}`}>
-                {tier.popular && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
-                    Most Popular
-                  </Badge>
-                )}
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-bold text-foreground">{tier.name}</h3>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-bold text-foreground">{tier.price}</span>
-                      {tier.price !== "Free" && tier.price !== "Contact Sales" && (
-                        <span className="text-sm text-muted-foreground">/month</span>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{tier.description}</p>
-                  </div>
-                  <ul className="space-y-3">
-                    {tier.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start gap-3">
-                        <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button 
-                    className="w-full" 
-                    variant={tier.popular ? "default" : "outline"}
-                    onClick={() => navigate('/auth')}
-                  >
-                    {tier.cta}
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+        )}
 
-      {/* Testimonials */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
-              Loved by Thousands of Users
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              See what our users have to say about their MoneyBee experience.
-            </p>
+        {activeMenuItem === "calendar" && (
+          <div className="space-y-6">
+            <CalendarView 
+              expenses={filteredExpenses}
+              budgets={budgets}
+              accounts={accounts}
+              goals={goals}
+              onDateSelect={setSelectedDate}
+              selectedDate={selectedDate}
+            />
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6">
-                <div className="space-y-4">
-                  <div className="flex gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-                    ))}
-                  </div>
-                  <p className="text-muted-foreground italic">"{testimonial.quote}"</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold">
-                      {testimonial.avatar}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-foreground">{testimonial.name}</p>
-                      <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+        )}
 
-      {/* FAQ Section */}
-      <section id="faq" className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to know about MoneyBee. Can't find what you're looking for? Contact our support team.
-            </p>
+        {activeMenuItem === "accounts" && (
+          <div className="space-y-6">
+            <AccountManager 
+              accounts={accounts}
+              expenses={filteredExpenses}
+              onAddAccount={handleAddAccount}
+              onUpdateAccount={handleUpdateAccount}
+              onDeleteAccount={handleDeleteAccount}
+            />
           </div>
-          <div className="max-w-3xl mx-auto">
-            <Accordion type="single" collapsible className="space-y-4">
-              {faqs.map((faq, index) => (
-                <AccordionItem key={index} value={`item-${index}`} className="border border-border rounded-lg px-6">
-                  <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground pb-6">
-                    {faq.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
-        </div>
-      </section>
+        )}
 
-      {/* Final CTA */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-primary opacity-10"></div>
-        <div className="container mx-auto px-4 relative">
-          <div className="text-center space-y-8 max-w-3xl mx-auto">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
-              Ready to Transform Your Financial Life?
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Join thousands of users who have already taken control of their finances with MoneyBee. 
-              Start your journey to financial freedom today.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button onClick={() => navigate('/auth')} size="lg" className="text-lg px-8 py-6">
-                Start Your Free Trial
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                <Users className="mr-2 h-5 w-5" />
-                Talk to Sales
-              </Button>
-            </div>
-            <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                <span>Bank-level security</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4" />
-                <span>Available worldwide</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4" />
-                <span>Privacy focused</span>
-              </div>
-            </div>
+        {activeMenuItem === "cards" && (
+          <div className="space-y-6">
+            <CreditCardManager />
           </div>
-        </div>
-      </section>
+        )}
 
-      {/* Footer */}
-      <footer className="border-t bg-muted/30 py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <img 
-                    src={moneyBeesLogo} 
-                    alt="MoneyBee" 
-                    className="w-5 h-5 object-contain" 
-                  />
-                </div>
-                <h3 className="text-lg font-bold text-foreground">MoneyBee</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Your smart financial companion for tracking expenses, managing budgets, and achieving financial goals.
-              </p>
-            </div>
-            <div className="space-y-4">
-              <h4 className="font-semibold text-foreground">Product</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#features" className="hover:text-foreground transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Security</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Updates</a></li>
-              </ul>
-            </div>
-            <div className="space-y-4">
-              <h4 className="font-semibold text-foreground">Support</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#faq" className="hover:text-foreground transition-colors">FAQ</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Status</a></li>
-              </ul>
-            </div>
-            <div className="space-y-4">
-              <h4 className="font-semibold text-foreground">Company</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Terms</a></li>
-              </ul>
-            </div>
+        {activeMenuItem === "recurring" && (
+          <div className="space-y-6">
+            <RecurringTransactionManager 
+              accounts={accounts}
+              onGenerateExpenses={(expenses) => {
+                expenses.forEach(expense => handleAddExpense(expense));
+              }}
+            />
           </div>
-          <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 MoneyBee. All rights reserved.</p>
+        )}
+
+        {activeMenuItem === "export" && (
+          <div className="space-y-6 text-center py-8">
+            <h2 className="text-lg font-semibold mb-4">Export Data</h2>
+            <Button onClick={handleExport} className="flex items-center gap-2">
+              <TrendingUp size={16} />
+              Export All Data
+            </Button>
           </div>
-        </div>
-      </footer>
+        )}
+
+        {/* Settings from Hamburger Menu */}
+        {activeMenuItem === "settings" && (
+          <div className="space-y-6">
+            <AppPreferences />
+          </div>
+        )}
+        </main>
+      </PullToRefresh>
+
+        {/* Transaction Detail Modal */}
+          <TransactionDetail 
+          expense={selectedExpense}
+          account={accounts.find(acc => acc.id === selectedExpense?.accountId)}
+          isOpen={isDetailOpen}
+          onClose={() => setIsDetailOpen(false)}
+          onDelete={handleDeleteExpense}
+          onEdit={handleEditExpense}
+        />
+
+        {/* Add Expense Sheet */}
+        <Sheet open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
+          <SheetContent side="bottom" className="h-[95vh] sm:h-[90vh] rounded-t-xl p-0">
+            <EnhancedQuickAddExpense 
+              onAddExpense={(expense) => {
+                handleAddExpense(expense);
+                setIsAddExpenseOpen(false);
+                setActiveTab("home"); // Auto switch to home tab
+                toast({
+                  title: "✅ Transaction Added",
+                  description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} recorded`,
+                  duration: 3000
+                });
+              }}
+              existingExpenses={allExpenses}
+              accounts={accounts}
+            />
+          </SheetContent>
+        </Sheet>
+
+        {/* Edit Expense Sheet */}
+        <Sheet open={!!editingExpense} onOpenChange={(open) => !open && setEditingExpense(null)}>
+          <SheetContent side="bottom" className="h-[95vh] sm:h-[90vh] rounded-t-xl p-0">
+            {editingExpense && (
+               <EnhancedQuickAddExpense 
+              key={editingExpense.id}
+               onAddExpense={(expense) => {
+                 handleUpdateExpense(expense);
+                 setEditingExpense(null);
+                 setActiveTab("home");
+                 toast({
+                   title: "✅ Transaction Updated",
+                   description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} updated`,
+                   duration: 3000
+                 });
+               }}
+                 existingExpenses={allExpenses}
+                 accounts={accounts}
+                 creditCards={creditCards}
+                editingExpense={editingExpense}
+              />
+            )}
+          </SheetContent>
+        </Sheet>
+
+      {/* Floating Action Button */}
+      <FloatingActionButton 
+        onAddExpense={() => setIsAddExpenseOpen(true)}
+      />
+
+      {/* Onboarding */}
+      <OnboardingTooltip 
+        steps={onboardingSteps}
+        isVisible={shouldShowOnboarding}
+        onComplete={markAsComplete}
+        onSkip={markAsComplete}
+      />
+
+      {/* Bottom Navigation */}
+      <BottomNavigation 
+        onAddExpense={() => setIsAddExpenseOpen(true)}
+      />
     </div>
   );
 };
