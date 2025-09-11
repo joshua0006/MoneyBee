@@ -36,6 +36,7 @@ import Notifications from "./pages/Notifications";
 import SettingsPage from "./pages/SettingsPage";
 import Security from "./pages/Security";
 import Help from "./pages/Help";
+import Investments from "./pages/Investments";
 
 const queryClient = new QueryClient();
 
@@ -123,6 +124,7 @@ const AppContent = () => {
         <Route path="/scanner" element={isSignedIn ? <Scanner /> : <Navigate to="/auth" replace />} />
         <Route path="/calendar" element={isSignedIn ? <Calendar /> : <Navigate to="/auth" replace />} />
         <Route path="/accounts" element={isSignedIn ? <Accounts /> : <Navigate to="/auth" replace />} />
+        <Route path="/investments" element={isSignedIn ? <Investments /> : <Navigate to="/auth" replace />} />
         <Route path="/recurring" element={isSignedIn ? <Recurring /> : <Navigate to="/auth" replace />} />
         <Route path="/reports" element={isSignedIn ? <Reports /> : <Navigate to="/auth" replace />} />
         <Route path="/notifications" element={isSignedIn ? <Notifications /> : <Navigate to="/auth" replace />} />

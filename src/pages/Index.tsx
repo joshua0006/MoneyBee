@@ -583,6 +583,27 @@ const Index = () => {
           </div>
         )}
 
+        {activeMenuItem === "investments" && (
+          <div className="space-y-6">
+            <div className="text-center py-8">
+              <h2 className="text-lg font-semibold mb-2">Investments</h2>
+              <p className="text-muted-foreground text-sm mb-6">
+                Your investment portfolio is available on the dedicated page
+              </p>
+              <Button 
+                onClick={() => {
+                  navigate('/investments');
+                  mobileService.lightHaptic();
+                }}
+                className="flex items-center gap-2"
+              >
+                <TrendingUp size={16} />
+                Go to Investments
+              </Button>
+            </div>
+          </div>
+        )}
+
         {activeMenuItem === "export" && (
           <div className="space-y-6 text-center py-8">
             <h2 className="text-lg font-semibold mb-4">Export Data</h2>
