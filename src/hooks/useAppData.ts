@@ -190,9 +190,13 @@ export const useAppData = (): AppDataHook => {
       }
     } catch (error) {
       console.error('Error adding expense:', error);
+      const e = error as any;
+      const isJWT = e?.message === 'JWSError JWSInvalidSignature' || e?.code === 'PGRST301';
       toast({
         title: "Save failed",
-        description: "Failed to save expense. Please try again.",
+        description: isJWT
+          ? "Auth misconfigured: configure Clerk JWT template 'supabase' signed with your Supabase JWT secret, then retry."
+          : "Failed to save expense. Please try again.",
         variant: "destructive"
       });
     }

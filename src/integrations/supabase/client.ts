@@ -20,10 +20,9 @@ async function getClerkToken(): Promise<string | null> {
   try {
     const session = (window as any)?.Clerk?.session;
     if (!session?.getToken) return null;
-    // Prefer a Clerk JWT template named "supabase" if configured
+    // Require a Clerk JWT template named "supabase"; if missing, return null so requests go as anon
     const templated = await session.getToken({ template: 'supabase' }).catch(() => null);
-    if (templated) return templated;
-    return await session.getToken().catch(() => null);
+    return templated; // null when template not configured
   } catch {
     return null;
   }
