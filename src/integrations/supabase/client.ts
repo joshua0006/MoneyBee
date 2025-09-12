@@ -8,10 +8,39 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// Attach Clerk JWT to all Supabase requests so RLS policies work with external auth
+// Safely access window.Clerk without breaking SSR/build
+declare global {
+  interface Window {
+    Clerk?: any;
+  }
+}
+
+async function getClerkToken(): Promise<string | null> {
+  try {
+    const session = (window as any)?.Clerk?.session;
+    if (!session?.getToken) return null;
+    // Prefer a Clerk JWT template named "supabase" if configured
+    const templated = await session.getToken({ template: 'supabase' }).catch(() => null);
+    if (templated) return templated;
+    return await session.getToken().catch(() => null);
+  } catch {
+    return null;
+  }
+}
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
     detectSessionInUrl: false
+  },
+  global: {
+    fetch: async (input: RequestInfo, init?: RequestInit) => {
+      const token = await getClerkToken();
+      const headers = new Headers(init?.headers ?? {});
+      if (token) headers.set('Authorization', `Bearer ${token}`);
+      return fetch(input, { ...init, headers });
+    }
   }
 });
