@@ -37,10 +37,10 @@ export function generateSecureDeviceId(): string {
 }
 
 /**
- * Validates that a user ID matches the expected format (Clerk uses strings)
+ * Validates that a user ID matches the expected format (Supabase UUIDs)
  */
 export function isValidUserId(userId: string): boolean {
-  return typeof userId === 'string' && userId.length > 0 && userId.startsWith('user_');
+  return typeof userId === 'string' && userId.length > 0;
 }
 
 /**

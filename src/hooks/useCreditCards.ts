@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useToast } from '@/hooks/use-toast';
 import type { CreditCard } from '@/types/app';
 
 export const useCreditCards = () => {
   const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
+  const { user } = useSupabaseAuth();
   const { toast } = useToast();
 
   const loadCreditCards = async () => {

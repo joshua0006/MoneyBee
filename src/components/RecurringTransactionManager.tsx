@@ -30,7 +30,7 @@ import {
   updateRecurringTransactionInDatabase,
   deleteRecurringTransactionFromDatabase
 } from "@/utils/supabaseExpenseUtils";
-import { useAuth } from "@/hooks/useAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { scheduleBillReminderCheck } from "@/utils/billReminderService";
 import type { Account } from '@/types/app';
 
@@ -46,7 +46,7 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
   const [showUpcoming, setShowUpcoming] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useSupabaseAuth();
 
   // Form state
   const [formData, setFormData] = useState({

@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, TrendingUp, TrendingDown, DollarSign, Bitcoin, Building2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { mobileService } from "@/utils/mobileService";
 
@@ -48,7 +48,7 @@ const RISK_LEVELS = [
 
 export const InvestmentManager = ({ investments, onInvestmentChange }: InvestmentManagerProps) => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useSupabaseAuth();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
   const [isLoading, setIsLoading] = useState(false);

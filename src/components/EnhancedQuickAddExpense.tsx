@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Camera, Receipt, Zap, Sparkles, CheckCircle2, Bot, X, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import type { Expense, Account, CreditCard } from '@/types/app';
 import { useCreditCards } from '@/hooks/useCreditCards';
 import { EXPENSE_CATEGORIES, suggestCategoryFromDescription as getCategorySuggestion } from '@/utils/categories';
@@ -55,7 +55,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [isUsingFallback, setIsUsingFallback] = useState(false);
   // Hooks
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useSupabaseAuth();
   const descriptionRef = useRef<HTMLInputElement>(null);
   const aiInputRef = useRef<HTMLTextAreaElement>(null);
 

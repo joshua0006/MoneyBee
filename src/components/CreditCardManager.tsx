@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Plus, CreditCard as CreditCardIcon, Trash2, Edit, Target } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { supabase } from '@/integrations/supabase/client';
 import type { CreditCard, CardRewardCategory, MonthlyCardSpending } from '@/types/app';
 import { EXPENSE_CATEGORIES } from '@/utils/categories';
@@ -27,7 +27,7 @@ export const CreditCardManager = () => {
   const [cardColor, setCardColor] = useState('#3B82F6');
   
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useSupabaseAuth();
 
   useEffect(() => {
     if (user?.id) {

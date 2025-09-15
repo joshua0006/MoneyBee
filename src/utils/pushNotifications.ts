@@ -45,8 +45,8 @@ export const registerForPush = async (): Promise<RegistrationResult> => {
             device_id: deviceId,
             token: String(fcmToken),
             platform: 'ios',
-            user_id: localStorage.getItem('clerk_user_id') || undefined,
-            user_email: localStorage.getItem('clerk_user_email') || undefined,
+            user_id: undefined,
+            user_email: undefined,
           },
         });
         return { granted: true, token: String(fcmToken) };
@@ -84,8 +84,8 @@ export const registerForPush = async (): Promise<RegistrationResult> => {
               device_id: deviceId,
               token: token.value,
               platform: mobileService.platform || 'web',
-              user_id: localStorage.getItem('clerk_user_id') || undefined,
-              user_email: localStorage.getItem('clerk_user_email') || undefined,
+              user_id: undefined,
+              user_email: undefined,
             },
           });
         } catch (e) {
