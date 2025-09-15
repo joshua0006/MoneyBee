@@ -7,7 +7,7 @@ import { mobileService } from "@/utils/mobileService";
 import { useToast } from "@/hooks/use-toast";
 import { Helmet } from "react-helmet-async";
 import { InvestmentManager } from "@/components/InvestmentManager";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Investment {
@@ -25,7 +25,7 @@ interface Investment {
 export default function Investments() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useUser();
+  const { user } = useAuth();
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
