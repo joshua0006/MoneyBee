@@ -32,6 +32,7 @@ export default function ClerkAuth() {
                 <SignIn 
                   routing="hash"
                   signUpUrl="#signup"
+                  forceRedirectUrl="/"
                   appearance={{
                     elements: {
                       formButtonPrimary: "bg-primary hover:bg-primary/90",
@@ -45,6 +46,7 @@ export default function ClerkAuth() {
                 <SignUp 
                   routing="hash"
                   signInUrl="#signin"
+                  forceRedirectUrl="/"
                   appearance={{
                     elements: {
                       formButtonPrimary: "bg-primary hover:bg-primary/90",
