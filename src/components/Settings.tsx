@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useClerk, useUser } from '@clerk/clerk-react';
 import { 
   User, 
@@ -12,14 +13,18 @@ import {
   LogOut,
   Mail,
   RotateCcw,
-  HelpCircle
+  HelpCircle,
+  Code,
+  Database
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useDevMode } from "@/hooks/useDevMode";
 
 export const Settings = () => {
   const { user } = useUser();
   const { signOut } = useClerk();
   const { toast } = useToast();
+  const devMode = useDevMode();
 
   const handleSignOut = async () => {
     try {
@@ -84,6 +89,14 @@ export const Settings = () => {
     toast({
       title: "All onboarding reset",
       description: "All tutorial experiences have been reset.",
+    });
+  };
+
+  const handleClearDevData = () => {
+    devMode.clearLocalData();
+    toast({
+      title: "Local dev data cleared",
+      description: "All device storage data has been removed.",
     });
   };
 
@@ -167,6 +180,64 @@ export const Settings = () => {
             <Trash2 className="h-4 w-4 mr-2" />
             Clear All Data
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Developer Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Code className="h-5 w-5" />
+            Developer Settings
+          </CardTitle>
+          <CardDescription>
+            Advanced options for development and testing
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <p className="font-medium">Local Storage Fallback</p>
+              <p className="text-sm text-muted-foreground">
+                Save to device when database is locked (auth issues)
+              </p>
+            </div>
+            <Switch
+              checked={devMode.devModeEnabled}
+              onCheckedChange={devMode.setDevModeEnabled}
+            />
+          </div>
+          
+          {devMode.devModeEnabled && (
+            <>
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Local Data Status</p>
+                  <p className="text-sm text-muted-foreground">
+                    {devMode.hasLocalData() ? (
+                      <>
+                        <Database className="h-3 w-3 inline mr-1" />
+                        Device has stored data
+                      </>
+                    ) : (
+                      "No local data stored"
+                    )}
+                  </p>
+                </div>
+                {devMode.hasLocalData() && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleClearDevData}
+                  >
+                    Clear Local Data
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 

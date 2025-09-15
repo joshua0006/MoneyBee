@@ -16,6 +16,7 @@ import { AccountManager } from "@/components/AccountManager";
 import { RecurringTransactionManager } from "@/components/RecurringTransactionManager";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
+import { SetupBanner } from "@/components/SetupBanner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Clock, LogOut } from "lucide-react";
@@ -342,6 +343,11 @@ const Index = () => {
       {/* Main Content with Pull to Refresh */}
       <PullToRefresh onRefresh={handleRefresh}>
         <main className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-24 sm:pb-20 safe-area-inset-bottom">
+        
+          {/* Setup Banner */}
+          <div className="mb-4">
+            <SetupBanner />
+          </div>
         
           {/* Welcome Banner - Responsive */}
           <section className="mb-6 lg:mb-8">
