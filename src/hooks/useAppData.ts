@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useDevMode } from '@/hooks/useDevMode';
 import {
   loadExpensesFromDatabase,
   loadAccountsFromDatabase,
@@ -49,9 +48,8 @@ export interface AppDataHook {
 }
 
 export const useAppData = (): AppDataHook => {
-  const { user } = useUser();
+  const { user } = useSupabaseAuth();
   const { toast } = useToast();
-  const devMode = useDevMode();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -85,24 +83,10 @@ export const useAppData = (): AppDataHook => {
         loadBudgetsFromDatabase(user.id)
       ]);
 
-      // Convert to app types and merge with local dev data if enabled
-      const dbExpenses = expensesData.map(convertDbExpenseToApp);
-      const dbAccounts = accountsData.map(convertDbAccountToApp);
-      const dbBudgets = budgetsData.map(convertDbBudgetToApp);
-      
-      if (devMode.devModeEnabled) {
-        const localExpenses = devMode.getLocalExpenses();
-        const localAccounts = devMode.getLocalAccounts();
-        const localBudgets = devMode.getLocalBudgets();
-        
-        setExpenses([...localExpenses, ...dbExpenses]);
-        setAccounts([...localAccounts, ...dbAccounts]);
-        setBudgets([...localBudgets, ...dbBudgets]);
-      } else {
-        setExpenses(dbExpenses);
-        setAccounts(dbAccounts);
-        setBudgets(dbBudgets);
-      }
+      // Convert to app types
+      setExpenses(expensesData.map(convertDbExpenseToApp));
+      setAccounts(accountsData.map(convertDbAccountToApp));
+      setBudgets(budgetsData.map(convertDbBudgetToApp));
 
       toast({
         title: "Data synced",
@@ -206,29 +190,9 @@ export const useAppData = (): AppDataHook => {
       }
     } catch (error) {
       console.error('Error adding expense:', error);
-      const e = error as any;
-      
-      // Handle RLS/JWT errors with dev mode fallback
-      if ((devMode.isRLSError(e) || devMode.isJWTError(e)) && devMode.devModeEnabled) {
-        const localExpense = { ...expense, id: `local-${Date.now()}` } as Expense;
-        devMode.saveExpenseLocally(localExpense);
-        setExpenses(prev => [localExpense, ...prev]);
-        toast({
-          title: "Saved locally",
-          description: "Expense saved to device storage (auth issue detected)",
-          duration: 3000
-        });
-        return;
-      }
-      
-      const isJWT = devMode.isJWTError(e);
-      const isRLS = devMode.isRLSError(e);
-      
       toast({
         title: "Save failed",
-        description: isJWT || isRLS
-          ? "Database access blocked. Configure Clerk JWT template 'supabase' with your Supabase JWT secret."
-          : "Failed to save expense. Please try again.",
+        description: "Failed to save expense. Please try again.",
         variant: "destructive"
       });
     }
@@ -236,18 +200,6 @@ export const useAppData = (): AppDataHook => {
 
   const updateExpense = async (id: string, updates: Partial<Expense>) => {
     try {
-      // Handle local updates for dev mode
-      if (id.startsWith('local-') && devMode.devModeEnabled) {
-        devMode.updateExpenseLocally(id, updates);
-        setExpenses(prev => prev.map(exp => exp.id === id ? { ...exp, ...updates } : exp));
-        toast({
-          title: "Updated locally",
-          description: "Changes saved to device storage",
-          duration: 2000
-        });
-        return;
-      }
-
       // Convert app updates to database format
       const dbUpdates: any = {};
       if (updates.amount !== undefined) dbUpdates.amount = updates.amount;
@@ -268,25 +220,9 @@ export const useAppData = (): AppDataHook => {
       }
     } catch (error) {
       console.error('Error updating expense:', error);
-      const e = error as any;
-      
-      // Fallback for RLS/JWT errors
-      if ((devMode.isRLSError(e) || devMode.isJWTError(e)) && devMode.devModeEnabled) {
-        devMode.updateExpenseLocally(id, updates);
-        setExpenses(prev => prev.map(exp => exp.id === id ? { ...exp, ...updates } : exp));
-        toast({
-          title: "Updated locally",
-          description: "Changes saved to device storage (auth issue)",
-          duration: 2000
-        });
-        return;
-      }
-      
       toast({
         title: "Update failed",
-        description: devMode.isJWTError(e) || devMode.isRLSError(e) 
-          ? "Database access blocked. Check JWT template configuration."
-          : "Failed to update expense. Please try again.",
+        description: "Failed to update expense. Please try again.",
         variant: "destructive"
       });
     }
@@ -294,18 +230,6 @@ export const useAppData = (): AppDataHook => {
 
   const deleteExpense = async (id: string) => {
     try {
-      // Handle local deletion for dev mode
-      if (id.startsWith('local-') && devMode.devModeEnabled) {
-        devMode.deleteExpenseLocally(id);
-        setExpenses(prev => prev.filter(exp => exp.id !== id));
-        toast({
-          title: "Deleted locally",
-          description: "Expense removed from device storage",
-          duration: 2000
-        });
-        return;
-      }
-
       await deleteExpenseFromDatabase(id);
       setExpenses(prev => prev.filter(exp => exp.id !== id));
       toast({
@@ -315,24 +239,9 @@ export const useAppData = (): AppDataHook => {
       });
     } catch (error) {
       console.error('Error deleting expense:', error);
-      const e = error as any;
-      
-      // Fallback for RLS/JWT errors
-      if ((devMode.isRLSError(e) || devMode.isJWTError(e)) && devMode.devModeEnabled) {
-        setExpenses(prev => prev.filter(exp => exp.id !== id));
-        toast({
-          title: "Deleted locally",
-          description: "Expense removed from view (auth issue)",
-          duration: 2000
-        });
-        return;
-      }
-      
       toast({
         title: "Delete failed",
-        description: devMode.isJWTError(e) || devMode.isRLSError(e)
-          ? "Database access blocked. Check JWT template configuration."
-          : "Failed to delete expense. Please try again.",
+        description: "Failed to delete expense. Please try again.",
         variant: "destructive"
       });
     }

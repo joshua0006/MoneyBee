@@ -2,8 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { useClerk, useUser } from '@clerk/clerk-react';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { 
   User, 
   Download, 
@@ -13,18 +12,13 @@ import {
   LogOut,
   Mail,
   RotateCcw,
-  HelpCircle,
-  Code,
-  Database
+  HelpCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useDevMode } from "@/hooks/useDevMode";
 
 export const Settings = () => {
-  const { user } = useUser();
-  const { signOut } = useClerk();
+  const { user, signOut } = useSupabaseAuth();
   const { toast } = useToast();
-  const devMode = useDevMode();
 
   const handleSignOut = async () => {
     try {
@@ -92,14 +86,6 @@ export const Settings = () => {
     });
   };
 
-  const handleClearDevData = () => {
-    devMode.clearLocalData();
-    toast({
-      title: "Local dev data cleared",
-      description: "All device storage data has been removed.",
-    });
-  };
-
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
       {/* Account Section */}
@@ -114,27 +100,27 @@ export const Settings = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">{user?.emailAddresses[0]?.emailAddress}</p>
-              <p className="text-sm text-muted-foreground">Primary email</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">{user?.email}</p>
+                <p className="text-sm text-muted-foreground">Primary email</p>
+              </div>
+              <Badge variant="outline" className="gap-1">
+                <Mail className="h-3 w-3" />
+                Verified
+              </Badge>
             </div>
-            <Badge variant="outline" className="gap-1">
-              <Mail className="h-3 w-3" />
-              Verified
-            </Badge>
-          </div>
-          
-          <Separator />
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Full Name</p>
-              <p className="text-sm text-muted-foreground">
-                {user?.fullName || "Not set"}
-              </p>
+            
+            <Separator />
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Full Name</p>
+                <p className="text-sm text-muted-foreground">
+                  {user?.user_metadata?.full_name || "Not set"}
+                </p>
+              </div>
             </div>
-          </div>
         </CardContent>
       </Card>
 
@@ -180,64 +166,6 @@ export const Settings = () => {
             <Trash2 className="h-4 w-4 mr-2" />
             Clear All Data
           </Button>
-        </CardContent>
-      </Card>
-
-      {/* Developer Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Code className="h-5 w-5" />
-            Developer Settings
-          </CardTitle>
-          <CardDescription>
-            Advanced options for development and testing
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <p className="font-medium">Local Storage Fallback</p>
-              <p className="text-sm text-muted-foreground">
-                Save to device when database is locked (auth issues)
-              </p>
-            </div>
-            <Switch
-              checked={devMode.devModeEnabled}
-              onCheckedChange={devMode.setDevModeEnabled}
-            />
-          </div>
-          
-          {devMode.devModeEnabled && (
-            <>
-              <Separator />
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Local Data Status</p>
-                  <p className="text-sm text-muted-foreground">
-                    {devMode.hasLocalData() ? (
-                      <>
-                        <Database className="h-3 w-3 inline mr-1" />
-                        Device has stored data
-                      </>
-                    ) : (
-                      "No local data stored"
-                    )}
-                  </p>
-                </div>
-                {devMode.hasLocalData() && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleClearDevData}
-                  >
-                    Clear Local Data
-                  </Button>
-                )}
-              </div>
-            </>
-          )}
         </CardContent>
       </Card>
 

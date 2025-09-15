@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser, useClerk } from "@clerk/clerk-react";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { ExpenseOverview } from "@/components/ExpenseOverview";
 import { EnhancedQuickAddExpense } from "@/components/EnhancedQuickAddExpense";
@@ -16,7 +16,6 @@ import { AccountManager } from "@/components/AccountManager";
 import { RecurringTransactionManager } from "@/components/RecurringTransactionManager";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
-import { SetupBanner } from "@/components/SetupBanner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Clock, LogOut } from "lucide-react";
@@ -43,8 +42,7 @@ import { MicroSavingsChallenge } from "@/components/MicroSavingsChallenge";
 import type { Expense, Account, Budget } from "@/types/app";
 
 const Index = () => {
-  const { user } = useUser();
-  const { signOut } = useClerk();
+  const { user, signOut } = useSupabaseAuth();
   const navigate = useNavigate();
   const {
     expenses: allExpenses,
@@ -344,18 +342,13 @@ const Index = () => {
       <PullToRefresh onRefresh={handleRefresh}>
         <main className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-24 sm:pb-20 safe-area-inset-bottom">
         
-          {/* Setup Banner */}
-          <div className="mb-4">
-            <SetupBanner />
-          </div>
-        
           {/* Welcome Banner - Responsive */}
           <section className="mb-6 lg:mb-8">
             <div className="p-4 sm:p-6 bg-gradient-to-br from-bee-gold/5 via-background to-bee-blue/5 rounded-2xl border border-bee-gold/20 shadow-soft">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
                 <div className="flex-1">
                   <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-foreground mb-1">
-                    Welcome back, {user?.firstName || 'Saver'}! 🐝
+                    Welcome back, {user?.user_metadata?.full_name?.split(' ')[0] || 'Saver'}! 🐝
                   </h2>
                   <p className="text-sm sm:text-base text-muted-foreground">
                     Let's make your money grow like a busy bee hive

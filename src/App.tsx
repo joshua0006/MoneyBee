@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider, useTheme } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { useAuth } from '@clerk/clerk-react';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useEffect, useState } from 'react';
 import { mobileService } from "@/utils/mobileService";
 import { AppLockGate } from "@/components/security/AppLockGate";
@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAppData } from "@/hooks/useAppData";
 
 import Index from "./pages/Index";
-import ClerkAuth from "./pages/ClerkAuth";
+import Auth from "./pages/Auth";
 import Welcome from "./pages/Welcome";
 import Cover from "./pages/Cover";
 import Onboarding from "./pages/Onboarding";
@@ -42,7 +42,7 @@ const queryClient = new QueryClient();
 
 // AppContent component to handle authenticated state
 const AppContent = () => {
-  const { isSignedIn } = useAuth();
+  const { isAuthenticated } = useSupabaseAuth();
   const location = useLocation();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const { expenses, accounts, addExpense } = useAppData();
@@ -54,7 +54,7 @@ const AppContent = () => {
   const hasCompletedOnboarding = localStorage.getItem('onboarding_completed') === 'true';
 
   // Don't show bottom navigation on auth pages, welcome, cover, or onboarding
-  const showBottomNav = isSignedIn && 
+  const showBottomNav = isAuthenticated && 
     !location.pathname.includes('/auth') && 
     !location.pathname.includes('/welcome') && 
     !location.pathname.includes('/cover') && 
@@ -79,7 +79,7 @@ const AppContent = () => {
           element={
             !hasSeenIntro ? (
               <Navigate to="/welcome" replace />
-            ) : !isSignedIn ? (
+            ) : !isAuthenticated ? (
               <Navigate to="/auth" replace />
             ) : !hasCompletedOnboarding ? (
               <Navigate to="/onboarding" replace />
@@ -92,12 +92,12 @@ const AppContent = () => {
         />
         <Route 
           path="/welcome" 
-          element={!hasSeenIntro ? <Welcome /> : <Navigate to={isSignedIn ? "/" : "/auth"} replace />} 
+          element={!hasSeenIntro ? <Welcome /> : <Navigate to={isAuthenticated ? "/" : "/auth"} replace />} 
         />
         <Route 
           path="/cover" 
           element={
-            isSignedIn && hasCompletedOnboarding && !hasSeenCover ? 
+            isAuthenticated && hasCompletedOnboarding && !hasSeenCover ? 
             <Cover /> : 
             <Navigate to="/" replace />
           } 
@@ -105,32 +105,32 @@ const AppContent = () => {
         <Route 
           path="/onboarding" 
           element={
-            isSignedIn && !hasCompletedOnboarding ? 
+            isAuthenticated && !hasCompletedOnboarding ? 
             <Onboarding /> : 
             <Navigate to="/" replace />
           } 
         />
         <Route 
           path="/auth" 
-          element={!isSignedIn ? <ClerkAuth /> : <Navigate to="/" replace />} 
+          element={!isAuthenticated ? <Auth /> : <Navigate to="/" replace />} 
         />
         
         {/* Protected Routes - Only accessible when signed in */}
-        <Route path="/transactions" element={isSignedIn ? <Transactions /> : <Navigate to="/auth" replace />} />
-        <Route path="/budgets" element={isSignedIn ? <Budgets /> : <Navigate to="/auth" replace />} />
-        <Route path="/analytics" element={isSignedIn ? <Analytics /> : <Navigate to="/auth" replace />} />
-        <Route path="/goals" element={isSignedIn ? <Goals /> : <Navigate to="/auth" replace />} />
-        <Route path="/growth" element={isSignedIn ? <Growth /> : <Navigate to="/auth" replace />} />
-        <Route path="/scanner" element={isSignedIn ? <Scanner /> : <Navigate to="/auth" replace />} />
-        <Route path="/calendar" element={isSignedIn ? <Calendar /> : <Navigate to="/auth" replace />} />
-        <Route path="/accounts" element={isSignedIn ? <Accounts /> : <Navigate to="/auth" replace />} />
-        <Route path="/investments" element={isSignedIn ? <Investments /> : <Navigate to="/auth" replace />} />
-        <Route path="/recurring" element={isSignedIn ? <Recurring /> : <Navigate to="/auth" replace />} />
-        <Route path="/reports" element={isSignedIn ? <Reports /> : <Navigate to="/auth" replace />} />
-        <Route path="/notifications" element={isSignedIn ? <Notifications /> : <Navigate to="/auth" replace />} />
-        <Route path="/settings" element={isSignedIn ? <SettingsPage /> : <Navigate to="/auth" replace />} />
-        <Route path="/security" element={isSignedIn ? <Security /> : <Navigate to="/auth" replace />} />
-        <Route path="/help" element={isSignedIn ? <Help /> : <Navigate to="/auth" replace />} />
+        <Route path="/transactions" element={isAuthenticated ? <Transactions /> : <Navigate to="/auth" replace />} />
+        <Route path="/budgets" element={isAuthenticated ? <Budgets /> : <Navigate to="/auth" replace />} />
+        <Route path="/analytics" element={isAuthenticated ? <Analytics /> : <Navigate to="/auth" replace />} />
+        <Route path="/goals" element={isAuthenticated ? <Goals /> : <Navigate to="/auth" replace />} />
+        <Route path="/growth" element={isAuthenticated ? <Growth /> : <Navigate to="/auth" replace />} />
+        <Route path="/scanner" element={isAuthenticated ? <Scanner /> : <Navigate to="/auth" replace />} />
+        <Route path="/calendar" element={isAuthenticated ? <Calendar /> : <Navigate to="/auth" replace />} />
+        <Route path="/accounts" element={isAuthenticated ? <Accounts /> : <Navigate to="/auth" replace />} />
+        <Route path="/investments" element={isAuthenticated ? <Investments /> : <Navigate to="/auth" replace />} />
+        <Route path="/recurring" element={isAuthenticated ? <Recurring /> : <Navigate to="/auth" replace />} />
+        <Route path="/reports" element={isAuthenticated ? <Reports /> : <Navigate to="/auth" replace />} />
+        <Route path="/notifications" element={isAuthenticated ? <Notifications /> : <Navigate to="/auth" replace />} />
+        <Route path="/settings" element={isAuthenticated ? <SettingsPage /> : <Navigate to="/auth" replace />} />
+        <Route path="/security" element={isAuthenticated ? <Security /> : <Navigate to="/auth" replace />} />
+        <Route path="/help" element={isAuthenticated ? <Help /> : <Navigate to="/auth" replace />} />
         
         {/* Public Routes */}
         <Route path="/mobile" element={<MobileToolkit />} />
@@ -143,7 +143,7 @@ const AppContent = () => {
       )}
 
       {/* Global Add Expense Modal */}
-      {isSignedIn && (
+      {isAuthenticated && (
         <Sheet open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
           <SheetContent side="bottom" className="h-[95vh] sm:h-[90vh] rounded-t-xl p-0">
             <EnhancedQuickAddExpense 
@@ -159,7 +159,7 @@ const AppContent = () => {
 };
 
 const App = () => {
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isAuthenticated, isLoading } = useSupabaseAuth();
 
   // Update native status bar on theme changes (mobile)
   const { theme } = useTheme();
@@ -168,8 +168,8 @@ const App = () => {
     mobileService.setStatusBarColor(isDark ? '#0b0f1a' : '#ffffff', !isDark);
   }, [theme]);
 
-  // Show loading while Clerk is initializing
-  if (!isLoaded) {
+  // Show loading while Supabase Auth is initializing
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
