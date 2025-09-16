@@ -17,6 +17,7 @@ import { ReceiptScanner } from "@/components/ReceiptScanner";
 import { BankStatementUploader } from "@/components/BankStatementUploader";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ValueTagSelector } from "@/components/ValueTagSelector";
 import { suggestValueTags } from "@/utils/valueTagging";
 interface QuickAddExpenseProps {
@@ -505,7 +506,8 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto p-4 space-y-4">
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-4">
         {/* AI Input Mode */}
         {aiMode && type === 'expense' && (
           <div className="space-y-3">
@@ -850,7 +852,8 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
             </Button>
           </div>
         </form>
-      </div>
+        </div>
+      </ScrollArea>
       
       {/* Receipt Scanner Dialog */}
       <Dialog open={showReceiptScanner} onOpenChange={setShowReceiptScanner}>
