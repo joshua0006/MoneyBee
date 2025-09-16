@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { Upload, FileText, X, Check, AlertTriangle } from 'lucide-react';
 import { PDFProcessor, BankTransaction } from '../utils/pdfProcessor';
@@ -150,15 +150,19 @@ export function BankStatementUploader({ isOpen, onClose, onTransactionsAdded }: 
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5" />
             Import Bank Statement
           </DialogTitle>
+          <DialogDescription>
+            Upload and process your bank statement to import transactions automatically
+          </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <ScrollArea className="flex-1 overflow-hidden">
+          <div className="space-y-4 pr-4">
           {!file ? (
             <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
               <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -307,7 +311,8 @@ export function BankStatementUploader({ isOpen, onClose, onTransactionsAdded }: 
               )}
             </div>
           )}
-        </div>
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

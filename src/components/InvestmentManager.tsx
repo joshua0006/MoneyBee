@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, TrendingUp, TrendingDown, DollarSign, Bitcoin, Building2 } from "lucide-react";
@@ -214,6 +214,9 @@ export const InvestmentManager = ({ investments, onInvestmentChange }: Investmen
               <DialogTitle>
                 {editingInvestment ? 'Edit Investment' : 'Add New Investment'}
               </DialogTitle>
+              <DialogDescription>
+                {editingInvestment ? 'Update your investment details' : 'Add a new investment to track your portfolio'}
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               {/* Name */}

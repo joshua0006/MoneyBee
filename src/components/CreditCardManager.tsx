@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Plus, CreditCard as CreditCardIcon, Trash2, Edit, Target } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -247,11 +248,15 @@ export const CreditCardManager = () => {
                 Add Card
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
               <DialogHeader>
                 <DialogTitle>Add Credit Card</DialogTitle>
+                <DialogDescription>
+                  Add your credit card details to track spending and earn rewards
+                </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <ScrollArea className="flex-1">
+              <div className="space-y-4 pr-4">
                 <Input
                   placeholder="Card name (e.g., Citi Rewards Card)"
                   value={cardName}
@@ -288,6 +293,7 @@ export const CreditCardManager = () => {
                   </Button>
                 </div>
               </div>
+              </ScrollArea>
             </DialogContent>
           </Dialog>
         </CardTitle>
