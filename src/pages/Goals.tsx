@@ -6,27 +6,41 @@ import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { mobileService } from "@/utils/mobileService";
 import { Helmet } from "react-helmet-async";
+import { GoalCreationDialog } from "@/components/GoalCreationDialog";
+import { Goal } from "@/types/app";
+import { toast } from "sonner";
 
 export default function Goals() {
   const navigate = useNavigate();
-  const [goals] = useState([
+  const [goals, setGoals] = useState<Goal[]>([
     {
-      id: 1,
+      id: "1",
       title: "Emergency Fund",
       target: 5000,
       current: 2500,
       category: "savings",
-      deadline: "2024-12-31"
+      deadline: new Date("2024-12-31")
     },
     {
-      id: 2,
+      id: "2", 
       title: "Vacation Fund",
       target: 2000,
       current: 800,
       category: "travel",
-      deadline: "2024-08-15"
+      deadline: new Date("2024-08-15")
     }
   ]);
+
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  const handleGoalCreate = (newGoal: Omit<Goal, 'id'>) => {
+    const goal: Goal = {
+      ...newGoal,
+      id: Date.now().toString()
+    };
+    setGoals(prev => [...prev, goal]);
+    toast.success("Goal created successfully!");
+  };
 
   return (
     <>
@@ -55,7 +69,10 @@ export default function Goals() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => mobileService.lightHaptic()}
+                onClick={() => {
+                  mobileService.lightHaptic();
+                  setShowCreateDialog(true);
+                }}
               >
                 <Plus size={16} className="mr-1" />
                 Add Goal
@@ -113,7 +130,7 @@ export default function Goals() {
                         ${goal.current.toLocaleString()} of ${goal.target.toLocaleString()}
                       </span>
                       <span className="text-muted-foreground">
-                        Due: {new Date(goal.deadline).toLocaleDateString()}
+                        Due: {goal.deadline.toLocaleDateString()}
                       </span>
                     </div>
                   </CardContent>
@@ -130,13 +147,22 @@ export default function Goals() {
               <p className="text-muted-foreground mb-4">
                 Set your first financial goal to start tracking your progress
               </p>
-              <Button onClick={() => mobileService.lightHaptic()}>
+              <Button onClick={() => {
+                mobileService.lightHaptic();
+                setShowCreateDialog(true);
+              }}>
                 <Plus size={16} className="mr-2" />
                 Create Your First Goal
               </Button>
             </div>
           )}
         </div>
+
+        <GoalCreationDialog
+          open={showCreateDialog}
+          onOpenChange={setShowCreateDialog}
+          onGoalCreate={handleGoalCreate}
+        />
       </div>
     </>
   );
