@@ -289,49 +289,46 @@ const Index = () => {
         <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/` : '/'} />
       </Helmet>
       
-      {/* Enhanced Responsive Header */}
-      <header className="bg-gradient-to-r from-background via-card/30 to-background border-b border-border/20 sticky top-0 z-40 backdrop-blur-xl shadow-elegant">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20">
+      {/* Mobile-Optimized Header */}
+      <header className="bg-background/95 backdrop-blur-xl border-b border-border/30 sticky top-0 z-40 shadow-soft safe-area-top">
+        <div className="px-4 xs:px-6">
+          <div className="flex items-center justify-between h-14 xs:h-16">
             <HamburgerMenu />
             
-            {/* Logo Section - Responsive */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            {/* Compact Logo Section */}
+            <div className="flex items-center gap-2">
               <div className="relative">
-                <div className="bg-gradient-to-br from-bee-gold via-bee-amber to-accent p-1.5 sm:p-2 rounded-xl shadow-gold">
+                <div className="bg-gradient-to-br from-bee-gold via-bee-amber to-accent p-1.5 rounded-lg shadow-gold">
                   <img 
                     src={moneyBeesLogo} 
                     alt="MoneyBee" 
-                    className="w-5 h-5 sm:w-6 sm:h-6 object-contain hover:scale-105 transition-transform duration-200" 
+                    className="w-4 h-4 xs:w-5 xs:h-5 object-contain" 
                   />
                 </div>
-                <div className="absolute -inset-1 bg-gradient-to-br from-bee-gold/20 to-accent/20 rounded-xl blur-sm -z-10"></div>
+                <div className="absolute -inset-0.5 bg-gradient-to-br from-bee-gold/20 to-accent/20 rounded-lg blur-sm -z-10"></div>
               </div>
-              <div className="hidden sm:block">
-                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-bee-blue via-primary to-bee-amber bg-clip-text text-transparent">
+              <div className="xs:block">
+                <h1 className="text-base xs:text-lg font-bold bg-gradient-to-r from-bee-blue via-primary to-bee-amber bg-clip-text text-transparent">
                   MoneyBee
                 </h1>
-                <p className="text-xs text-muted-foreground font-medium -mt-0.5 hidden lg:block">
-                  Smart Finance Tracker
-                </p>
               </div>
             </div>
             
-            {/* Action Section - Responsive */}
-            <div className="flex items-center gap-1 sm:gap-2">
-              <div className="hidden sm:flex bg-gradient-to-r from-bee-blue/10 to-primary/10 px-2 py-1 rounded-lg border border-bee-blue/20">
-                <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-transparent border-0 text-bee-blue font-medium">
-                  {allExpenses.length} entries
+            {/* Mobile Actions */}
+            <div className="flex items-center gap-2">
+              <div className="xs:flex bg-gradient-to-r from-bee-blue/10 to-primary/10 px-2 py-1 rounded-md border border-bee-blue/20">
+                <Badge variant="secondary" className="text-[10px] xs:text-xs px-1.5 py-0.5 bg-transparent border-0 text-bee-blue font-medium">
+                  {allExpenses.length}
                 </Badge>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                className="p-2 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                className="p-1.5 xs:p-2 touch-target hover:bg-destructive/10 hover:text-destructive transition-colors"
                 onClick={() => signOut()}
                 aria-label="Sign out"
               >
-                <LogOut size={16} className="sm:w-4 sm:h-4" />
+                <LogOut size={14} className="xs:w-4 xs:h-4" />
               </Button>
             </div>
           </div>
@@ -340,85 +337,81 @@ const Index = () => {
 
       {/* Main Content with Pull to Refresh */}
       <PullToRefresh onRefresh={handleRefresh}>
-        <main className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-24 sm:pb-20 safe-area-inset-bottom">
+        <main className="px-3 xs:px-4 sm:px-6 py-3 xs:py-4 pb-20 xs:pb-24 mobile-nav-spacing scroll-smooth high-dpi-optimize">
         
-          {/* Welcome Banner - Responsive */}
-          <section className="mb-6 lg:mb-8">
-            <div className="p-4 sm:p-6 bg-gradient-to-br from-bee-gold/5 via-background to-bee-blue/5 rounded-2xl border border-bee-gold/20 shadow-soft">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
+          {/* Mobile-First Welcome Banner */}
+          <section className="mb-4 xs:mb-6">
+            <div className="p-3 xs:p-4 bg-gradient-to-br from-bee-gold/5 via-background to-bee-blue/5 rounded-xl xs:rounded-2xl border border-bee-gold/20 shadow-soft mobile-card-hover">
+              <div className="flex flex-col gap-2 xs:gap-3">
                 <div className="flex-1">
-                  <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-foreground mb-1">
+                  <h2 className="text-base xs:text-lg font-semibold text-foreground mb-0.5 xs:mb-1">
                     Welcome back, {user?.user_metadata?.full_name?.split(' ')[0] || 'Saver'}! 🐝
                   </h2>
-                  <p className="text-sm sm:text-base text-muted-foreground">
+                  <p className="text-xs xs:text-sm text-muted-foreground mobile-text-scale">
                     Let's make your money grow like a busy bee hive
                   </p>
                 </div>
-                <div className="text-left sm:text-right">
-                  <div className="text-xs text-muted-foreground">Today</div>
-                  <div className="text-sm sm:text-base font-medium text-bee-blue">
-                    {format(new Date(), 'MMM dd, yyyy')}
+                <div className="flex justify-between items-center">
+                  <div className="text-[10px] xs:text-xs text-muted-foreground">Today</div>
+                  <div className="text-xs xs:text-sm font-medium text-bee-blue">
+                    {format(new Date(), 'MMM dd')}
                   </div>
                 </div>
               </div>
             </div>
           </section>
-          {/* Home Tab Content - Responsive Grid Layout */}
-          {activeTab === "home" && (
-            <div className="space-y-6 lg:space-y-8">
-              {/* Financial Overview Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-                <div className="lg:col-span-2">
-                  <ProgressiveLoader isLoading={isLoading} type="overview">
-                    <div className="bg-gradient-to-br from-card via-background to-card/50 rounded-2xl border border-border/50 shadow-medium p-1 h-full">
-                      <ExpenseOverview 
-                        totalIncome={totalIncome}
-                        totalExpenses={totalExpenses}
-                        monthlyBudget={budgets.reduce((sum, budget) => sum + budget.amount, 0)}
-                        selectedMonth={selectedMonth}
-                        onMonthChange={setSelectedMonth}
-                      />
-                    </div>
-                  </ProgressiveLoader>
-                </div>
-                
-                <div className="lg:col-span-1">
-                  <ProgressiveLoader isLoading={isLoading} type="card" delay={150}>
-                    <MicroSavingsChallenge 
-                      onSavingsTrack={(amount) => {
-                        toast({
-                          title: "💪 Challenge Completed!",
-                          description: `You saved $${amount} today. Keep building those habits!`,
-                          duration: 4000
-                        });
-                      }}
-                    />
-                  </ProgressiveLoader>
-                </div>
+      {/* Mobile-First Grid Layout */}
+      {activeTab === "home" && (
+        <div className="space-y-4 xs:space-y-6">
+          {/* Financial Overview - Mobile Stacked Layout */}
+          <div className="space-y-4 xs:space-y-6">
+            <ProgressiveLoader isLoading={isLoading} type="overview">
+              <div className="bg-gradient-to-br from-card via-background to-card/50 rounded-xl xs:rounded-2xl border border-border/50 shadow-medium p-1">
+                <ExpenseOverview 
+                  totalIncome={totalIncome}
+                  totalExpenses={totalExpenses}
+                  monthlyBudget={budgets.reduce((sum, budget) => sum + budget.amount, 0)}
+                  selectedMonth={selectedMonth}
+                  onMonthChange={setSelectedMonth}
+                />
               </div>
-              
-              {/* Charts and Analytics */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-                <ProgressiveLoader isLoading={isLoading} type="chart" delay={100}>
-                  <div className="bg-card/60 backdrop-blur-sm rounded-2xl border border-border/30 shadow-soft p-1 h-full">
-                    <Suspense fallback={null}>
-                      <CategoryBreakdown 
-                        expenses={monthlyExpenses}
-                      />
-                    </Suspense>
-                  </div>
-                </ProgressiveLoader>
-                
-                {/* Recent Transactions */}
-                <div className="xl:col-span-1">
-                  {monthlyExpenses.length > 0 ? (
-                    <ProgressiveLoader isLoading={isLoading} type="list" delay={200}>
-                      <div className="bg-card/40 backdrop-blur-sm rounded-2xl border border-border/20 shadow-soft p-1 h-full">
-                        <ExpenseList
-                          expenses={monthlyExpenses.slice(0, 6)} // Show fewer on desktop for better layout
-                          onExpenseClick={handleExpenseClick}
-                          onEditExpense={handleEditExpense}
-                          onDeleteExpense={handleDeleteExpense}
+            </ProgressiveLoader>
+            
+            <ProgressiveLoader isLoading={isLoading} type="card" delay={150}>
+              <MicroSavingsChallenge 
+                onSavingsTrack={(amount) => {
+                  toast({
+                    title: "💪 Challenge Completed!",
+                    description: `You saved $${amount} today. Keep building those habits!`,
+                    duration: 4000
+                  });
+                }}
+              />
+            </ProgressiveLoader>
+          </div>
+          
+          {/* Charts and Analytics - Mobile Stacked */}
+          <div className="space-y-4 xs:space-y-6 md:grid md:grid-cols-2 md:gap-6 md:space-y-0">
+            <ProgressiveLoader isLoading={isLoading} type="chart" delay={100}>
+              <div className="bg-card/60 backdrop-blur-sm rounded-xl xs:rounded-2xl border border-border/30 shadow-soft p-1">
+                <Suspense fallback={null}>
+                  <CategoryBreakdown 
+                    expenses={monthlyExpenses}
+                  />
+                </Suspense>
+              </div>
+            </ProgressiveLoader>
+            
+            {/* Recent Transactions - Mobile Optimized */}
+            <div>
+              {monthlyExpenses.length > 0 ? (
+                <ProgressiveLoader isLoading={isLoading} type="list" delay={200}>
+                  <div className="bg-card/40 backdrop-blur-sm rounded-xl xs:rounded-2xl border border-border/20 shadow-soft p-1">
+                    <ExpenseList
+                      expenses={monthlyExpenses.slice(0, 4)} // Show fewer on mobile
+                      onExpenseClick={handleExpenseClick}
+                      onEditExpense={handleEditExpense}
+                      onDeleteExpense={handleDeleteExpense}
                           showViewAll={monthlyExpenses.length > 6}
                           onViewAll={handleViewAllTransactions}
                         />
