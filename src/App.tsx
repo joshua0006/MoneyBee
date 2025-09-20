@@ -42,9 +42,7 @@ const queryClient = new QueryClient();
 
 // AppContent component to handle authenticated state
 const AppContent = () => {
-  console.log('AppContent starting');
   const { isAuthenticated } = useSupabaseAuth();
-  console.log('Authentication status:', isAuthenticated);
   const location = useLocation();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const { expenses, accounts, addExpense } = useAppData();
@@ -54,8 +52,6 @@ const AppContent = () => {
   const hasSeenIntro = localStorage.getItem('intro_seen') === 'true';
   const hasSeenCover = localStorage.getItem('cover_seen') === 'true';
   const hasCompletedOnboarding = localStorage.getItem('onboarding_completed') === 'true';
-  
-  console.log('Onboarding status:', { hasSeenIntro, hasSeenCover, hasCompletedOnboarding });
 
   // Don't show bottom navigation on auth pages, welcome, cover, or onboarding
   const showBottomNav = isAuthenticated && 
@@ -82,30 +78,15 @@ const AppContent = () => {
           path="/" 
           element={
             !hasSeenIntro ? (
-              <>
-                {console.log('Redirecting to welcome')}
-                <Navigate to="/welcome" replace />
-              </>
+              <Navigate to="/welcome" replace />
             ) : !isAuthenticated ? (
-              <>
-                {console.log('Redirecting to auth')}
-                <Navigate to="/auth" replace />
-              </>
+              <Navigate to="/auth" replace />
             ) : !hasCompletedOnboarding ? (
-              <>
-                {console.log('Redirecting to onboarding')}
-                <Navigate to="/onboarding" replace />
-              </>
+              <Navigate to="/onboarding" replace />
             ) : !hasSeenCover ? (
-              <>
-                {console.log('Redirecting to cover')}
-                <Navigate to="/cover" replace />
-              </>
+              <Navigate to="/cover" replace />
             ) : (
-              <>
-                {console.log('Rendering Index page')}
-                <Index />
-              </>
+              <Index />
             )
           } 
         />
@@ -178,9 +159,7 @@ const AppContent = () => {
 };
 
 const App = () => {
-  console.log('Main App component starting');
   const { isAuthenticated, isLoading } = useSupabaseAuth();
-  console.log('Main App auth status:', { isAuthenticated, isLoading });
 
   // Update native status bar on theme changes (mobile)
   const { theme } = useTheme();
@@ -191,7 +170,6 @@ const App = () => {
 
   // Show loading while Supabase Auth is initializing
   if (isLoading) {
-    console.log('App showing auth loading spinner');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
@@ -199,7 +177,6 @@ const App = () => {
     );
   }
 
-  console.log('App rendering main content');
   return (
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>

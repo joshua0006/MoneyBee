@@ -38,17 +38,17 @@ import { useDashboardHandlers } from "@/hooks/useDashboardHandlers";
 // Utilities
 import { getMockGoals, getOnboardingSteps } from "@/utils/dashboardHelpers";
 
-// Lazy loaded components
+// Lazy loaded components - only keep critical ones as lazy
 const AdvancedAnalytics = lazy(() => import("@/components/AdvancedAnalytics").then(m => ({ default: m.AdvancedAnalytics })));
 const FinancialSimulation = lazy(() => import("@/components/FinancialSimulation").then(m => ({ default: m.FinancialSimulation })));
-const GamificationHub = lazy(() => import("@/components/gamification/GamificationHub").then(m => ({ default: m.GamificationHub })));
+
+// Regular imports for components causing issues
+import { GamificationHub } from "@/components/gamification/GamificationHub";
 
 import type { Expense, Account, Budget } from "@/types/app";
 
 const Index = () => {
-  console.log('Index component starting');
   const { user, signOut } = useSupabaseAuth();
-  console.log('User:', user);
   const navigate = useNavigate();
   const {
     expenses: allExpenses,
@@ -67,8 +67,6 @@ const Index = () => {
     refreshData
   } = useAppData();
   
-  console.log('App data:', { allExpenses: allExpenses?.length, accounts: accounts?.length, isLoading });
-  
   const { creditCards } = useCreditCards();
   
   // State management
@@ -85,14 +83,11 @@ const Index = () => {
   const { shouldShowOnboarding, markAsComplete } = useOnboarding();
 
   // Custom hooks for data and handlers
-  console.log('About to call useDashboardData');
   const { monthlyExpenses, totalIncome, totalExpenses } = useDashboardData({
     allExpenses,
     selectedMonth
   });
-  console.log('Dashboard data:', { monthlyExpenses: monthlyExpenses?.length, totalIncome, totalExpenses });
 
-  console.log('About to call useDashboardHandlers');
   const handlers = useDashboardHandlers({
     saveExpense,
     updateExpenseData,
@@ -112,7 +107,6 @@ const Index = () => {
     setActiveTab,
     setActiveMenuItem
   });
-  console.log('Handlers created successfully');
 
   // Constants from utilities
   const goals = getMockGoals();
@@ -136,11 +130,9 @@ const Index = () => {
   const userName = user?.user_metadata?.full_name?.split(' ')[0] || 'Saver';
 
   if (isLoading) {
-    console.log('Showing loading skeleton');
     return <DashboardLoadingSkeleton />;
   }
 
-  console.log('About to render main dashboard');
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/5 to-background">
       <Helmet>
@@ -215,9 +207,7 @@ const Index = () => {
 
             {/* Gamification Tab */}
             <TabsContent value="gamification" className="space-y-6">
-              <Suspense fallback={<div className="h-64 flex items-center justify-center">Loading...</div>}>
-                <GamificationHub expenses={allExpenses} />
-              </Suspense>
+              <GamificationHub expenses={allExpenses} />
             </TabsContent>
 
             {/* More Tab */}
