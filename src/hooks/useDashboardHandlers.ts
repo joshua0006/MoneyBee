@@ -19,7 +19,6 @@ interface UseDashboardHandlersProps {
   setIsDetailOpen: (open: boolean) => void;
   setEditingExpense: (expense: Expense | null) => void;
   setIsAddExpenseOpen: (open: boolean) => void;
-  setActiveTab: (tab: string) => void;
   setActiveMenuItem: (item: string | null) => void;
 }
 
@@ -122,9 +121,8 @@ export const useDashboardHandlers = (props: UseDashboardHandlersProps) => {
 
   const handleViewAllTransactions = useCallback(() => {
     mobileService.lightHaptic();
-    props.setActiveTab("more");
     props.setActiveMenuItem("search");
-  }, [props.setActiveTab, props.setActiveMenuItem]);
+  }, [props.setActiveMenuItem]);
 
   const handleRefresh = useCallback(async () => {
     mobileService.lightHaptic();

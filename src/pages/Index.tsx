@@ -8,7 +8,6 @@ import { CalendarView } from "@/components/CalendarView";
 import { BudgetManager } from "@/components/BudgetManager";
 import { AccountManager } from "@/components/AccountManager";
 import { RecurringTransactionManager } from "@/components/RecurringTransactionManager";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Clock } from "lucide-react";
@@ -37,13 +36,6 @@ import { useDashboardHandlers } from "@/hooks/useDashboardHandlers";
 
 // Utilities
 import { getMockGoals, getOnboardingSteps } from "@/utils/dashboardHelpers";
-
-// Lazy loaded components - only keep critical ones as lazy
-const AdvancedAnalytics = lazy(() => import("@/components/AdvancedAnalytics").then(m => ({ default: m.AdvancedAnalytics })));
-const FinancialSimulation = lazy(() => import("@/components/FinancialSimulation").then(m => ({ default: m.FinancialSimulation })));
-
-// Regular imports for components causing issues
-import { GamificationHub } from "@/components/gamification/GamificationHub";
 
 import type { Expense, Account, Budget } from "@/types/app";
 
@@ -77,7 +69,6 @@ const Index = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-  const [activeTab, setActiveTab] = useState("home");
   const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
   
   const { shouldShowOnboarding, markAsComplete } = useOnboarding();
@@ -104,7 +95,6 @@ const Index = () => {
     setIsDetailOpen,
     setEditingExpense,
     setIsAddExpenseOpen,
-    setActiveTab,
     setActiveMenuItem
   });
 
@@ -151,103 +141,79 @@ const Index = () => {
           
           <WelcomeBanner userName={userName} />
           
-          {/* Mobile-First Content Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
-              <TabsTrigger value="home" className="text-xs">Home</TabsTrigger>
-              <TabsTrigger value="analytics" className="text-xs">Analytics</TabsTrigger>
-              <TabsTrigger value="gamification" className="text-xs">Growth</TabsTrigger>
-              <TabsTrigger value="more" className="text-xs">More</TabsTrigger>
-            </TabsList>
-
-            {/* Home Tab - Main Dashboard */}
-            <TabsContent value="home" className="space-y-4">
-              <FinancialOverviewSection
-                totalIncome={totalIncome}
-                totalExpenses={totalExpenses}
-                monthlyBudget={monthlyBudget}
-                selectedMonth={selectedMonth}
-                onMonthChange={setSelectedMonth}
-                isLoading={isLoading}
-                monthlyExpenses={monthlyExpenses}
-              />
-              
-              {/* Recent Transactions */}
-              <div>
-                {monthlyExpenses.length > 0 ? (
-                  <ProgressiveLoader isLoading={isLoading} type="list" delay={200}>
-                    <div className="bg-card/40 backdrop-blur-sm rounded-xl xs:rounded-2xl border border-border/20 shadow-soft p-1">
-                      <ExpenseList
-                        expenses={monthlyExpenses.slice(0, 4)}
-                        onExpenseClick={handlers.handleExpenseClick}
-                        onEditExpense={handlers.handleEditExpense}
-                        onDeleteExpense={handlers.handleDeleteExpense}
-                        showViewAll={monthlyExpenses.length > 4}
-                        onViewAll={handlers.handleViewAllTransactions}
-                      />
-                    </div>
-                  </ProgressiveLoader>
-                ) : !isLoading && (
-                  <div className="bg-gradient-to-br from-muted/30 to-card/50 rounded-2xl border-2 border-dashed border-border/40 shadow-soft">
-                    <EmptyState 
-                      type="expenses"
-                      onAction={() => setIsAddExpenseOpen(true)}
+          {/* Main Dashboard Content */}
+          <div className="space-y-4">
+            <FinancialOverviewSection
+              totalIncome={totalIncome}
+              totalExpenses={totalExpenses}
+              monthlyBudget={monthlyBudget}
+              selectedMonth={selectedMonth}
+              onMonthChange={setSelectedMonth}
+              isLoading={isLoading}
+              monthlyExpenses={monthlyExpenses}
+            />
+            
+            {/* Recent Transactions */}
+            <div>
+              {monthlyExpenses.length > 0 ? (
+                <ProgressiveLoader isLoading={isLoading} type="list" delay={200}>
+                  <div className="bg-card/40 backdrop-blur-sm rounded-xl xs:rounded-2xl border border-border/20 shadow-soft p-1">
+                    <ExpenseList
+                      expenses={monthlyExpenses.slice(0, 4)}
+                      onExpenseClick={handlers.handleExpenseClick}
+                      onEditExpense={handlers.handleEditExpense}
+                      onDeleteExpense={handlers.handleDeleteExpense}
+                      showViewAll={monthlyExpenses.length > 4}
+                      onViewAll={handlers.handleViewAllTransactions}
                     />
                   </div>
-                )}
-              </div>
-            </TabsContent>
+                </ProgressiveLoader>
+              ) : !isLoading && (
+                <div className="bg-gradient-to-br from-muted/30 to-card/50 rounded-2xl border-2 border-dashed border-border/40 shadow-soft">
+                  <EmptyState 
+                    type="expenses"
+                    onAction={() => setIsAddExpenseOpen(true)}
+                  />
+                </div>
+              )}
+            </div>
 
-            {/* Analytics Tab */}
-            <TabsContent value="analytics" className="space-y-6">
-              <Suspense fallback={<div className="h-64 flex items-center justify-center">Loading...</div>}>
-                <AdvancedAnalytics expenses={allExpenses} />
-              </Suspense>
-            </TabsContent>
-
-            {/* Gamification Tab */}
-            <TabsContent value="gamification" className="space-y-6">
-              <GamificationHub expenses={allExpenses} />
-            </TabsContent>
-
-            {/* More Tab */}
-            <TabsContent value="more" className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  variant="outline"
-                  className="h-24 flex flex-col items-center gap-2"
-                  onClick={() => setActiveMenuItem("search")}
-                >
-                  <Search size={24} />
-                  <span className="text-sm">Search & Filter</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-24 flex flex-col items-center gap-2"
-                  onClick={() => setActiveMenuItem("calendar")}
-                >
-                  <Calendar size={24} />
-                  <span className="text-sm">Calendar View</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-24 flex flex-col items-center gap-2"
-                  onClick={() => setActiveMenuItem("budgets")}
-                >
-                  <Target size={24} />
-                  <span className="text-sm">Budget Manager</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-24 flex flex-col items-center gap-2"
-                  onClick={() => setActiveMenuItem("recurring")}
-                >
-                  <Clock size={24} />
-                  <span className="text-sm">Recurring</span>
-                </Button>
-              </div>
-            </TabsContent>
-          </Tabs>
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                variant="outline"
+                className="h-24 flex flex-col items-center gap-2"
+                onClick={() => setActiveMenuItem("search")}
+              >
+                <Search size={24} />
+                <span className="text-sm">Search & Filter</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-24 flex flex-col items-center gap-2"
+                onClick={() => setActiveMenuItem("calendar")}
+              >
+                <Calendar size={24} />
+                <span className="text-sm">Calendar View</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-24 flex flex-col items-center gap-2"
+                onClick={() => setActiveMenuItem("budgets")}
+              >
+                <Target size={24} />
+                <span className="text-sm">Budget Manager</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-24 flex flex-col items-center gap-2"
+                onClick={() => setActiveMenuItem("recurring")}
+              >
+                <Clock size={24} />
+                <span className="text-sm">Recurring</span>
+              </Button>
+            </div>
+          </div>
         </main>
       </PullToRefresh>
 
