@@ -46,7 +46,9 @@ const GamificationHub = lazy(() => import("@/components/gamification/Gamificatio
 import type { Expense, Account, Budget } from "@/types/app";
 
 const Index = () => {
+  console.log('Index component starting');
   const { user, signOut } = useSupabaseAuth();
+  console.log('User:', user);
   const navigate = useNavigate();
   const {
     expenses: allExpenses,
@@ -65,6 +67,8 @@ const Index = () => {
     refreshData
   } = useAppData();
   
+  console.log('App data:', { allExpenses: allExpenses?.length, accounts: accounts?.length, isLoading });
+  
   const { creditCards } = useCreditCards();
   
   // State management
@@ -81,11 +85,14 @@ const Index = () => {
   const { shouldShowOnboarding, markAsComplete } = useOnboarding();
 
   // Custom hooks for data and handlers
+  console.log('About to call useDashboardData');
   const { monthlyExpenses, totalIncome, totalExpenses } = useDashboardData({
     allExpenses,
     selectedMonth
   });
+  console.log('Dashboard data:', { monthlyExpenses: monthlyExpenses?.length, totalIncome, totalExpenses });
 
+  console.log('About to call useDashboardHandlers');
   const handlers = useDashboardHandlers({
     saveExpense,
     updateExpenseData,
@@ -105,6 +112,7 @@ const Index = () => {
     setActiveTab,
     setActiveMenuItem
   });
+  console.log('Handlers created successfully');
 
   // Constants from utilities
   const goals = getMockGoals();
@@ -128,9 +136,11 @@ const Index = () => {
   const userName = user?.user_metadata?.full_name?.split(' ')[0] || 'Saver';
 
   if (isLoading) {
+    console.log('Showing loading skeleton');
     return <DashboardLoadingSkeleton />;
   }
 
+  console.log('About to render main dashboard');
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/5 to-background">
       <Helmet>
