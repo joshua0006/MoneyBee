@@ -1,4 +1,4 @@
-import { ArrowLeft, TrendingUp, PieChart, BarChart3 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
@@ -39,23 +39,6 @@ export default function Analytics() {
 
         {/* Content */}
         <div className="p-4 pb-20 space-y-6">
-          {/* Summary Cards */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="flex flex-col items-center p-3 sm:p-4 bg-card rounded-xl border hover:border-primary/20 transition-colors">
-              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-primary mb-2" />
-              <span className="text-xs sm:text-sm font-medium text-center">Trends</span>
-            </div>
-            <div className="flex flex-col items-center p-3 sm:p-4 bg-card rounded-xl border hover:border-primary/20 transition-colors">
-              <PieChart className="w-5 h-5 sm:w-6 sm:h-6 text-primary mb-2" />
-              <span className="text-xs sm:text-sm font-medium text-center">Categories</span>
-            </div>
-            <div className="flex flex-col items-center p-3 sm:p-4 bg-card rounded-xl border hover:border-primary/20 transition-colors">
-              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-primary mb-2" />
-              <span className="text-xs sm:text-sm font-medium text-center">Compare</span>
-            </div>
-          </div>
-
-          {/* Analytics Components */}
           <CategoryBreakdown expenses={expenses} />
           <AdvancedAnalytics expenses={expenses} />
         </div>
