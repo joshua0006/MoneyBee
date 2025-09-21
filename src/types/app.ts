@@ -96,6 +96,41 @@ export interface Goal {
   description?: string;
 }
 
+// Bill Splitter Types
+export interface BillSplit {
+  id: string;
+  title: string;
+  totalAmount: number;
+  description?: string;
+  participants: Participant[];
+  splitMethod: SplitMethod;
+  date: Date;
+  status: 'pending' | 'partial' | 'completed';
+  category?: string;
+  createdBy: string;
+  settledAt?: Date;
+}
+
+export interface Participant {
+  id: string;
+  name: string;
+  email?: string;
+  amountOwed: number;
+  amountPaid: number;
+  status: 'pending' | 'paid';
+  paidAt?: Date;
+  shares?: number; // For share-based splitting
+}
+
+export type SplitMethod = 'equal' | 'manual' | 'percentage' | 'shares';
+
+export interface SplitCalculation {
+  participantId: string;
+  amount: number;
+  percentage?: number;
+  shares?: number;
+}
+
 // Conversion utilities
 export const convertDbExpenseToApp = (dbExpense: DbExpense): Expense => ({
   id: dbExpense.id,

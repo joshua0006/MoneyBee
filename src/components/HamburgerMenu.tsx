@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, Search, Calendar, CreditCard, Repeat, Download, Settings, Receipt, Bell, Shield, HelpCircle, Target, TrendingUp } from "lucide-react";
+import { Menu, Search, Calendar, CreditCard, Repeat, Download, Settings, Receipt, Bell, Shield, HelpCircle, Target, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { mobileService } from "@/utils/mobileService";
@@ -16,6 +16,7 @@ export const HamburgerMenu = ({}: HamburgerMenuProps) => {
   const menuItems = [
     { id: "transactions", label: "Transactions", icon: CreditCard, path: "/transactions" },
     { id: "scanner", label: "Receipt Scanner", icon: Receipt, path: "/scanner" },
+    { id: "bill-splitter", label: "Bill Splitter", icon: Users, path: "/bill-splitter" },
     { id: "calendar", label: "Calendar View", icon: Calendar, path: "/calendar" },
     { id: "goals", label: "Goals", icon: Target, path: "/goals" },
     { id: "growth", label: "Wealth Growth", icon: TrendingUp, path: "/growth" },

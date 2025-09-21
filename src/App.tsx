@@ -37,6 +37,7 @@ import SettingsPage from "./pages/SettingsPage";
 import Security from "./pages/Security";
 import Help from "./pages/Help";
 import Investments from "./pages/Investments";
+import BillSplitter from "./pages/BillSplitter";
 
 const queryClient = new QueryClient();
 
@@ -127,6 +128,7 @@ const AppContent = () => {
         <Route path="/investments" element={isAuthenticated ? <Investments /> : <Navigate to="/auth" replace />} />
         <Route path="/recurring" element={isAuthenticated ? <Recurring /> : <Navigate to="/auth" replace />} />
         <Route path="/reports" element={isAuthenticated ? <Reports /> : <Navigate to="/auth" replace />} />
+        <Route path="/bill-splitter" element={isAuthenticated ? <BillSplitter /> : <Navigate to="/auth" replace />} />
         <Route path="/notifications" element={isAuthenticated ? <Notifications /> : <Navigate to="/auth" replace />} />
         <Route path="/settings" element={isAuthenticated ? <SettingsPage /> : <Navigate to="/auth" replace />} />
         <Route path="/security" element={isAuthenticated ? <Security /> : <Navigate to="/auth" replace />} />
