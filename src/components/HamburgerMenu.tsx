@@ -32,6 +32,7 @@ export const HamburgerMenu = ({}: HamburgerMenuProps) => {
   ];
 
   const handleMenuClick = (path: string) => {
+    console.log('HamburgerMenu: Navigating to:', path);
     mobileService.lightHaptic();
     navigate(path);
     setIsOpen(false);
