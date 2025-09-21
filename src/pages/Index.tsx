@@ -178,41 +178,6 @@ const Index = () => {
               )}
             </div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                variant="outline"
-                className="h-24 flex flex-col items-center gap-2"
-                onClick={() => setActiveMenuItem("search")}
-              >
-                <Search size={24} />
-                <span className="text-sm">Search & Filter</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-24 flex flex-col items-center gap-2"
-                onClick={() => setActiveMenuItem("calendar")}
-              >
-                <Calendar size={24} />
-                <span className="text-sm">Calendar View</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-24 flex flex-col items-center gap-2"
-                onClick={() => setActiveMenuItem("budgets")}
-              >
-                <Target size={24} />
-                <span className="text-sm">Budget Manager</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-24 flex flex-col items-center gap-2"
-                onClick={() => setActiveMenuItem("recurring")}
-              >
-                <Clock size={24} />
-                <span className="text-sm">Recurring</span>
-              </Button>
-            </div>
           </div>
         </main>
       </PullToRefresh>
