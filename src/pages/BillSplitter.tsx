@@ -14,7 +14,6 @@ import { mobileService } from '@/utils/mobileService';
 import { EmptyState } from '@/components/EmptyState';
 
 const BillSplitter = () => {
-  console.log('BillSplitter page loaded');
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);

@@ -51,7 +51,6 @@ const AppContent = () => {
 
   // Check onboarding states
   const hasSeenIntro = localStorage.getItem('intro_seen') === 'true';
-  const hasSeenCover = localStorage.getItem('cover_seen') === 'true';
   const hasCompletedOnboarding = localStorage.getItem('onboarding_completed') === 'true';
 
   // Don't show bottom navigation on auth pages, welcome, cover, or onboarding
@@ -84,8 +83,6 @@ const AppContent = () => {
               <Navigate to="/auth" replace />
             ) : !hasCompletedOnboarding ? (
               <Navigate to="/onboarding" replace />
-            ) : !hasSeenCover ? (
-              <Navigate to="/cover" replace />
             ) : (
               <Index />
             )
@@ -97,11 +94,7 @@ const AppContent = () => {
         />
         <Route 
           path="/cover" 
-          element={
-            isAuthenticated && hasCompletedOnboarding && !hasSeenCover ? 
-            <Cover /> : 
-            <Navigate to="/" replace />
-          } 
+          element={<Cover />} 
         />
         <Route 
           path="/onboarding" 
