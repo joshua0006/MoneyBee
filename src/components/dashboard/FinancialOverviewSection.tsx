@@ -58,13 +58,15 @@ export const FinancialOverviewSection = ({
       
       {/* Charts and Analytics - Mobile Stacked */}
       <div className="space-y-4 xs:space-y-6 md:grid md:grid-cols-2 md:gap-6 md:space-y-0">
-        <ProgressiveLoader isLoading={isLoading} type="chart" delay={100}>
-          <div className="bg-card/60 backdrop-blur-sm rounded-xl xs:rounded-2xl border border-border/30 shadow-soft p-1">
-            <Suspense fallback={null}>
-              <CategoryBreakdown expenses={monthlyExpenses} />
-            </Suspense>
-          </div>
-        </ProgressiveLoader>
+        <div className="md:col-span-2">
+          <ProgressiveLoader isLoading={isLoading} type="chart" delay={100}>
+            <div className="bg-card/60 backdrop-blur-sm rounded-xl xs:rounded-2xl border border-border/30 shadow-soft p-1">
+              <Suspense fallback={null}>
+                <CategoryBreakdown expenses={monthlyExpenses} />
+              </Suspense>
+            </div>
+          </ProgressiveLoader>
+        </div>
       </div>
     </div>
   );
