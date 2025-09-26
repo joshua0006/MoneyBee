@@ -60,7 +60,7 @@ export const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
     .slice(0, 6); // Show top 6 categories
 
   return (
-    <Card className="glass-card expense-card">
+    <Card className="glass-card expense-card w-full">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg">Spending by Category</CardTitle>
       </CardHeader>
