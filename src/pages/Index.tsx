@@ -206,34 +206,52 @@ const Index = () => {
       </Sheet>
 
       {/* Search and Filter Sheet */}
-      <Sheet 
-        open={activeMenuItem === "search"} 
+      <Sheet
+        open={activeMenuItem === "search"}
         onOpenChange={(open) => !open && setActiveMenuItem(null)}
       >
-        <SheetContent side="bottom" className="h-[90vh] p-0">
-          <SheetHeader className="p-4 border-b">
+        <SheetContent
+          side="bottom"
+          className="h-[calc(100vh-env(safe-area-inset-top))] max-h-[95vh] sm:h-[90vh] md:h-[85vh] lg:h-[90vh] p-0 flex flex-col"
+        >
+          <SheetHeader className="flex-shrink-0 p-4 border-b">
             <SheetTitle>Search & Filter Transactions</SheetTitle>
           </SheetHeader>
-          <div className="flex-1 overflow-y-auto">
-            <SearchAndFilter
-              expenses={allExpenses}
-              onFilteredResults={handleFilteredResults}
-              onExport={handlers.handleExport}
-            />
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="flex-shrink-0 p-4">
+              <SearchAndFilter
+                expenses={allExpenses}
+                onFilteredResults={handleFilteredResults}
+                onExport={handlers.handleExport}
+              />
+            </div>
+            {/* Scrollable transactions list */}
+            <div className="flex-1 overflow-y-auto px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+              <ExpenseList
+                expenses={filteredExpenses}
+                onExpenseClick={handlers.handleExpenseClick}
+                onEditExpense={handlers.handleEditExpense}
+                onDeleteExpense={handlers.handleDeleteExpense}
+                showViewAll={false}
+              />
+            </div>
           </div>
         </SheetContent>
       </Sheet>
 
       {/* Calendar View Sheet */}
-      <Sheet 
-        open={activeMenuItem === "calendar"} 
+      <Sheet
+        open={activeMenuItem === "calendar"}
         onOpenChange={(open) => !open && setActiveMenuItem(null)}
       >
-        <SheetContent side="bottom" className="h-[90vh] p-0">
-          <SheetHeader className="p-4 border-b">
+        <SheetContent
+          side="bottom"
+          className="h-[calc(100vh-env(safe-area-inset-top))] max-h-[95vh] sm:h-[90vh] md:h-[85vh] lg:h-[90vh] p-0 flex flex-col"
+        >
+          <SheetHeader className="flex-shrink-0 p-4 border-b">
             <SheetTitle>Calendar View</SheetTitle>
           </SheetHeader>
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
             <CalendarView
               expenses={allExpenses}
               budgets={budgets}
@@ -247,15 +265,18 @@ const Index = () => {
       </Sheet>
 
       {/* Budget Manager Sheet */}
-      <Sheet 
-        open={activeMenuItem === "budgets"} 
+      <Sheet
+        open={activeMenuItem === "budgets"}
         onOpenChange={(open) => !open && setActiveMenuItem(null)}
       >
-        <SheetContent side="bottom" className="h-[90vh] p-0">
-          <SheetHeader className="p-4 border-b">
+        <SheetContent
+          side="bottom"
+          className="h-[calc(100vh-env(safe-area-inset-top))] max-h-[95vh] sm:h-[90vh] md:h-[85vh] lg:h-[90vh] p-0 flex flex-col"
+        >
+          <SheetHeader className="flex-shrink-0 p-4 border-b">
             <SheetTitle>Budget Manager</SheetTitle>
           </SheetHeader>
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
             <BudgetManager
               budgets={budgets}
               expenses={allExpenses}
@@ -268,15 +289,18 @@ const Index = () => {
       </Sheet>
 
       {/* Recurring Transactions Sheet */}
-      <Sheet 
-        open={activeMenuItem === "recurring"} 
+      <Sheet
+        open={activeMenuItem === "recurring"}
         onOpenChange={(open) => !open && setActiveMenuItem(null)}
       >
-        <SheetContent side="bottom" className="h-[90vh] p-0">
-          <SheetHeader className="p-4 border-b">
+        <SheetContent
+          side="bottom"
+          className="h-[calc(100vh-env(safe-area-inset-top))] max-h-[95vh] sm:h-[90vh] md:h-[85vh] lg:h-[90vh] p-0 flex flex-col"
+        >
+          <SheetHeader className="flex-shrink-0 p-4 border-b">
             <SheetTitle>Recurring Transactions</SheetTitle>
           </SheetHeader>
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
             <RecurringTransactionManager
               accounts={accounts}
               onGenerateExpenses={(expenses) => {
