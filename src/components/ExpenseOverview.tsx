@@ -29,12 +29,16 @@ export const ExpenseOverview = ({
       <Card className="glass-card mobile-card-hover border-0 shadow-soft">
         <CardHeader className="pb-2 xs:pb-3 px-3 xs:px-4 pt-3 xs:pt-4">
           <div className="flex flex-col items-center gap-2 xs:gap-3">
-            <CardTitle className="text-sm xs:text-base font-semibold text-center">Monthly Overview</CardTitle>
-            <div className="w-full max-w-48">
-              <MonthPicker
-                selectedMonth={selectedMonth}
-                onMonthChange={onMonthChange}
-              />
+            {/* Pill-style container for title and month picker */}
+            <div className="rounded-full px-4 py-2 xs:px-6 xs:py-3 w-full max-w-64">
+              <CardTitle className="text-sm xs:text-base font-semibold text-center mb-2">Monthly Overview</CardTitle>
+              <div className="w-full flex justify-center">
+                <MonthPicker
+                  selectedMonth={selectedMonth}
+                  onMonthChange={onMonthChange}
+                  className="scale-90 xs:scale-100"
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
