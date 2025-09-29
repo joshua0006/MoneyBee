@@ -47,7 +47,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [aiMode, setAiMode] = useState(true);
   const [aiInput, setAiInput] = useState("");
   const [isParsing, setIsParsing] = useState(false);
-  const [autoSubmit, setAutoSubmit] = useState(true);
+  const [autoSubmit, setAutoSubmit] = useState(false);
   const [aiParseSuccess, setAiParseSuccess] = useState(false);
   const [parsedData, setParsedData] = useState<ParsedExpense | null>(null);
   const [useFallback, setUseFallback] = useState(true);
@@ -477,9 +477,9 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const isMobile = useIsMobile();
 
   return (
-    <div className="h-full bg-background">
+    <div className="flex flex-col h-full max-h-screen bg-background">
       {/* Mobile Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border/30">
+      <div className="flex items-center justify-between p-3 xs:p-4 border-b border-border/30 flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="text-lg font-semibold">{editingExpense ? 'Edit Transaction' : 'Quick Add'}</div>
           {isLoading && (
@@ -506,8 +506,8 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       </div>
 
       {/* Main Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-4 space-y-4">
+      <ScrollArea className="flex-1 overflow-y-auto min-h-0 h-full">
+        <div className="p-3 xs:p-4 space-y-3 xs:space-y-4 pb-6 xs:pb-8 min-h-full">
         {/* AI Input Mode */}
         {aiMode && type === 'expense' && (
           <div className="space-y-3">
@@ -548,7 +548,9 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               value={aiInput}
               onChange={(e) => setAiInput(e.target.value)}
               onKeyDown={handleAiInputKeyDown}
-              className="min-h-[60px] resize-none text-base"
+              className="min-h-[60px] xs:min-h-[70px] resize-none text-base touch-manipulation"
+              autoComplete="off"
+              autoCapitalize="sentences"
             />
             
             {/* Parsed Data Display - Compact */}
@@ -578,7 +580,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
         )}
 
         {/* Manual Entry Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 xs:space-y-4 w-full touch-manipulation">
           {/* Type Toggle - Always Visible for Better Income Access */}
           <div className="grid grid-cols-2 gap-2">
             <Button
@@ -617,8 +619,9 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
                 value={amount}
                 onChange={(e) => handleSmartAmountChange(e.target.value)}
                 onBlur={handleFieldBlur}
-                className="text-2xl font-bold h-16 pl-8 text-center"
+                className="text-xl xs:text-2xl font-bold h-14 xs:h-16 pl-8 text-center touch-manipulation"
                 disabled={isLoading}
+                inputMode="decimal"
               />
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-2xl font-bold text-muted-foreground">
                 $
@@ -678,7 +681,9 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               onBlur={handleFieldBlur}
-              className="transition-colors"
+              className="transition-colors h-10 xs:h-11 touch-manipulation"
+              autoComplete="off"
+              autoCapitalize="words"
             />
             
             {/* Smart Suggestions */}
@@ -828,7 +833,7 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
           />
 
           {/* Action Button - Full Width */}
-          <div className="pt-4">
+          <div className="pt-3 xs:pt-4 sticky bottom-0 bg-background/80 backdrop-blur-sm -mx-3 xs:-mx-4 px-3 xs:px-4 pb-3 xs:pb-4">
             <Button
               type="submit"
               disabled={isLoading || !amount}
