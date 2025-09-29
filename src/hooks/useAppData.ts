@@ -88,11 +88,6 @@ export const useAppData = (): AppDataHook => {
       setAccounts(accountsData.map(convertDbAccountToApp));
       setBudgets(budgetsData.map(convertDbBudgetToApp));
 
-      toast({
-        title: "Data synced",
-        description: "Your financial data is up to date",
-        duration: 2000
-      });
     } catch (error) {
       console.error('Error loading data:', error);
       toast({
