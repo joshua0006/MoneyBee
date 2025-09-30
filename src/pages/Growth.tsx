@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { mobileService } from "@/utils/mobileService";
 import { Helmet } from "react-helmet-async";
 import { FinancialSimulation } from "@/components/FinancialSimulation";
-import { useAppData } from "@/hooks/useAppData";
+import { useAppData } from "@/contexts/AppDataContext";
 import { LoadingSkeleton } from "@/components/LoadingSkeleton";
 
 export default function Growth() {

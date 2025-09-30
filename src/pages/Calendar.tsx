@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { CalendarView } from "@/components/CalendarView";
 import { mobileService } from "@/utils/mobileService";
-import { useAppData } from "@/hooks/useAppData";
+import { useAppData } from "@/contexts/AppDataContext";
 import { Helmet } from "react-helmet-async";
 
 export default function Calendar() {

@@ -1,4 +1,4 @@
-import { useAppData } from "@/hooks/useAppData";
+import { useAppData } from "@/contexts/AppDataContext";
 import { Helmet } from "react-helmet-async";
 import { AnalyticsHeader } from "@/components/analytics/AnalyticsHeader";
 import { AnalyticsContent } from "@/components/analytics/AnalyticsContent";

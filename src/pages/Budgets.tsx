@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { BudgetManager } from "@/components/BudgetManager";
 import { mobileService } from "@/utils/mobileService";
 import { Helmet } from "react-helmet-async";
-import { useAppData } from "@/hooks/useAppData";
+import { useAppData } from "@/contexts/AppDataContext";
 import type { Budget } from "@/types/app";
 
 export default function Budgets() {

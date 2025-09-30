@@ -23,7 +23,7 @@ import { Settings } from "@/components/Settings";
 import { AppPreferences } from "@/components/AppPreferences";
 import { CreditCardManager } from "@/components/CreditCardManager";
 import { useCreditCards } from "@/hooks/useCreditCards";
-import { useAppData } from "@/hooks/useAppData";
+import { useAppData } from "@/contexts/AppDataContext";
 
 // Refactored components
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";

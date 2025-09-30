@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { AccountManager } from "@/components/AccountManager";
 import { mobileService } from "@/utils/mobileService";
-import { useAppData } from "@/hooks/useAppData";
+import { useAppData } from "@/contexts/AppDataContext";
 import { Helmet } from "react-helmet-async";
 
 export default function Accounts() {

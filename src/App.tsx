@@ -10,10 +10,9 @@ import { mobileService } from "@/utils/mobileService";
 import { AppLockGate } from "@/components/security/AppLockGate";
 import { HelmetProvider } from "react-helmet-async";
 import { BottomNavigation } from "@/components/BottomNavigation";
-import { EnhancedQuickAddExpense } from "@/components/EnhancedQuickAddExpense";
+import { GlobalExpenseForm } from "@/components/GlobalExpenseForm";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { useToast } from "@/hooks/use-toast";
-import { useAppData } from "@/hooks/useAppData";
+import { AppDataProvider } from "@/contexts/AppDataContext";
 
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -46,30 +45,17 @@ const AppContent = () => {
   const { isAuthenticated } = useSupabaseAuth();
   const location = useLocation();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
-  const { expenses, accounts, addExpense } = useAppData();
-  const { toast } = useToast();
 
   // Check onboarding states
   const hasSeenIntro = localStorage.getItem('intro_seen') === 'true';
   const hasCompletedOnboarding = localStorage.getItem('onboarding_completed') === 'true';
 
   // Don't show bottom navigation on auth pages, welcome, cover, or onboarding
-  const showBottomNav = isAuthenticated && 
-    !location.pathname.includes('/auth') && 
-    !location.pathname.includes('/welcome') && 
-    !location.pathname.includes('/cover') && 
+  const showBottomNav = isAuthenticated &&
+    !location.pathname.includes('/auth') &&
+    !location.pathname.includes('/welcome') &&
+    !location.pathname.includes('/cover') &&
     !location.pathname.includes('/onboarding');
-
-  const handleAddExpense = async (expense: any) => {
-    await addExpense(expense);
-    mobileService.successHaptic();
-    setIsAddExpenseOpen(false);
-    toast({
-      title: "✅ Transaction Added",
-      description: `${expense.type === 'income' ? 'Income' : 'Expense'} of $${expense.amount} recorded`,
-      duration: 3000
-    });
-  };
 
   return (
     <>
@@ -141,11 +127,7 @@ const AppContent = () => {
       {isAuthenticated && (
         <Sheet open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
           <SheetContent side="bottom" className="h-[95vh] sm:h-[90vh] rounded-t-xl p-0">
-            <EnhancedQuickAddExpense 
-              onAddExpense={handleAddExpense}
-              existingExpenses={expenses || []}
-              accounts={accounts || []}
-            />
+            <GlobalExpenseForm onClose={() => setIsAddExpenseOpen(false)} />
           </SheetContent>
         </Sheet>
       )}
@@ -182,12 +164,14 @@ const App = () => {
         disableTransitionOnChange={false}
       >
         <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          {/* <AppLockGate onUnlocked={() => {}} /> */}
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
+          <AppDataProvider>
+            <Toaster />
+            <Sonner />
+            {/* <AppLockGate onUnlocked={() => {}} /> */}
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </AppDataProvider>
         </TooltipProvider>
       </ThemeProvider>
       </HelmetProvider>
