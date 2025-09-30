@@ -29,6 +29,8 @@ interface QuickAddExpenseProps {
 }
 
 const quickAmounts = [5, 10, 15, 20, 25, 50];
+const QUICK_SAVE_PREFERENCE_KEY = 'quickSaveEnabled';
+const SMART_AI_PREFERENCE_KEY = 'smartAIEnabled';
 
 export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accounts, creditCards = [], editingExpense }: QuickAddExpenseProps) => {
   const [amount, setAmount] = useState("");
@@ -47,10 +49,16 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const [aiMode, setAiMode] = useState(true);
   const [aiInput, setAiInput] = useState("");
   const [isParsing, setIsParsing] = useState(false);
-  const [autoSubmit, setAutoSubmit] = useState(false);
+  const [autoSubmit, setAutoSubmit] = useState(() => {
+    const saved = localStorage.getItem(QUICK_SAVE_PREFERENCE_KEY);
+    return saved === 'true';
+  });
   const [aiParseSuccess, setAiParseSuccess] = useState(false);
   const [parsedData, setParsedData] = useState<ParsedExpense | null>(null);
-  const [useFallback, setUseFallback] = useState(true);
+  const [useFallback, setUseFallback] = useState(() => {
+    const saved = localStorage.getItem(SMART_AI_PREFERENCE_KEY);
+    return saved !== 'false'; // Default to true
+  });
   const [showReceiptScanner, setShowReceiptScanner] = useState(false);
   const [showStatementUploader, setShowStatementUploader] = useState(false);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
@@ -212,6 +220,15 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       }
     };
   }, []);
+
+  // Persist Quick Save and Smart AI preferences
+  useEffect(() => {
+    localStorage.setItem(QUICK_SAVE_PREFERENCE_KEY, autoSubmit.toString());
+  }, [autoSubmit]);
+
+  useEffect(() => {
+    localStorage.setItem(SMART_AI_PREFERENCE_KEY, useFallback.toString());
+  }, [useFallback]);
 
   // Trigger auto-save when form fields change
   useEffect(() => {
