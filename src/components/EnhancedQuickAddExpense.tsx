@@ -67,6 +67,20 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
   const latestDraftRef = useRef<{ amount: string; description: string; category: string; type: 'expense' | 'income'; accountId: string; } | null>(null);
   const lastSavedHashRef = useRef<string | null>(null);
 
+  // Populate form when editing an expense
+  useEffect(() => {
+    if (editingExpense) {
+      setAmount(editingExpense.amount.toString());
+      setDescription(editingExpense.description);
+      setCategory(editingExpense.category);
+      setType(editingExpense.type);
+      setAccountId(editingExpense.accountId || accounts[0]?.id || "");
+      setCreditCardId(editingExpense.creditCardId || "");
+      setValueTags(editingExpense.valueTags || []);
+      setAiMode(false); // Switch to manual mode when editing
+    }
+  }, [editingExpense, accounts]);
+
   // Smart suggestions based on input
   useEffect(() => {
     if (description.length >= 2) {
@@ -307,9 +321,11 @@ export const EnhancedQuickAddExpense = ({ onAddExpense, existingExpenses, accoun
       }
       setIsLoading(false);
       setAiParseSuccess(false);
-      
+
       toast({
-        title: type === 'expense' ? "💳 Expense Added" : "💰 Income Added",
+        title: editingExpense
+          ? (type === 'expense' ? "💳 Expense Updated" : "💰 Income Updated")
+          : (type === 'expense' ? "💳 Expense Added" : "💰 Income Added"),
         description: `$${validAmount.toLocaleString()} for ${description}`,
         duration: 2000
       });

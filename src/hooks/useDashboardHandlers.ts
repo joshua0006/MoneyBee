@@ -73,15 +73,17 @@ export const useDashboardHandlers = (props: UseDashboardHandlersProps) => {
   const handleEditExpense = useCallback((expense: Expense) => {
     props.setEditingExpense(expense);
     props.setIsDetailOpen(false);
-    props.setIsAddExpenseOpen(false);
+    props.setIsAddExpenseOpen(true); // Open the expense form for editing
   }, [props.setEditingExpense, props.setIsDetailOpen, props.setIsAddExpenseOpen]);
 
   const handleUpdateExpense = useCallback(async (updatedExpense: Omit<Expense, 'id'>, editingExpense: Expense | null) => {
     if (!editingExpense) return;
-    
+
     await props.updateExpenseData(editingExpense.id, updatedExpense);
     props.setEditingExpense(null);
-  }, [props.updateExpenseData, props.setEditingExpense]);
+    props.setIsAddExpenseOpen(false); // Close the sheet after update
+    mobileService.successHaptic();
+  }, [props.updateExpenseData, props.setEditingExpense, props.setIsAddExpenseOpen]);
 
   const handleExport = useCallback(() => {
     try {

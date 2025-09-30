@@ -312,13 +312,20 @@ const Index = () => {
         </SheetContent>
       </Sheet>
 
-      {/* Add Expense Sheet */}
-      <Sheet open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
+      {/* Add/Edit Expense Sheet */}
+      <Sheet open={isAddExpenseOpen} onOpenChange={(open) => {
+        setIsAddExpenseOpen(open);
+        if (!open) setEditingExpense(null); // Clear editing state when closing
+      }}>
         <SheetContent side="bottom" className="h-[95vh] sm:h-[90vh] rounded-t-xl p-0">
           <EnhancedQuickAddExpense
-            onAddExpense={handlers.handleAddExpense}
+            onAddExpense={editingExpense
+              ? (expense) => handlers.handleUpdateExpense(expense, editingExpense)
+              : handlers.handleAddExpense
+            }
             existingExpenses={allExpenses}
             accounts={accounts}
+            editingExpense={editingExpense || undefined}
           />
         </SheetContent>
       </Sheet>
