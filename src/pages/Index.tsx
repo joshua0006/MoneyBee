@@ -10,6 +10,7 @@ import { AccountManager } from "@/components/AccountManager";
 import { RecurringTransactionManager } from "@/components/RecurringTransactionManager";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { EnhancedQuickAddExpense } from "@/components/EnhancedQuickAddExpense";
 import { TrendingUp, BarChart3, Search, PieChart, Calendar, Target, Clock } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { EmptyState } from "@/components/EmptyState";
@@ -308,6 +309,17 @@ const Index = () => {
               }}
             />
           </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Add Expense Sheet */}
+      <Sheet open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
+        <SheetContent side="bottom" className="h-[95vh] sm:h-[90vh] rounded-t-xl p-0">
+          <EnhancedQuickAddExpense
+            onAddExpense={handlers.handleAddExpense}
+            existingExpenses={allExpenses}
+            accounts={accounts}
+          />
         </SheetContent>
       </Sheet>
 
