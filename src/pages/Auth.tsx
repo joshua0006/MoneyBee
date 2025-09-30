@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
@@ -16,6 +17,9 @@ export default function Auth() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
   const { toast } = useToast();
 
   const cleanupAuthState = () => {
@@ -78,7 +82,7 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       toast({
         title: "Password mismatch",
@@ -93,9 +97,9 @@ export default function Auth() {
     try {
       // Clean up existing state
       cleanupAuthState();
-      
+
       const redirectUrl = `${window.location.origin}/`;
-      
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -130,6 +134,35 @@ export default function Auth() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password reset email sent!",
+        description: "Please check your email for the password reset link.",
+      });
+
+      setShowResetModal(false);
+      setResetEmail("");
+    } catch (error: any) {
+      toast({
+        title: "Password reset failed",
+        description: error.message || "An error occurred while sending the reset email.",
+        variant: "destructive",
+      });
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -217,6 +250,19 @@ export default function Auth() {
                   <Button type="submit" className="w-full gradient-blue bee-button" disabled={loading}>
                     {loading ? "Signing in..." : "Sign In"}
                   </Button>
+
+                  <div className="text-center mt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setResetEmail(email);
+                        setShowResetModal(true);
+                      }}
+                      className="text-sm text-bee-blue hover:text-bee-gold transition-colors underline"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
                 </form>
               </TabsContent>
               
@@ -317,6 +363,56 @@ export default function Auth() {
           </div>
         </div>
       </div>
+
+      {/* Password Reset Modal */}
+      <Dialog open={showResetModal} onOpenChange={setShowResetModal}>
+        <DialogContent className="glass-card">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Reset Password</DialogTitle>
+            <DialogDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handlePasswordReset}>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email" className="text-sm font-medium">
+                  Email
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowResetModal(false)}
+                disabled={resetLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="gradient-blue bee-button"
+                disabled={resetLoading}
+              >
+                {resetLoading ? "Sending..." : "Send Reset Link"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

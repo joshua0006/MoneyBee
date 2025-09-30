@@ -336,7 +336,7 @@ export const generateSmartInsights = (expenses: Expense[]): SmartInsights => {
   }
 
   // Seasonal insights
-  const currentSeason = getCurrentSeason(now);
+const currentSeason = getCurrentSeason(now);
   const seasonalExpenses = expenses.filter(e => 
     e.type === 'expense' && 
     getCurrentSeason(e.date) === currentSeason &&
