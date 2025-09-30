@@ -109,7 +109,7 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
         onDoubleClick={resetSwipe}
       >
         <div className="p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex flex-col gap-1 mb-2">
                 <h4 className="font-medium text-foreground truncate text-sm sm:text-base">
@@ -133,8 +133,8 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
                 })}
               </p>
             </div>
-            
-            <div className="flex items-center gap-1 shrink-0 ml-4">
+
+            <div className="flex items-center gap-1 shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
@@ -173,9 +173,9 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
                 </AlertDialogContent>
               </AlertDialog>
               <div className={cn(
-                "font-semibold text-lg sm:text-xl ml-2",
-                expense.type === 'income' 
-                  ? "text-income" 
+                "font-semibold text-lg sm:text-xl ml-2 text-right min-w-[80px]",
+                expense.type === 'income'
+                  ? "text-income"
                   : "text-expense"
               )}>
                 {expense.type === 'income' ? '+' : '-'}${expense.amount.toFixed(2)}

@@ -37,11 +37,7 @@ export const DashboardHeader = ({ expenseCount, onSignOut }: DashboardHeaderProp
           
           {/* Mobile Actions */}
           <div className="flex items-center gap-2">
-            <div className="xs:flex bg-gradient-to-r from-bee-blue/10 to-primary/10 px-2 py-1 rounded-md border border-bee-blue/20">
-              <Badge variant="secondary" className="text-[10px] xs:text-xs px-1.5 py-0.5 bg-transparent border-0 text-bee-blue font-medium">
-                {expenseCount}
-              </Badge>
-            </div>
+           
             <Button
               variant="ghost"
               size="sm"
