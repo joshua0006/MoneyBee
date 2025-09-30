@@ -111,14 +111,14 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
         <div className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex flex-col gap-1 mb-2">
                 <h4 className="font-medium text-foreground truncate text-sm sm:text-base">
                   {expense.description}
                 </h4>
-                <Badge 
-                  variant="secondary" 
+                <Badge
+                  variant="secondary"
                   className={cn(
-                    "text-xs px-2 py-0.5 shrink-0",
+                    "text-xs px-2 py-0.5 shrink-0 w-fit",
                     categoryColors[expense.category as keyof typeof categoryColors] || categoryColors.Other
                   )}
                 >
@@ -126,8 +126,8 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
                 </Badge>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                {expense.date.toLocaleDateString('en-US', { 
-                  month: 'short', 
+                {expense.date.toLocaleDateString('en-US', {
+                  month: 'short',
                   day: 'numeric',
                   year: expense.date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
                 })}
