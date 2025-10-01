@@ -122,9 +122,8 @@ export const processDueRecurringTransactions = (
     
     // Check if due
     if (currentDate >= recurring.nextDueDate) {
-      // Generate expense
+      // Generate expense (without ID - database will generate it)
       const newExpense = {
-        id: `recurring_${recurring.id}_${Date.now()}`,
         amount: recurring.amount,
         description: recurring.description,
         category: recurring.category,

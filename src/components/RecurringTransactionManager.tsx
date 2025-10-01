@@ -127,13 +127,41 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
 
   // Check for due transactions on component mount and periodically
   useEffect(() => {
-    const checkDueTransactions = () => {
+    const checkDueTransactions = async () => {
       const { expenses, updatedRecurring } = processDueRecurringTransactions(recurringTransactions);
-      
+
       if (expenses.length > 0) {
+        // Update local state
         setRecurringTransactions(updatedRecurring);
+
+        // Persist next_due_date updates to database
+        try {
+          const updatePromises = updatedRecurring
+            .filter(r => {
+              const original = recurringTransactions.find(rt => rt.id === r.id);
+              return original && original.nextDueDate.getTime() !== r.nextDueDate.getTime();
+            })
+            .map(r =>
+              updateRecurringTransactionInDatabase(r.id, {
+                next_due_date: r.nextDueDate.toISOString().split('T')[0],
+                updated_at: new Date().toISOString()
+              })
+            );
+
+          await Promise.all(updatePromises);
+        } catch (error) {
+          console.error('Failed to update recurring transaction next due dates:', error);
+          toast({
+            title: "Sync Warning",
+            description: "Expenses generated but recurring schedule may need manual update",
+            variant: "destructive",
+            duration: 5000
+          });
+        }
+
+        // Generate expenses
         onGenerateExpenses(expenses);
-        
+
         toast({
           title: "🔄 Recurring Transactions Processed",
           description: `Generated ${expenses.length} new transaction${expenses.length > 1 ? 's' : ''}`,
@@ -144,7 +172,7 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
 
     checkDueTransactions();
     const interval = setInterval(checkDueTransactions, 60000); // Check every minute
-    
+
     return () => clearInterval(interval);
   }, [recurringTransactions, onGenerateExpenses, toast]);
 
@@ -766,33 +794,69 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
                       )}
 
                       {/* Action Buttons */}
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(transaction)}
-                          className="min-h-[44px] flex-1 sm:flex-initial"
-                          aria-label={`Edit ${transaction.description}`}
-                        >
-                          <Edit className="h-4 w-4 mr-2" aria-hidden="true" />
-                          <span>Edit</span>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleToggleActive(transaction.id)}
-                          className="min-h-[44px] flex-1 sm:flex-initial"
-                          aria-label={`Pause ${transaction.description}`}
-                        >
-                          <Pause className="h-4 w-4 mr-2" aria-hidden="true" />
-                          <span>Pause</span>
-                        </Button>
+                      <div className="flex flex-col gap-2 pt-2">
+                        {/* Row 1: Edit and Pause (+ Delete on larger screens) */}
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(transaction)}
+                            className="min-h-[44px] flex-1 sm:flex-initial"
+                            aria-label={`Edit ${transaction.description}`}
+                          >
+                            <Edit className="h-4 w-4 mr-2" aria-hidden="true" />
+                            <span>Edit</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleActive(transaction.id)}
+                            className="min-h-[44px] flex-1 sm:flex-initial"
+                            aria-label={`Pause ${transaction.description}`}
+                          >
+                            <Pause className="h-4 w-4 mr-2" aria-hidden="true" />
+                            <span>Pause</span>
+                          </Button>
+                          {/* Delete button - hidden at ≤400px, visible above */}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="max-[400px]:hidden min-h-[44px] flex-1 sm:flex-initial text-destructive hover:text-destructive"
+                                aria-label={`Delete ${transaction.description}`}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" aria-hidden="true" />
+                                <span>Delete</span>
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Recurring Transaction</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{transaction.description}"? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                                <AlertDialogCancel className="min-h-[44px] sm:min-h-[36px]">Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(transaction.id)}
+                                  className="min-h-[44px] sm:min-h-[36px]"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+
+                        {/* Row 2: Delete button - visible only at ≤400px */}
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
                               variant="outline"
                               size="sm"
-                              className="min-h-[44px] flex-1 sm:flex-initial text-destructive hover:text-destructive"
+                              className="min-[401px]:hidden min-h-[44px] w-full text-destructive hover:text-destructive"
                               aria-label={`Delete ${transaction.description}`}
                             >
                               <Trash2 className="h-4 w-4 mr-2" aria-hidden="true" />
