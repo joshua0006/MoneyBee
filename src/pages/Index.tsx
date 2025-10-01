@@ -250,7 +250,7 @@ const Index = () => {
           className="h-[calc(100vh-env(safe-area-inset-top))] max-h-[95vh] sm:h-[90vh] md:h-[85vh] lg:h-[90vh] p-0 flex flex-col"
         >
           <SheetHeader className="flex-shrink-0 p-4 border-b">
-            <SheetTitle>Calendar View</SheetTitle>
+            <SheetTitle>Monthly Report</SheetTitle>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
             <CalendarView

@@ -4,7 +4,7 @@ A modern expense tracking application with AI-powered expense parsing using Open
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/48cad12d-4f1c-4233-aae8-dd059f15e20a
+A personal finance management application.
 
 ## Features
 
@@ -50,15 +50,9 @@ The AI parser can understand natural language input like:
 
 There are several ways of editing your application.
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/48cad12d-4f1c-4233-aae8-dd059f15e20a) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
 **Use your preferred IDE**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+If you want to work locally using your own IDE, you can clone this repo and push changes.
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
@@ -118,14 +112,6 @@ If OpenAI is not configured or fails:
 - Still provides smart suggestions and auto-completion
 - User experience remains seamless
 
-## How can I deploy this project?
+## Deployment
 
-Simply open [Lovable](https://lovable.dev/projects/48cad12d-4f1c-4233-aae8-dd059f15e20a) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Configure your deployment settings according to your hosting platform of choice.

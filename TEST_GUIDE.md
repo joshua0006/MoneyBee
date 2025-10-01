@@ -93,5 +93,4 @@ npx playwright test --debug
 - iOS/Android: ensure capabilities/permissions are enabled by platform
 - Test in app: route /mobile → Biometrics → Verify
 
-For physical device guidance, read our blog post:
-https://lovable.dev/blogs/TODO
+For physical device guidance, refer to the Capacitor documentation.

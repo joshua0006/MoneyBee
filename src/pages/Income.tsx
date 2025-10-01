@@ -1,22 +1,27 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { RecurringTransactionManager } from "@/components/RecurringTransactionManager";
+import { IncomeManager } from "@/components/IncomeManager";
 import { mobileService } from "@/utils/mobileService";
 import { useAppData } from "@/contexts/AppDataContext";
 import { Helmet } from "react-helmet-async";
 
-export default function Recurring() {
+export default function Income() {
   const navigate = useNavigate();
-  const { accounts, addExpense } = useAppData();
+  const { expenses, addExpense, updateExpense, deleteExpense } = useAppData();
+
+  const handleUpdateExpense = (expense) => {
+    const { id, ...updates } = expense;
+    updateExpense(id, updates);
+  };
 
   return (
     <>
       <Helmet>
-        <title>Recurring Transactions - MoneyBee</title>
-        <meta name="description" content="Manage your recurring income and expenses like subscriptions and bills" />
+        <title>Monthly Income - MoneyBee</title>
+        <meta name="description" content="Manage your monthly income entries and track your earnings" />
       </Helmet>
-      
+
       <div className="min-h-screen bg-background">
         {/* Header */}
         <div className="sticky top-0 z-40 bg-background border-b border-border">
@@ -32,17 +37,17 @@ export default function Recurring() {
             >
               <ArrowLeft size={20} />
             </Button>
-            <h1 className="text-xl font-semibold">Recurring</h1>
+            <h1 className="text-xl font-semibold">Monthly Income</h1>
           </div>
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto scroll-smooth pb-24 p-4">
-          <RecurringTransactionManager
-            accounts={accounts}
-            onGenerateExpenses={(expenses) => {
-              expenses.forEach(expense => addExpense(expense));
-            }}
+        <div className="p-4">
+          <IncomeManager
+            expenses={expenses}
+            onAddExpense={addExpense}
+            onUpdateExpense={handleUpdateExpense}
+            onDeleteExpense={deleteExpense}
           />
         </div>
       </div>
