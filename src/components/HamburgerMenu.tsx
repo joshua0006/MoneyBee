@@ -38,7 +38,7 @@ export const HamburgerMenu = ({}: HamburgerMenuProps) => {
           <SheetTitle className="text-left">Features</SheetTitle>
         </SheetHeader>
         
-        <div className="mt-6 overflow-y-auto max-h-[calc(100vh-8rem)] -mx-6 px-6 space-y-2">
+        <div className="mt-6 overflow-y-auto scroll-smooth max-h-[calc(100vh-8rem)] -mx-6 px-6 space-y-2">
           {menuItems.map((item) => (
             <Button
               key={item.id}

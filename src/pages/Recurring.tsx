@@ -37,7 +37,7 @@ export default function Recurring() {
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="overflow-y-auto scroll-smooth pb-24 p-4">
           <RecurringTransactionManager
             accounts={accounts}
             onGenerateExpenses={() => {}}
