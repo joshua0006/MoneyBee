@@ -558,55 +558,6 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
         </Dialog>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-sm text-muted-foreground">Active</p>
-                <p className="text-2xl font-bold">{activeTransactions.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-income" />
-              <div>
-                <p className="text-sm text-muted-foreground">Monthly Income</p>
-                <p className="text-2xl font-bold text-income">
-                  ${activeTransactions
-                    .filter(r => r.type === 'income' && r.frequency === 'monthly')
-                    .reduce((sum, r) => sum + r.amount, 0)
-                    .toFixed(2)}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <TrendingDown className="h-5 w-5 text-expense" />
-              <div>
-                <p className="text-sm text-muted-foreground">Monthly Expenses</p>
-                <p className="text-2xl font-bold text-expense">
-                  ${activeTransactions
-                    .filter(r => r.type === 'expense' && r.frequency === 'monthly')
-                    .reduce((sum, r) => sum + r.amount, 0)
-                    .toFixed(2)}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Upcoming Transactions Toggle */}
       <div className="flex items-center gap-4">
         <Button
