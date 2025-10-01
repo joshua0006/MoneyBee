@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format } from "date-fns";
 import { CalendarIcon, Plus, Edit, Trash2, Play, Pause, Clock, TrendingUp, TrendingDown, Eye, Calendar as CalendarIconSmall } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -361,6 +362,7 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
   }
 
   return (
+    <TooltipProvider>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -624,62 +626,106 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
           <CardContent>
             <div className="space-y-4">
               {activeTransactions.map(transaction => (
-                <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-lg ${
+                <div key={transaction.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                    <div className={`p-2 sm:p-3 rounded-lg shrink-0 ${
                       transaction.type === 'income' ? 'bg-income/10' : 'bg-expense/10'
                     }`}>
-                      {transaction.type === 'income' ? 
-                        <TrendingUp className="h-5 w-5 text-income" /> : 
-                        <TrendingDown className="h-5 w-5 text-expense" />
+                      {transaction.type === 'income' ?
+                        <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-income" /> :
+                        <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-expense" />
                       }
                     </div>
-                    <div>
-                      <h3 className="font-semibold">{transaction.description}</h3>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>{transaction.category}</span>
-                        <Separator orientation="vertical" className="h-4" />
-                        <span>{getFrequencyDisplay(transaction.frequency)}</span>
-                        <Separator orientation="vertical" className="h-4" />
-                        <span>{getNextOccurrenceText(transaction)}</span>
+                    <div className="min-w-0 flex-1">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <h3 className="font-semibold truncate">{transaction.description}</h3>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{transaction.description}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+                        <span className="truncate">{transaction.category}</span>
+                        <Separator orientation="vertical" className="h-4 hidden sm:block" />
+                        <span className="shrink-0">{getFrequencyDisplay(transaction.frequency)}</span>
+                        <Separator orientation="vertical" className="h-4 hidden sm:block" />
+                        <span className="shrink-0 text-xs sm:text-sm">{getNextOccurrenceText(transaction)}</span>
                       </div>
                       {transaction.notes && (
-                        <p className="text-sm text-muted-foreground mt-1">{transaction.notes}</p>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{transaction.notes}</p>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">{transaction.notes}</p>
+                          </TooltipContent>
+                        </Tooltip>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className={`text-lg font-bold ${
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                    <div className="text-left sm:text-right">
+                      <p className={`text-base sm:text-lg font-bold ${
                         transaction.type === 'income' ? 'text-income' : 'text-expense'
                       }`}>
                         ${transaction.amount.toFixed(2)}
                       </p>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs mt-1">
                         {accounts.find(a => a.id === transaction.accountId)?.name || 'Unknown'}
                       </Badge>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(transaction)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleToggleActive(transaction.id)}
-                      >
-                        <Pause className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Trash2 className="h-4 w-4" />
+                    <div className="flex gap-1 sm:gap-2">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(transaction)}
+                            className="h-9 w-9 p-0 sm:h-10 sm:w-10"
+                            aria-label="Edit recurring transaction"
+                          >
+                            <Edit className="h-4 w-4" />
                           </Button>
-                        </AlertDialogTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Edit</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleActive(transaction.id)}
+                            className="h-9 w-9 p-0 sm:h-10 sm:w-10"
+                            aria-label="Pause recurring transaction"
+                          >
+                            <Pause className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Pause</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <AlertDialog>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-9 w-9 p-0 sm:h-10 sm:w-10"
+                                aria-label="Delete recurring transaction"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Delete</p>
+                          </TooltipContent>
+                        </Tooltip>
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>Delete Recurring Transaction</AlertDialogTitle>
@@ -780,5 +826,6 @@ export const RecurringTransactionManager = ({ accounts, onGenerateExpenses }: Re
         </Card>
       )}
     </div>
+    </TooltipProvider>
   );
 };
