@@ -19,8 +19,8 @@ export default function Recurring() {
       
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <div className="sticky top-0 z-40 bg-background border-b border-border">
-          <div className="flex items-center gap-3 p-4">
+        <header className="sticky top-0 z-40 bg-background border-b border-border">
+          <div className="flex items-center gap-3 p-3 sm:p-4">
             <Button
               variant="ghost"
               size="sm"
@@ -28,23 +28,24 @@ export default function Recurring() {
                 mobileService.lightHaptic();
                 navigate(-1);
               }}
-              className="p-2"
+              className="min-h-[44px] min-w-[44px] p-2"
+              aria-label="Go back"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={20} aria-hidden="true" />
             </Button>
-            <h1 className="text-xl font-semibold">Recurring</h1>
+            <h1 className="text-lg sm:text-xl font-semibold">Recurring Transactions</h1>
           </div>
-        </div>
+        </header>
 
         {/* Content */}
-        <div className="overflow-y-auto scroll-smooth pb-24 p-4">
+        <main className="overflow-y-auto scroll-smooth pb-24 px-3 py-4 sm:p-4">
           <RecurringTransactionManager
             accounts={accounts}
             onGenerateExpenses={(expenses) => {
               expenses.forEach(expense => addExpense(expense));
             }}
           />
-        </div>
+        </main>
       </div>
     </>
   );
