@@ -1,19 +1,8 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Trash2, Edit } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Trash2 } from 'lucide-react';
 import { useSwipeToDelete } from '@/hooks/useTouchGestures';
 import { mobileService } from '@/utils/mobileService';
 import { cn } from '@/lib/utils';
@@ -40,7 +29,6 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
   onClick,
   readOnly = false
 }) => {
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { ref, isSwipingToDelete, resetSwipe } = useSwipeToDelete(
     readOnly ? undefined : () => {
       mobileService.heavyHaptic();
@@ -49,27 +37,8 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
   );
 
   const handleClick = () => {
-    // Remove auto-click to edit - now only manual edit button works
-    // mobileService.lightHaptic();
-    // onClick();
-  };
-
-  const handleEdit = (e: React.MouseEvent) => {
-    e.stopPropagation();
     mobileService.lightHaptic();
-    onEdit?.(expense);
-  };
-
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    mobileService.lightHaptic();
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    mobileService.heavyHaptic();
-    onDelete(expense.id);
-    setIsDeleteDialogOpen(false);
+    onClick();
   };
 
   const categoryColors = {
@@ -85,104 +54,69 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
   };
 
   return (
-    <div className="relative overflow-hidden">
-      {/* Delete Action Background */}
-      <div 
-        aria-hidden={!isSwipingToDelete}
-        role="presentation"
-        className={cn(
-          "absolute inset-0 bg-destructive flex items-center justify-end px-6 transition-opacity duration-200",
-          isSwipingToDelete ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        )}
-      >
-        <div className="flex items-center gap-2 text-destructive-foreground">
-          <Trash2 size={20} />
-          <span className="font-medium">Delete</span>
+    <TooltipProvider>
+      <div className="relative overflow-hidden">
+        {/* Delete Action Background */}
+        <div
+          aria-hidden={!isSwipingToDelete}
+          role="presentation"
+          className={cn(
+            "absolute inset-0 bg-destructive flex items-center justify-end px-4 xs:px-6 transition-opacity duration-200",
+            isSwipingToDelete ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          )}
+        >
+          <div className="flex items-center gap-2 text-destructive-foreground">
+            <Trash2 className="h-4 w-4 xs:h-5 xs:w-5" />
+            <span className="font-medium text-xs xs:text-sm">Delete</span>
+          </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <Card 
-        ref={ref}
-        className={cn(
-          "expense-item transition-all duration-200 cursor-pointer touch-manipulation",
-          "active:scale-[0.98] hover:shadow-md",
-          isSwipingToDelete && "transform translate-x-[-80px]"
-        )}
-        onClick={handleClick}
-        onDoubleClick={resetSwipe}
-      >
-        <div className="p-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-col gap-1 mb-2">
-                <h4 className="font-medium text-foreground truncate text-sm sm:text-base">
-                  {expense.description}
-                </h4>
-                <Badge
-                  variant="secondary"
-                  className={cn(
-                    "text-xs px-2 py-0.5 shrink-0 w-fit",
-                    categoryColors[expense.category as keyof typeof categoryColors] || categoryColors.Other
-                  )}
-                >
-                  {expense.category}
-                </Badge>
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                {expense.date.toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: expense.date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
-                })}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-1 shrink-0">
-              {!readOnly && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleEdit}
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+        {/* Main Content */}
+        <Card
+          ref={ref}
+          className={cn(
+            "expense-item transition-all duration-200 cursor-pointer touch-manipulation",
+            "active:scale-[0.98] hover:shadow-md",
+            isSwipingToDelete && "transform translate-x-[-80px]"
+          )}
+          onClick={handleClick}
+          onDoubleClick={resetSwipe}
+        >
+          <div className="p-3 xs:p-4">
+            <div className="flex items-start justify-between gap-2 xs:gap-3 sm:gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col gap-1 mb-1.5 xs:mb-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <h4 className="font-medium text-foreground truncate text-xs xs:text-sm sm:text-base">
+                        {expense.description}
+                      </h4>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">{expense.description}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      "text-[10px] xs:text-xs px-1.5 xs:px-2 py-0.5 shrink-0 w-fit",
+                      categoryColors[expense.category as keyof typeof categoryColors] || categoryColors.Other
+                    )}
                   >
-                    <Edit size={16} />
-                  </Button>
-                  <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleDeleteClick}
-                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete this transaction? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleDeleteConfirm}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </>
-              )}
+                    {expense.category}
+                  </Badge>
+                </div>
+                <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground">
+                  {expense.date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: expense.date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+                  })}
+                </p>
+              </div>
+
               <div className={cn(
-                "font-semibold text-lg sm:text-xl text-right min-w-[80px]",
-                !readOnly && "ml-2",
+                "font-semibold text-base xs:text-lg sm:text-xl text-right min-w-[70px] xs:min-w-[80px] sm:min-w-[90px]",
                 expense.type === 'income'
                   ? "text-income"
                   : "text-expense"
@@ -191,15 +125,15 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
               </div>
             </div>
           </div>
-        </div>
-      </Card>
+        </Card>
 
-      {/* Swipe Hint */}
-      {isSwipingToDelete && (
-        <div className="absolute top-1/2 right-4 transform -translate-y-1/2 text-xs text-muted-foreground animate-pulse">
-          ← Swipe to delete
-        </div>
-      )}
-    </div>
+        {/* Swipe Hint */}
+        {isSwipingToDelete && (
+          <div className="absolute top-1/2 right-4 transform -translate-y-1/2 text-xs text-muted-foreground animate-pulse" aria-live="polite">
+            ← Swipe to delete
+          </div>
+        )}
+      </div>
+    </TooltipProvider>
   );
 };

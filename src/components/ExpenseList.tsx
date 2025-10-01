@@ -59,32 +59,33 @@ export const ExpenseList = ({
 
   return (
     <Card className="w-full">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Recent Transactions</CardTitle>
+      <CardHeader className="pb-2 xs:pb-3">
+        <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 xs:gap-0">
+          <CardTitle className="text-base xs:text-lg">Recent Transactions</CardTitle>
           {showViewAll && onViewAll && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onViewAll}
-              className="text-primary hover:text-primary/80"
+              className="text-primary hover:text-primary/80 w-fit xs:w-auto"
+              aria-label="View all transactions"
             >
               <Eye className="w-4 h-4 mr-1" />
               View All
             </Button>
           )}
         </div>
-        
+
         {/* Category Filter */}
-        <div className="flex items-center gap-2 mt-3">
-          <Filter className="w-4 h-4 text-muted-foreground" />
+        <div className="flex items-center gap-2 mt-2 xs:mt-3">
+          <Filter className="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true" />
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-40 h-8 text-sm">
+            <SelectTrigger className="w-full xs:w-40 h-9 xs:h-8 text-xs xs:text-sm">
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
               {getCategoriesForFilter().map((category) => (
-                <SelectItem key={category} value={category} className="text-sm">
+                <SelectItem key={category} value={category} className="text-xs xs:text-sm">
                   {category}
                 </SelectItem>
               ))}
@@ -95,14 +96,15 @@ export const ExpenseList = ({
               variant="ghost"
               size="sm"
               onClick={() => setSelectedCategory("All Categories")}
-              className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+              className="h-9 xs:h-8 px-2 xs:px-2 text-xs text-muted-foreground hover:text-foreground shrink-0"
+              aria-label="Clear category filter"
             >
               Clear
             </Button>
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-3 p-4 pt-0">
+      <CardContent className="space-y-2 xs:space-y-3 p-2 xs:p-3 sm:p-4 pt-0">
         {filteredExpenses.length > 0 ? (
           filteredExpenses.map((expense) => (
             <SwipeableExpenseItem
@@ -114,8 +116,8 @@ export const ExpenseList = ({
             />
           ))
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <p className="text-sm">No transactions found for "{selectedCategory}"</p>
+          <div className="text-center py-6 xs:py-8 text-muted-foreground">
+            <p className="text-xs xs:text-sm">No transactions found for "{selectedCategory}"</p>
           </div>
         )}
       </CardContent>

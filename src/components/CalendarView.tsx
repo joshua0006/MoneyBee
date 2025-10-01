@@ -80,7 +80,7 @@ export const CalendarView = ({ expenses, budgets, accounts, goals, onDateSelect,
 
   // Get month summary
   const getMonthSummary = () => {
-    const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const monthStart = new Date(currentMonth.getFullYear(), currentM  onth.getMonth(), 1);
     const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
     
     const monthExpenses = expenses.filter(expense => 
