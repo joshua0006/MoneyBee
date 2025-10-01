@@ -8,7 +8,7 @@ import { Helmet } from "react-helmet-async";
 
 export default function Recurring() {
   const navigate = useNavigate();
-  const { accounts } = useAppData();
+  const { accounts, addExpense } = useAppData();
 
   return (
     <>
@@ -40,7 +40,9 @@ export default function Recurring() {
         <div className="overflow-y-auto scroll-smooth pb-24 p-4">
           <RecurringTransactionManager
             accounts={accounts}
-            onGenerateExpenses={() => {}}
+            onGenerateExpenses={(expenses) => {
+              expenses.forEach(expense => addExpense(expense));
+            }}
           />
         </div>
       </div>
