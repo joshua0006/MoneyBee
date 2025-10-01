@@ -10,7 +10,7 @@ interface AnalyticsContentProps {
 export const AnalyticsContent = ({ expenses }: AnalyticsContentProps) => {
   if (expenses.length === 0) {
     return (
-      <div className="p-4 pb-20">
+      <div className="p-3 md:p-4 lg:p-6 pb-20">
         <EmptyState
           type="analytics"
         />
@@ -19,7 +19,7 @@ export const AnalyticsContent = ({ expenses }: AnalyticsContentProps) => {
   }
 
   return (
-    <div className="p-4 pb-20 space-y-6">
+    <div className="p-3 md:p-4 lg:p-6 pb-20 space-y-4 md:space-y-6" role="main" aria-label="Analytics content">
       <CategoryBreakdown expenses={expenses} />
       <AdvancedAnalytics expenses={expenses} />
     </div>

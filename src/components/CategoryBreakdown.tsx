@@ -43,7 +43,7 @@ interface CategoryBreakdownProps {
 
 export const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
   const expenseOnly = expenses.filter(e => e.type === 'expense');
-  
+
   if (expenseOnly.length === 0) {
     return null;
   }
@@ -60,44 +60,55 @@ export const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
     .slice(0, 6); // Show top 6 categories
 
   return (
-    <Card className="glass-card expense-card w-full">
+    <Card
+      className="glass-card expense-card w-full"
+      role="region"
+      aria-label="Spending by category breakdown"
+    >
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Spending by Category</CardTitle>
+        <CardTitle className="text-base md:text-lg">Spending by Category</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 md:space-y-4">
         {sortedCategories.map(([category, amount]) => {
           const percentage = Math.round((amount / totalExpenses) * 100);
+          const IconComponent = CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS] || CATEGORY_ICONS.Other;
+
           return (
             <div key={category} className="space-y-2">
-              <div className="flex justify-between items-center">
-                 <div className="flex items-center gap-2">
-                   {(() => {
-                     const IconComponent = CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS] || CATEGORY_ICONS.Other;
-                     return (
-                       <IconComponent 
-                         size={16} 
-                         style={{ color: CATEGORY_COLORS[category] || CATEGORY_COLORS.Other }}
-                       />
-                     );
-                   })()}
-                   <span className="text-sm font-medium">{category}</span>
+              <div className="flex justify-between items-center gap-2">
+                 <div className="flex items-center gap-2 min-w-0 flex-1">
+                   <IconComponent
+                     size={16}
+                     className="shrink-0"
+                     style={{ color: CATEGORY_COLORS[category] || CATEGORY_COLORS.Other }}
+                     aria-hidden="true"
+                   />
+                   <span className="text-sm md:text-base font-medium truncate">{category}</span>
                  </div>
-                <div className="text-right">
-                  <span className="text-sm font-semibold">${amount.toFixed(2)}</span>
-                  <span className="text-xs text-muted-foreground ml-2">{percentage}%</span>
+                <div className="text-right shrink-0">
+                  <span
+                    className="text-sm md:text-base font-semibold"
+                    aria-label={`${category} spending: $${amount.toFixed(2)}`}
+                  >
+                    ${amount.toFixed(2)}
+                  </span>
+                  <span className="text-xs text-muted-foreground ml-2" aria-label={`${percentage} percent`}>
+                    {percentage}%
+                  </span>
                 </div>
               </div>
-              <Progress 
-                value={percentage} 
+              <Progress
+                value={percentage}
                 className="h-2"
                 style={{
                   '--progress-color': CATEGORY_COLORS[category] || CATEGORY_COLORS.Other
                 } as React.CSSProperties}
+                aria-label={`${category} represents ${percentage}% of total spending`}
               />
             </div>
           );
         })}
-        
+
         {Object.keys(categoryTotals).length > 6 && (
           <p className="text-xs text-muted-foreground text-center pt-2 border-t">
             Showing top 6 categories
