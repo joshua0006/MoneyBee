@@ -1,4 +1,4 @@
-import { Home, BarChart2, Plus, Target, Trophy, TrendingUp } from "lucide-react";
+import { Home, BarChart2, Plus, DollarSign, Trophy, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -13,7 +13,7 @@ export const BottomNavigation = ({ onAddExpense }: BottomNavigationProps) => {
   
   const navItems = [
     { id: "home", icon: Home, label: "Home", path: "/" },
-    { id: "budgets", icon: Target, label: "Budgets", path: "/budgets" },
+    { id: "income", icon: DollarSign, label: "Income", path: "/accounts" },
     { id: "add", icon: Plus, label: "Add", isSpecial: true },
     { id: "analytics", icon: BarChart2, label: "Analytics", path: "/analytics" },
     { id: "growth", icon: TrendingUp, label: "Growth", path: "/growth" },

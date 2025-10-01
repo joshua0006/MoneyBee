@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, Search, Calendar, CreditCard, Repeat, Download, Settings, Receipt, Bell, Shield, HelpCircle, Target, TrendingUp, Users } from "lucide-react";
+import { Menu, Calendar, Repeat, Settings, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { mobileService } from "@/utils/mobileService";
@@ -14,20 +14,9 @@ export const HamburgerMenu = ({}: HamburgerMenuProps) => {
   const navigate = useNavigate();
   
   const menuItems = [
-    { id: "transactions", label: "Transactions", icon: CreditCard, path: "/transactions" },
-    { id: "scanner", label: "Receipt Scanner", icon: Receipt, path: "/scanner" },
-    { id: "bill-splitter", label: "Bill Splitter", icon: Users, path: "/bill-splitter" },
     { id: "calendar", label: "Calendar View", icon: Calendar, path: "/calendar" },
-    { id: "goals", label: "Goals", icon: Target, path: "/goals" },
-    { id: "growth", label: "Wealth Growth", icon: TrendingUp, path: "/growth" },
-    { id: "accounts", label: "Accounts", icon: CreditCard, path: "/accounts" },
-    { id: "investments", label: "Investments", icon: TrendingUp, path: "/investments" },
-    { id: "cards", label: "Credit Cards", icon: Target, path: "#", onClick: () => window.dispatchEvent(new CustomEvent('menu-cards')) },
     { id: "recurring", label: "Recurring", icon: Repeat, path: "/recurring" },
-    { id: "reports", label: "Reports & Export", icon: Download, path: "/reports" },
-    { id: "notifications", label: "Notifications", icon: Bell, path: "/notifications" },
     { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
-    { id: "security", label: "Security", icon: Shield, path: "/security" },
     { id: "help", label: "Help & Support", icon: HelpCircle, path: "/help" },
   ];
 
@@ -49,7 +38,7 @@ export const HamburgerMenu = ({}: HamburgerMenuProps) => {
           <SheetTitle className="text-left">Features</SheetTitle>
         </SheetHeader>
         
-        <div className="mt-6 space-y-2">
+        <div className="mt-6 overflow-y-auto max-h-[calc(100vh-8rem)] -mx-6 px-6 space-y-2">
           {menuItems.map((item) => (
             <Button
               key={item.id}

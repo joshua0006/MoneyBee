@@ -28,7 +28,7 @@ import Goals from "./pages/Goals";
 import Growth from "./pages/Growth";
 import Scanner from "./pages/Scanner";
 import Calendar from "./pages/Calendar";
-import Accounts from "./pages/Accounts";
+import Income from "./pages/Income";
 import Recurring from "./pages/Recurring";
 import Reports from "./pages/Reports";
 import Notifications from "./pages/Notifications";
@@ -103,7 +103,7 @@ const AppContent = () => {
         <Route path="/growth" element={isAuthenticated ? <Growth /> : <Navigate to="/auth" replace />} />
         <Route path="/scanner" element={isAuthenticated ? <Scanner /> : <Navigate to="/auth" replace />} />
         <Route path="/calendar" element={isAuthenticated ? <Calendar /> : <Navigate to="/auth" replace />} />
-        <Route path="/accounts" element={isAuthenticated ? <Accounts /> : <Navigate to="/auth" replace />} />
+        <Route path="/accounts" element={isAuthenticated ? <Income /> : <Navigate to="/auth" replace />} />
         <Route path="/investments" element={isAuthenticated ? <Investments /> : <Navigate to="/auth" replace />} />
         <Route path="/recurring" element={isAuthenticated ? <Recurring /> : <Navigate to="/auth" replace />} />
         <Route path="/reports" element={isAuthenticated ? <Reports /> : <Navigate to="/auth" replace />} />
