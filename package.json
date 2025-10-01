@@ -11,8 +11,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@aparajita/capacitor-biometric-auth": "^6.0.1",
-    "@capacitor-firebase/messaging": "^6.3.1",
+    "@aparajita/capacitor-biometric-auth": "^8.0.0",
+    "@capacitor-firebase/messaging": "^7.0.0",
     "@capacitor/android": "^7.4.2",
     "@capacitor/assets": "^3.0.5",
     "@capacitor/camera": "^7.0.1",
