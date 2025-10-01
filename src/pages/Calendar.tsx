@@ -39,7 +39,7 @@ export default function Calendar() {
         <meta name="description" content="View your expenses and income organized by calendar date" />
       </Helmet>
       
-      <div className="min-h-screen bg-background">
+      <div className="h-screen overflow-y-auto bg-background">
         {/* Header */}
         <div className="sticky top-0 z-40 bg-background border-b border-border">
           <div className="flex items-center gap-3 p-4">
@@ -59,7 +59,7 @@ export default function Calendar() {
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-4 pb-24">
           <CalendarView 
             expenses={expenses}
             budgets={budgets}
