@@ -13,9 +13,10 @@ interface CalendarViewProps {
   goals: Goal[];
   onDateSelect: (date: Date) => void;
   selectedDate?: Date;
+  onMonthChange?: (month: Date) => void;
 }
 
-export const CalendarView = ({ expenses, budgets, accounts, goals, onDateSelect, selectedDate }: CalendarViewProps) => {
+export const CalendarView = ({ expenses, budgets, accounts, goals, onDateSelect, selectedDate, onMonthChange }: CalendarViewProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   // Get expenses for a specific date
@@ -156,6 +157,7 @@ export const CalendarView = ({ expenses, budgets, accounts, goals, onDateSelect,
       newMonth.setMonth(newMonth.getMonth() + 1);
     }
     setCurrentMonth(newMonth);
+    onMonthChange?.(newMonth);
   };
 
   return (
@@ -223,7 +225,10 @@ export const CalendarView = ({ expenses, budgets, accounts, goals, onDateSelect,
             selected={selectedDate}
             onSelect={(date) => date && onDateSelect(date)}
             month={currentMonth}
-            onMonthChange={setCurrentMonth}
+            onMonthChange={(month) => {
+              setCurrentMonth(month);
+              onMonthChange?.(month);
+            }}
             modifiers={modifiers}
             modifiersStyles={modifiersStyles}
             className="rounded-md border-0"

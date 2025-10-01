@@ -90,7 +90,7 @@ flowchart TD
     Menu --> Transactions[💳 Transactions Page]
     Menu --> Goals[🎯 Goals Page]
     Menu --> Scanner[📷 Receipt Scanner]
-    Menu --> Calendar[📅 Calendar View]
+    Menu --> Calendar[📅 Monthly Report]
     Menu --> Accounts[🏦 Accounts Page]
     Menu --> Investments[💼 Investments Page]
     Menu --> Recurring[🔄 Recurring Transactions]
@@ -131,7 +131,7 @@ flowchart TD
     ReviewData --> SaveTransaction[Save Transaction]
     SaveTransaction --> Dashboard
 
-    %% Calendar View
+    %% Monthly Report
     Calendar --> CalendarFeatures{Calendar Features}
     CalendarFeatures --> ViewByMonth[Monthly View]
     CalendarFeatures --> ViewByWeek[Weekly View]

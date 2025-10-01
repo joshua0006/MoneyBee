@@ -30,19 +30,23 @@ interface SwipeableExpenseItemProps {
   onDelete: (id: string) => void;
   onEdit?: (expense: SwipeableExpenseItemProps['expense']) => void;
   onClick: () => void;
+  readOnly?: boolean;
 }
 
 export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
   expense,
   onDelete,
   onEdit,
-  onClick
+  onClick,
+  readOnly = false
 }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const { ref, isSwipingToDelete, resetSwipe } = useSwipeToDelete(() => {
-    mobileService.heavyHaptic();
-    onDelete(expense.id);
-  });
+  const { ref, isSwipingToDelete, resetSwipe } = useSwipeToDelete(
+    readOnly ? undefined : () => {
+      mobileService.heavyHaptic();
+      onDelete(expense.id);
+    }
+  );
 
   const handleClick = () => {
     // Remove auto-click to edit - now only manual edit button works
@@ -135,45 +139,50 @@ export const SwipeableExpenseItem: React.FC<SwipeableExpenseItemProps> = ({
             </div>
 
             <div className="flex items-center gap-1 shrink-0">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleEdit}
-                className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
-              >
-                <Edit size={16} />
-              </Button>
-              <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogTrigger asChild>
+              {!readOnly && (
+                <>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={handleDeleteClick}
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                    onClick={handleEdit}
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
                   >
-                    <Trash2 size={16} />
+                    <Edit size={16} />
                   </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete this transaction? This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeleteConfirm}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                  <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleDeleteClick}
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this transaction? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteConfirm}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              )}
               <div className={cn(
-                "font-semibold text-lg sm:text-xl ml-2 text-right min-w-[80px]",
+                "font-semibold text-lg sm:text-xl text-right min-w-[80px]",
+                !readOnly && "ml-2",
                 expense.type === 'income'
                   ? "text-income"
                   : "text-expense"

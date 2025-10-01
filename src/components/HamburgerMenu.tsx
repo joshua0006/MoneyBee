@@ -14,7 +14,7 @@ export const HamburgerMenu = ({}: HamburgerMenuProps) => {
   const navigate = useNavigate();
   
   const menuItems = [
-    { id: "calendar", label: "Calendar View", icon: Calendar, path: "/calendar" },
+    { id: "calendar", label: "Monthly Report", icon: Calendar, path: "/calendar" },
     { id: "recurring", label: "Recurring", icon: Repeat, path: "/recurring" },
     { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
     { id: "help", label: "Help & Support", icon: HelpCircle, path: "/help" },
